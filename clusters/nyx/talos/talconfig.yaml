@@ -1,0 +1,44 @@
+clusterName: nyx
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+talosVersion: v1.7.5
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.30.2
+endpoint: https://${VIP}:6443
+additionalMachineCertSans:
+  - ${VIP}
+additionalApiServerCertSans:
+  - ${VIP}
+  - nyx.internal
+nodes:
+  - hostname: nyx-control-plane-1
+    ipAddress: ${CONTROL_PLANE_1_IP}
+    controlPlane: true
+    nameservers:
+      - ${GATEWAY}
+      - ${NAMESERVER_PRIMARY}
+      - ${NAMESERVER_SECONDARY}
+    installDisk: /dev/mmcblk0
+    networkInterfaces:
+      - interface: enxdca6325aa72d
+        addresses:
+          - ${CONTROL_PLANE_1_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+        vip:
+          ip: ${VIP}
+  - hostname: nyx-worker-1
+    ipAddress: ${WORKER_1_IP}
+    controlPlane: false
+    nameservers:
+      - ${GATEWAY}
+      - ${NAMESERVER_PRIMARY}
+      - ${NAMESERVER_SECONDARY}
+    installDisk: /dev/vda
+    networkInterfaces:
+      - interface: enx00a09830128c
+        addresses:
+          - ${WORKER_1_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
