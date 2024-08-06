@@ -23,6 +23,9 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: freenas-api-iscsi-values-secret
   values:
     csiDriver:
       # should be globally unique for a given cluster
@@ -79,7 +82,8 @@ spec:
           # use only 1 of apiKey or username/password
           # if both are present, apiKey is preferred
           # apiKey is only available starting in TrueNAS-12
-          apiKey: ${key}
+          # provided by encrypted secret
+          #apiKey: "${truenas-api-key}"
           #username: root
           #password:
           allowInsecure: true
