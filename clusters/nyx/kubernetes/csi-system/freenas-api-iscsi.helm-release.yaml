@@ -1,32 +1,84 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-    name: freenas-api-iscsi
-    namespace: csi-system
+  name: freenas-api-iscsi
+  namespace: csi-system
 spec:
-    interval: 5m
-    chart:
-        spec:
-            chart: democratic-csi
-            version: 0.14.6
-            sourceRef:
-                kind: HelmRepository
-                name: democratic-csi
-                namespace: flux-system
-            interval: 5m
+  interval: 5m
+  chart:
+    spec:
+      chart: democratic-csi
+      version: 0.14.6
+      sourceRef:
+        kind: HelmRepository
+        name: democratic-csi
+        namespace: flux-system
+      interval: 5m
     install:
-        createNamespace: true
-        crds: CreateReplace
-        remediation:
-            retries: 3
+      createNamespace: true
+      crds: CreateReplace
+      remediation:
+        retries: 3
     upgrade:
-        crds: CreateReplace
-        remediation:
-            retries: 3
+      crds: CreateReplace
+      remediation:
+        retries: 3
     values:
-        driver: freenas-api-iscsi
-        instance_id: null
-        httpConnection:
+      csiDriver:
+        # should be globally unique for a given cluster
+        name: "iscsi.democratic-csi.org"
+
+      # add note here about volume expansion requirements
+      storageClasses:
+        - name: freenas-iscsi-csi
+          defaultClass: true
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+          allowVolumeExpansion: true
+          parameters:
+            # for block-based storage can be ext3, ext4, xfs
+            # for nfs should be nfs
+            fsType: ext4
+
+            # if true, volumes created from other snapshots will be
+            # zfs send/received instead of zfs cloned
+            # detachedVolumesFromSnapshots: "false"
+
+            # if true, volumes created from other volumes will be
+            # zfs send/received instead of zfs cloned
+            # detachedVolumesFromVolumes: "false"
+
+          mountOptions: []
+          secrets:
+            provisioner-secret:
+            controller-publish-secret:
+            node-stage-secret:
+            #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
+            #      # if doing CHAP
+            #      node-db.node.session.auth.authmethod: CHAP
+            #      node-db.node.session.auth.username: foo
+            #      node-db.node.session.auth.password: bar
+            #
+            #      # if doing mutual CHAP
+            #      node-db.node.session.auth.username_in: baz
+            #      node-db.node.session.auth.password_in: bar
+            node-publish-secret:
+            controller-expand-secret:
+
+      # if your cluster supports snapshots you may enable below
+      volumeSnapshotClasses: []
+      #- name: freenas-iscsi-csi
+      #  parameters:
+      #  # if true, snapshots will be created with zfs send/receive
+      #  # detachedSnapshots: "false"
+      #  secrets:
+      #    snapshotter-secret:
+
+      driver:
+        config:
+          driver: freenas-api-iscsi
+          instance_id: null
+          httpConnection:
             protocol: https
             host: 192.168.178.14
             port: 8443
@@ -40,7 +92,7 @@ spec:
             # use apiVersion 2 for TrueNAS-12 and up (will work on 11.x in some scenarios as well)
             # leave unset for auto-detection
             apiVersion: 2
-        zfs:
+          zfs:
             # can be used to override defaults if necessary
             # the example below is useful for TrueNAS 12
             cli:
@@ -75,7 +127,7 @@ spec:
             zvolEnableReservation: false
             # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
             zvolBlocksize: 128K
-        iscsi:
+          iscsi:
             targetPortal: 192.168.178.14:3260
             # for multipath
             targetPortals: []
@@ -89,18 +141,18 @@ spec:
             #nameSuffix: "-clustera"
             # add as many as needed
             targetGroups:
-                # get the correct ID from the "portal" section in the UI
-                # https://github.com/democratic-csi/democratic-csi/issues/302
-                # NOTE: the ID in the UI does NOT always match the ID in the DB, you must use the DB value
-                - targetGroupPortalGroup: 1
-                  # get the correct ID from the "initiators" section in the UI
-                  targetGroupInitiatorGroup: 1
-                  # None, CHAP, or CHAP Mutual
-                  targetGroupAuthType: None
-                  # get the correct ID from the "Authorized Access" section of the UI
-                  # only required if using Chap
-                  targetGroupAuthGroup: null
-            #extentCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+              # get the correct ID from the "portal" section in the UI
+              # https://github.com/democratic-csi/democratic-csi/issues/302
+              # NOTE: the ID in the UI does NOT always match the ID in the DB, you must use the DB value
+              - targetGroupPortalGroup: 1
+                # get the correct ID from the "initiators" section in the UI
+                targetGroupInitiatorGroup: 1
+                # None, CHAP, or CHAP Mutual
+                targetGroupAuthType: None
+                # get the correct ID from the "Authorized Access" section of the UI
+                # only required if using Chap
+                targetGroupAuthGroup: null
+            extentCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
             extentInsecureTpc: true
             extentXenCompat: false
             extentDisablePhysicalBlocksize: true
@@ -111,22 +163,22 @@ spec:
             # 0-100 (0 == ignore)
             extentAvailThreshold: 0
 sops:
-    kms: []
-    gcp_kms: []
-    azure_kv: []
-    hc_vault: []
-    age:
-        - recipient: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
-          enc: |
-            -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXY0JqT3JyT1pIdjBraXFY
-            ajlZb3pzU0JlVStsbFgvMHdORldBWUJrRWhvCjhSa1ZTaFBtVXU5N053dHJsWnVa
-            UW02ME5zQ0lSVVVSb1pOVjFYaXZqblEKLS0tIDVHakdTS08rQlJ6RTltd0lJSS9L
-            NUt3bkxxemNicTlYdVV5Q0NWMTU2VXcK3bNMieqwu5KV0PCWc+bzXFHrhsGh6fOM
-            OUtcZi6D/wOKD5TZuGOmZzX4lsrsx/IrUkBD64fLIO7TWsJ8EVoK8Q==
-            -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2024-08-06T14:40:15Z"
-    mac: ENC[AES256_GCM,data:YFrAv6xb3+UmIkx+iog/Cw1AFdzHzXYce4y1aMTAb2X+JWjla0h3C1maKqLXcqPBY3MNnDYH7TJ9zkulyl/Np+6SCnI0Jw1HEjP6XeoYOju8MVkoef79xOZTs0Bji2ghkje85ZPfMkqkShajbWkrsUdEIRPltkBjD0AYfhqeRik=,iv:GBs2wEta2Kk0RMqQjVU+7PrBIPh/UN2pbObKuO60UJI=,tag:M0ZXJF7aKv9LzK9BtUmDHw==,type:str]
-    pgp: []
-    encrypted_regex: ^apiKey$
-    version: 3.9.0
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault: []
+  age:
+    - recipient: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXY0JqT3JyT1pIdjBraXFY
+        ajlZb3pzU0JlVStsbFgvMHdORldBWUJrRWhvCjhSa1ZTaFBtVXU5N053dHJsWnVa
+        UW02ME5zQ0lSVVVSb1pOVjFYaXZqblEKLS0tIDVHakdTS08rQlJ6RTltd0lJSS9L
+        NUt3bkxxemNicTlYdVV5Q0NWMTU2VXcK3bNMieqwu5KV0PCWc+bzXFHrhsGh6fOM
+        OUtcZi6D/wOKD5TZuGOmZzX4lsrsx/IrUkBD64fLIO7TWsJ8EVoK8Q==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2024-08-06T14:40:15Z"
+  mac: ENC[AES256_GCM,data:YFrAv6xb3+UmIkx+iog/Cw1AFdzHzXYce4y1aMTAb2X+JWjla0h3C1maKqLXcqPBY3MNnDYH7TJ9zkulyl/Np+6SCnI0Jw1HEjP6XeoYOju8MVkoef79xOZTs0Bji2ghkje85ZPfMkqkShajbWkrsUdEIRPltkBjD0AYfhqeRik=,iv:GBs2wEta2Kk0RMqQjVU+7PrBIPh/UN2pbObKuO60UJI=,tag:M0ZXJF7aKv9LzK9BtUmDHw==,type:str]
+  pgp: []
+  encrypted_regex: ^apiKey$
+  version: 3.9.0
