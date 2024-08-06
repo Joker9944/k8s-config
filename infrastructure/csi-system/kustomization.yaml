@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - freenas-api-iscsi.helm-release.yaml
+  - truenas-api-key.secret.yaml

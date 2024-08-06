@@ -79,7 +79,7 @@ spec:
           # use only 1 of apiKey or username/password
           # if both are present, apiKey is preferred
           # apiKey is only available starting in TrueNAS-12
-          apiKey: ENC[AES256_GCM,data:cGSzZDBw7Xu8P2akdLo/F96VlY5ePEV9O8lbvcTRQlMKHlP4Jb8Z8hgg8lx2pDX8GNQuMqdmzcp77ovIc/+jENKYk85HkQg0rKh3NHUTYkNhRqay5Rz6t/+ch4YajsjPDjCGdlTuB53B+ky7+mCo4uam4W+BDlOC8z13AleeNAPCDmdmBmRi00RuMCW7jAc7oriCL0kQMu8LP+9ZOyHzj6xMTodo7AW2WVJ1UDteP1JJyFKdlIEmKOa1kKmkE5N5OgkG,iv:V3QCAB0N485noLK1cs8PhDSZRHbsYRoO0SQYfvQDqOY=,tag:c/DIT/Cf/oZO0/wGIc4xyA==,type:str]
+          apiKey: ${key}
           #username: root
           #password:
           allowInsecure: true
@@ -156,23 +156,3 @@ spec:
           extentRpm: "5400"
           # 0-100 (0 == ignore)
           extentAvailThreshold: 0
-sops:
-  kms: []
-  gcp_kms: []
-  azure_kv: []
-  hc_vault: []
-  age:
-    - recipient: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
-      enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB0alFDblNNSlVCV0NCWlFD
-        S3EvYld6NTZ5MHVHc0RMVEg1dFBpSytHdkI0CmhMTWorTGVNaGpYMkV3dTEvWTBF
-        cXdhWERNZndqcms3YkFINWVBWWpySGsKLS0tIFFMTWU0SktpOTJQRUFndWp6eWZn
-        cUZ5RXJ6ZHh1VlZJbW9udkpLRDFCZ00KxPTnJM3LlGILrfWlWtUqq4VFQToGbaP3
-        +4nsefI2bkfLH2IsGY+HH2tn+b+iRd66DSuLthb4MLkV1YJT9dVKxw==
-        -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2024-08-06T15:18:13Z"
-  mac: ENC[AES256_GCM,data:tYgJ5bxBC0z/KmJcLtyKIyCm9FfR/k+17Pv4bNjo3spkJ5pgw3CR6fgaGysF0WpydAmr3nPfBEnmCltcLozjMapoPWHAW9NNS+LjkU1jFWNLG2YI60CvOh70qF/DeYziJYiXO1BCvKjurXxI9Ziyo08UCwaqRVg1rCt3ViTVFvw=,iv:SU0YfCNlkJdPHdmKNL/fpaaXageWrf1wnLh7mGz2oQg=,tag:jlr+L9N9uLqtQS7qxGjKYg==,type:str]
-  pgp: []
-  encrypted_regex: ^apiKey$
-  version: 3.9.0
