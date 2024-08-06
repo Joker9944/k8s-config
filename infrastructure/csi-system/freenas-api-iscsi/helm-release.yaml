@@ -25,7 +25,7 @@ spec:
       retries: 3
   valuesFrom:
     - kind: Secret
-      name: freenas-api-iscsi-values-secret
+      name: freenas-api-iscsi-secret-values
   values:
     csiDriver:
       # should be globally unique for a given cluster
@@ -49,9 +49,9 @@ spec:
           # detachedVolumesFromVolumes: "false"
         mountOptions: []
         secrets:
-          provisioner-secret: null
-          controller-publish-secret: null
-          node-stage-secret: null
+          provisioner-secret:
+          controller-publish-secret:
+          node-stage-secret:
           #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
           #      # if doing CHAP
           #      node-db.node.session.auth.authmethod: CHAP
@@ -61,8 +61,8 @@ spec:
           #      # if doing mutual CHAP
           #      node-db.node.session.auth.username_in: baz
           #      node-db.node.session.auth.password_in: bar
-          node-publish-secret: null
-          controller-expand-secret: null
+          node-publish-secret:
+          controller-expand-secret:
     # if your cluster supports snapshots you may enable below
     volumeSnapshotClasses: []
     #- name: freenas-iscsi-csi
@@ -74,7 +74,7 @@ spec:
     driver:
       config:
         driver: freenas-api-iscsi
-        instance_id: null
+        instance_id:
         httpConnection:
           protocol: https
           host: 192.168.178.14
@@ -130,7 +130,7 @@ spec:
           # for multipath
           targetPortals: []
           # leave empty to omit usage of -I with iscsiadm
-          interface: null
+          interface:
           # MUST ensure uniqueness
           # full iqn limit is 223 bytes, plan accordingly
           # default is "{{ name }}"
@@ -149,7 +149,7 @@ spec:
               targetGroupAuthType: None
               # get the correct ID from the "Authorized Access" section of the UI
               # only required if using Chap
-              targetGroupAuthGroup: null
+              targetGroupAuthGroup:
           extentCommentTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
           extentInsecureTpc: true
           extentXenCompat: false
