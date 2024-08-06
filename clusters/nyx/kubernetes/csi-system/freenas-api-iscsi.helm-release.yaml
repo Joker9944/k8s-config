@@ -14,148 +14,148 @@ spec:
         name: democratic-csi
         namespace: flux-system
       interval: 5m
-    install:
-      createNamespace: true
-      crds: CreateReplace
-      remediation:
-        retries: 3
-    upgrade:
-      crds: CreateReplace
-      remediation:
-        retries: 3
-    values:
-      csiDriver:
-        # should be globally unique for a given cluster
-        name: iscsi.democratic-csi.org
-      # add note here about volume expansion requirements
-      storageClasses:
-        - name: freenas-iscsi-csi
-          defaultClass: true
-          reclaimPolicy: Delete
-          volumeBindingMode: Immediate
-          allowVolumeExpansion: true
-          parameters:
-            # for block-based storage can be ext3, ext4, xfs
-            # for nfs should be nfs
-            fsType: ext4
-            # if true, volumes created from other snapshots will be
-            # zfs send/received instead of zfs cloned
-            # detachedVolumesFromSnapshots: "false"
-            # if true, volumes created from other volumes will be
-            # zfs send/received instead of zfs cloned
-            # detachedVolumesFromVolumes: "false"
-          mountOptions: []
-          secrets:
-            provisioner-secret: null
-            controller-publish-secret: null
-            node-stage-secret: null
-            #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
-            #      # if doing CHAP
-            #      node-db.node.session.auth.authmethod: CHAP
-            #      node-db.node.session.auth.username: foo
-            #      node-db.node.session.auth.password: bar
-            #
-            #      # if doing mutual CHAP
-            #      node-db.node.session.auth.username_in: baz
-            #      node-db.node.session.auth.password_in: bar
-            node-publish-secret: null
-            controller-expand-secret: null
-      # if your cluster supports snapshots you may enable below
-      volumeSnapshotClasses: []
-      #- name: freenas-iscsi-csi
-      #  parameters:
-      #  # if true, snapshots will be created with zfs send/receive
-      #  # detachedSnapshots: "false"
-      #  secrets:
-      #    snapshotter-secret:
-      driver:
-        config:
-          driver: freenas-api-iscsi
-          instance_id: null
-          httpConnection:
-            protocol: https
-            host: 192.168.178.14
-            port: 8443
-            # use only 1 of apiKey or username/password
-            # if both are present, apiKey is preferred
-            # apiKey is only available starting in TrueNAS-12
-            apiKey: ENC[AES256_GCM,data:gv3tTQkQLwMmDg1mDJ2Usdpe+yjBivwGM/+dM7W48vOuMWJyXZ/V35K/G1KaBiATrTKfSCe11XDWyeyvakIhUW89,iv:Otct2cIkrWQVNF8sB3Iut+MTv6k/l6mXzcf9qsjoaW0=,tag:uSf8L2h9sWSqJ+xRJ4aQxg==,type:str]
-            #username: root
-            #password:
-            allowInsecure: true
-            # use apiVersion 2 for TrueNAS-12 and up (will work on 11.x in some scenarios as well)
-            # leave unset for auto-detection
-            apiVersion: 2
-          zfs:
-            # can be used to override defaults if necessary
-            # the example below is useful for TrueNAS 12
-            cli:
-              sudoEnabled: true
-            #
-            #  leave paths unset for auto-detection
-            #  paths:
-            #    zfs: /usr/local/sbin/zfs
-            #    zpool: /usr/local/sbin/zpool
-            #    sudo: /usr/local/bin/sudo
-            #    chroot: /usr/sbin/chroot
-            # can be used to set arbitrary values on the dataset/zvol
-            # can use handlebars templates with the parameters from the storage class/CO
-            datasetProperties:
-              org.freenas:description: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
-            #  "org.freenas:test": "{{ parameters.foo }}"
-            #  "org.freenas:test2": "some value"
-            # total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
-            # https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
-            # standard volume naming overhead is 46 chars
-            # datasetParentName should therefore be 17 chars or less when using TrueNAS 12 or below (SCALE and 13+ do not have the same limits)
-            # for work-arounds see https://github.com/democratic-csi/democratic-csi/issues/54
-            datasetParentName: chronos/nyx-iscsi-volumes
-            # do NOT make datasetParentName and detachedSnapshotsDatasetParentName overlap
-            # they may be siblings, but neither should be nested in the other
-            # do NOT comment this option out even if you don't plan to use snapshots, just leave it with dummy value
-            detachedSnapshotsDatasetParentName: chronos/nyx-iscsi-snapshots
-            # "" (inherit), lz4, gzip-9, etc
-            zvolCompression: ""
-            # "" (inherit), on, off, verify
-            zvolDedup: ""
-            zvolEnableReservation: false
-            # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
-            zvolBlocksize: 128K
-          iscsi:
-            targetPortal: 192.168.178.14:3260
-            # for multipath
-            targetPortals: []
-            # leave empty to omit usage of -I with iscsiadm
-            interface: null
-            # MUST ensure uniqueness
-            # full iqn limit is 223 bytes, plan accordingly
-            # default is "{{ name }}"
-            nameTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
-            #namePrefix: csi-
-            #nameSuffix: "-clustera"
-            # add as many as needed
-            targetGroups:
-              # get the correct ID from the "portal" section in the UI
-              # https://github.com/democratic-csi/democratic-csi/issues/302
-              # NOTE: the ID in the UI does NOT always match the ID in the DB, you must use the DB value
-              - targetGroupPortalGroup: 1
-                # get the correct ID from the "initiators" section in the UI
-                targetGroupInitiatorGroup: 1
-                # None, CHAP, or CHAP Mutual
-                targetGroupAuthType: None
-                # get the correct ID from the "Authorized Access" section of the UI
-                # only required if using Chap
-                targetGroupAuthGroup: null
-            extentCommentTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
-            extentInsecureTpc: true
-            extentXenCompat: false
-            extentDisablePhysicalBlocksize: true
-            # 512, 1024, 2048, or 4096,
-            extentBlocksize: 512
-            # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
-            extentRpm: "5400"
-            # 0-100 (0 == ignore)
-            extentAvailThreshold: 0
+  install:
+    createNamespace: true
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    csiDriver:
+      # should be globally unique for a given cluster
+      name: iscsi.democratic-csi.org
+    # add note here about volume expansion requirements
+    storageClasses:
+      - name: freenas-iscsi-csi
+        defaultClass: true
+        reclaimPolicy: Delete
+        volumeBindingMode: Immediate
+        allowVolumeExpansion: true
+        parameters:
+          # for block-based storage can be ext3, ext4, xfs
+          # for nfs should be nfs
+          fsType: ext4
+          # if true, volumes created from other snapshots will be
+          # zfs send/received instead of zfs cloned
+          # detachedVolumesFromSnapshots: "false"
+          # if true, volumes created from other volumes will be
+          # zfs send/received instead of zfs cloned
+          # detachedVolumesFromVolumes: "false"
+        mountOptions: []
+        secrets:
+          provisioner-secret: null
+          controller-publish-secret: null
+          node-stage-secret: null
+          #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
+          #      # if doing CHAP
+          #      node-db.node.session.auth.authmethod: CHAP
+          #      node-db.node.session.auth.username: foo
+          #      node-db.node.session.auth.password: bar
+          #
+          #      # if doing mutual CHAP
+          #      node-db.node.session.auth.username_in: baz
+          #      node-db.node.session.auth.password_in: bar
+          node-publish-secret: null
+          controller-expand-secret: null
+    # if your cluster supports snapshots you may enable below
+    volumeSnapshotClasses: []
+    #- name: freenas-iscsi-csi
+    #  parameters:
+    #  # if true, snapshots will be created with zfs send/receive
+    #  # detachedSnapshots: "false"
+    #  secrets:
+    #    snapshotter-secret:
+    driver:
+      config:
+        driver: freenas-api-iscsi
+        instance_id: null
+        httpConnection:
+          protocol: https
+          host: 192.168.178.14
+          port: 8443
+          # use only 1 of apiKey or username/password
+          # if both are present, apiKey is preferred
+          # apiKey is only available starting in TrueNAS-12
+          apiKey: ENC[AES256_GCM,data:cGSzZDBw7Xu8P2akdLo/F96VlY5ePEV9O8lbvcTRQlMKHlP4Jb8Z8hgg8lx2pDX8GNQuMqdmzcp77ovIc/+jENKYk85HkQg0rKh3NHUTYkNhRqay5Rz6t/+ch4YajsjPDjCGdlTuB53B+ky7+mCo4uam4W+BDlOC8z13AleeNAPCDmdmBmRi00RuMCW7jAc7oriCL0kQMu8LP+9ZOyHzj6xMTodo7AW2WVJ1UDteP1JJyFKdlIEmKOa1kKmkE5N5OgkG,iv:V3QCAB0N485noLK1cs8PhDSZRHbsYRoO0SQYfvQDqOY=,tag:c/DIT/Cf/oZO0/wGIc4xyA==,type:str]
+          #username: root
+          #password:
+          allowInsecure: true
+          # use apiVersion 2 for TrueNAS-12 and up (will work on 11.x in some scenarios as well)
+          # leave unset for auto-detection
+          apiVersion: 2
+        zfs:
+          # can be used to override defaults if necessary
+          # the example below is useful for TrueNAS 12
+          cli:
+            sudoEnabled: true
+          #
+          #  leave paths unset for auto-detection
+          #  paths:
+          #    zfs: /usr/local/sbin/zfs
+          #    zpool: /usr/local/sbin/zpool
+          #    sudo: /usr/local/bin/sudo
+          #    chroot: /usr/sbin/chroot
+          # can be used to set arbitrary values on the dataset/zvol
+          # can use handlebars templates with the parameters from the storage class/CO
+          datasetProperties:
+            org.freenas:description: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
+          #  "org.freenas:test": "{{ parameters.foo }}"
+          #  "org.freenas:test2": "some value"
+          # total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
+          # https://www.ixsystems.com/documentation/freenas/11.2-U5/storage.html#zfs-zvol-config-opts-tab
+          # standard volume naming overhead is 46 chars
+          # datasetParentName should therefore be 17 chars or less when using TrueNAS 12 or below (SCALE and 13+ do not have the same limits)
+          # for work-arounds see https://github.com/democratic-csi/democratic-csi/issues/54
+          datasetParentName: chronos/nyx-iscsi-volumes
+          # do NOT make datasetParentName and detachedSnapshotsDatasetParentName overlap
+          # they may be siblings, but neither should be nested in the other
+          # do NOT comment this option out even if you don't plan to use snapshots, just leave it with dummy value
+          detachedSnapshotsDatasetParentName: chronos/nyx-iscsi-snapshots
+          # "" (inherit), lz4, gzip-9, etc
+          zvolCompression: ""
+          # "" (inherit), on, off, verify
+          zvolDedup: ""
+          zvolEnableReservation: false
+          # 512, 1K, 2K, 4K, 8K, 16K, 64K, 128K default is 16K
+          zvolBlocksize: 128K
+        iscsi:
+          targetPortal: 192.168.178.14:3260
+          # for multipath
+          targetPortals: []
+          # leave empty to omit usage of -I with iscsiadm
+          interface: null
+          # MUST ensure uniqueness
+          # full iqn limit is 223 bytes, plan accordingly
+          # default is "{{ name }}"
+          nameTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
+          #namePrefix: csi-
+          #nameSuffix: "-clustera"
+          # add as many as needed
+          targetGroups:
+            # get the correct ID from the "portal" section in the UI
+            # https://github.com/democratic-csi/democratic-csi/issues/302
+            # NOTE: the ID in the UI does NOT always match the ID in the DB, you must use the DB value
+            - targetGroupPortalGroup: 1
+              # get the correct ID from the "initiators" section in the UI
+              targetGroupInitiatorGroup: 1
+              # None, CHAP, or CHAP Mutual
+              targetGroupAuthType: None
+              # get the correct ID from the "Authorized Access" section of the UI
+              # only required if using Chap
+              targetGroupAuthGroup: null
+          extentCommentTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
+          extentInsecureTpc: true
+          extentXenCompat: false
+          extentDisablePhysicalBlocksize: true
+          # 512, 1024, 2048, or 4096,
+          extentBlocksize: 512
+          # "" (let FreeNAS decide, currently defaults to SSD), Unknown, SSD, 5400, 7200, 10000, 15000
+          extentRpm: "5400"
+          # 0-100 (0 == ignore)
+          extentAvailThreshold: 0
 sops:
   kms: []
   gcp_kms: []
@@ -165,14 +165,14 @@ sops:
     - recipient: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSldub2pmb2syZEF5Tll3
-        UDJhdCtsSGhZRzFMQVhJdEJaeThaU05RN3pzCkQ0Ymp3cXJUSVllUUtuWS9qekls
-        VGk4SGpWOGVvdnd4a2tkTGE2SmtkMGMKLS0tIDFFVFJzWldvcys2RzVaUmI3VGU4
-        UHMxTW1HWElUSlBRbDBQNmFjRGFSSk0KualK+DT0FxAnHA8M3mDwOFUdGNjbmaiq
-        B+zN6sYTf2YJbDlQRviq8lmJj+lv3oNtgoTCOBIBMprcFi5gz5pJdQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB0alFDblNNSlVCV0NCWlFD
+        S3EvYld6NTZ5MHVHc0RMVEg1dFBpSytHdkI0CmhMTWorTGVNaGpYMkV3dTEvWTBF
+        cXdhWERNZndqcms3YkFINWVBWWpySGsKLS0tIFFMTWU0SktpOTJQRUFndWp6eWZn
+        cUZ5RXJ6ZHh1VlZJbW9udkpLRDFCZ00KxPTnJM3LlGILrfWlWtUqq4VFQToGbaP3
+        +4nsefI2bkfLH2IsGY+HH2tn+b+iRd66DSuLthb4MLkV1YJT9dVKxw==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2024-08-06T15:14:14Z"
-  mac: ENC[AES256_GCM,data:pyEqBmhzxkwzrhJ9GxhnCzURm56Jc9RAd69y8iG2mE1De9J96Eif3Xjm0spnrrdkSm6QVxI7rCUADooqP9OKMnr4qCqmvc9ra5CWuUkwupeomEmuhXXjPEI6KzuX/7RrYUa1V5Crrq7ltsEJau1r9sj5DTgK23qebSC5e+eBigk=,iv:9M0OIq8q/U+X8jAcaAcqrNXjpr/Ee9rJ2Y62lzkde8s=,tag:Ydb9DQ0px0mkdz5UPBpF7A==,type:str]
+  lastmodified: "2024-08-06T15:18:13Z"
+  mac: ENC[AES256_GCM,data:tYgJ5bxBC0z/KmJcLtyKIyCm9FfR/k+17Pv4bNjo3spkJ5pgw3CR6fgaGysF0WpydAmr3nPfBEnmCltcLozjMapoPWHAW9NNS+LjkU1jFWNLG2YI60CvOh70qF/DeYziJYiXO1BCvKjurXxI9Ziyo08UCwaqRVg1rCt3ViTVFvw=,iv:SU0YfCNlkJdPHdmKNL/fpaaXageWrf1wnLh7mGz2oQg=,tag:jlr+L9N9uLqtQS7qxGjKYg==,type:str]
   pgp: []
   encrypted_regex: ^apiKey$
   version: 3.9.0
