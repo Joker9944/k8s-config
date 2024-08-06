@@ -2,5 +2,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - freenas-api-iscsi.yaml
-  - truenas-api-key.secret.yaml
+  - freenas-api-iscsi.helm-release.yaml
