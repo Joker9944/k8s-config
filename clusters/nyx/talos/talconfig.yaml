@@ -13,10 +13,6 @@ nodes:
   - hostname: nyx-control-plane-1
     ipAddress: ${CONTROL_PLANE_1_IP}
     controlPlane: true
-    nameservers:
-      - ${GATEWAY}
-      - ${NAMESERVER_PRIMARY}
-      - ${NAMESERVER_SECONDARY}
     installDisk: /dev/mmcblk0
     networkInterfaces:
       - interface: enxdca6325aa72d
@@ -30,10 +26,6 @@ nodes:
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
-    nameservers:
-      - ${GATEWAY}
-      - ${NAMESERVER_PRIMARY}
-      - ${NAMESERVER_SECONDARY}
     installDisk: /dev/vda
     networkInterfaces:
       - interface: enx00a09830128c
@@ -42,3 +34,18 @@ nodes:
         routes:
           - network: 0.0.0.0/0
             gateway: ${GATEWAY}
+controlPlane:
+  nameservers:
+      - ${GATEWAY}
+      - ${NAMESERVER_PRIMARY}
+      - ${NAMESERVER_SECONDARY}
+worker:
+  nameservers:
+      - ${GATEWAY}
+      - ${NAMESERVER_PRIMARY}
+      - ${NAMESERVER_SECONDARY}
+  schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools

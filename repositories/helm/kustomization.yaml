@@ -5,3 +5,4 @@ metadata:
     namespace: flux-system
 resources:
   - truecharts.yaml
+  - democratic-csi.yaml
