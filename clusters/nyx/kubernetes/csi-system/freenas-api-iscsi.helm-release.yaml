@@ -26,8 +26,7 @@ spec:
     values:
       csiDriver:
         # should be globally unique for a given cluster
-        name: "iscsi.democratic-csi.org"
-
+        name: iscsi.democratic-csi.org
       # add note here about volume expansion requirements
       storageClasses:
         - name: freenas-iscsi-csi
@@ -39,20 +38,17 @@ spec:
             # for block-based storage can be ext3, ext4, xfs
             # for nfs should be nfs
             fsType: ext4
-
             # if true, volumes created from other snapshots will be
             # zfs send/received instead of zfs cloned
             # detachedVolumesFromSnapshots: "false"
-
             # if true, volumes created from other volumes will be
             # zfs send/received instead of zfs cloned
             # detachedVolumesFromVolumes: "false"
-
           mountOptions: []
           secrets:
-            provisioner-secret:
-            controller-publish-secret:
-            node-stage-secret:
+            provisioner-secret: null
+            controller-publish-secret: null
+            node-stage-secret: null
             #      # any arbitrary iscsiadm entries can be add by creating keys starting with node-db.<entry.name>
             #      # if doing CHAP
             #      node-db.node.session.auth.authmethod: CHAP
@@ -62,9 +58,8 @@ spec:
             #      # if doing mutual CHAP
             #      node-db.node.session.auth.username_in: baz
             #      node-db.node.session.auth.password_in: bar
-            node-publish-secret:
-            controller-expand-secret:
-
+            node-publish-secret: null
+            controller-expand-secret: null
       # if your cluster supports snapshots you may enable below
       volumeSnapshotClasses: []
       #- name: freenas-iscsi-csi
@@ -73,7 +68,6 @@ spec:
       #  # detachedSnapshots: "false"
       #  secrets:
       #    snapshotter-secret:
-
       driver:
         config:
           driver: freenas-api-iscsi
@@ -85,7 +79,7 @@ spec:
             # use only 1 of apiKey or username/password
             # if both are present, apiKey is preferred
             # apiKey is only available starting in TrueNAS-12
-            apiKey: ENC[AES256_GCM,data:sWCHE4KWcPqCi9FAoZgH/FUpxtd7jskgD1QifARwlvSxEr0zz+BKcXqmyR6SurFoj1llzJDmlfsQF4J8xz1xxmA2,iv:kBLRRLYpA/C1isgEKlqnGLgnGm5fy/M2qlLU61jAhDQ=,tag:Ll0RCQAHv1lQ11jLx2FhIw==,type:str]
+            apiKey: ENC[AES256_GCM,data:gv3tTQkQLwMmDg1mDJ2Usdpe+yjBivwGM/+dM7W48vOuMWJyXZ/V35K/G1KaBiATrTKfSCe11XDWyeyvakIhUW89,iv:Otct2cIkrWQVNF8sB3Iut+MTv6k/l6mXzcf9qsjoaW0=,tag:uSf8L2h9sWSqJ+xRJ4aQxg==,type:str]
             #username: root
             #password:
             allowInsecure: true
@@ -96,7 +90,7 @@ spec:
             # can be used to override defaults if necessary
             # the example below is useful for TrueNAS 12
             cli:
-                sudoEnabled: true
+              sudoEnabled: true
             #
             #  leave paths unset for auto-detection
             #  paths:
@@ -107,7 +101,7 @@ spec:
             # can be used to set arbitrary values on the dataset/zvol
             # can use handlebars templates with the parameters from the storage class/CO
             datasetProperties:
-                org.freenas:description: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
+              org.freenas:description: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
             #  "org.freenas:test": "{{ parameters.foo }}"
             #  "org.freenas:test2": "some value"
             # total volume name (zvol/<datasetParentName>/<pvc name>) length cannot exceed 63 chars
@@ -152,7 +146,7 @@ spec:
                 # get the correct ID from the "Authorized Access" section of the UI
                 # only required if using Chap
                 targetGroupAuthGroup: null
-            extentCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+            extentCommentTemplate: '{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}'
             extentInsecureTpc: true
             extentXenCompat: false
             extentDisablePhysicalBlocksize: true
@@ -171,14 +165,14 @@ sops:
     - recipient: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXY0JqT3JyT1pIdjBraXFY
-        ajlZb3pzU0JlVStsbFgvMHdORldBWUJrRWhvCjhSa1ZTaFBtVXU5N053dHJsWnVa
-        UW02ME5zQ0lSVVVSb1pOVjFYaXZqblEKLS0tIDVHakdTS08rQlJ6RTltd0lJSS9L
-        NUt3bkxxemNicTlYdVV5Q0NWMTU2VXcK3bNMieqwu5KV0PCWc+bzXFHrhsGh6fOM
-        OUtcZi6D/wOKD5TZuGOmZzX4lsrsx/IrUkBD64fLIO7TWsJ8EVoK8Q==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSldub2pmb2syZEF5Tll3
+        UDJhdCtsSGhZRzFMQVhJdEJaeThaU05RN3pzCkQ0Ymp3cXJUSVllUUtuWS9qekls
+        VGk4SGpWOGVvdnd4a2tkTGE2SmtkMGMKLS0tIDFFVFJzWldvcys2RzVaUmI3VGU4
+        UHMxTW1HWElUSlBRbDBQNmFjRGFSSk0KualK+DT0FxAnHA8M3mDwOFUdGNjbmaiq
+        B+zN6sYTf2YJbDlQRviq8lmJj+lv3oNtgoTCOBIBMprcFi5gz5pJdQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2024-08-06T14:40:15Z"
-  mac: ENC[AES256_GCM,data:YFrAv6xb3+UmIkx+iog/Cw1AFdzHzXYce4y1aMTAb2X+JWjla0h3C1maKqLXcqPBY3MNnDYH7TJ9zkulyl/Np+6SCnI0Jw1HEjP6XeoYOju8MVkoef79xOZTs0Bji2ghkje85ZPfMkqkShajbWkrsUdEIRPltkBjD0AYfhqeRik=,iv:GBs2wEta2Kk0RMqQjVU+7PrBIPh/UN2pbObKuO60UJI=,tag:M0ZXJF7aKv9LzK9BtUmDHw==,type:str]
+  lastmodified: "2024-08-06T15:14:14Z"
+  mac: ENC[AES256_GCM,data:pyEqBmhzxkwzrhJ9GxhnCzURm56Jc9RAd69y8iG2mE1De9J96Eif3Xjm0spnrrdkSm6QVxI7rCUADooqP9OKMnr4qCqmvc9ra5CWuUkwupeomEmuhXXjPEI6KzuX/7RrYUa1V5Crrq7ltsEJau1r9sj5DTgK23qebSC5e+eBigk=,iv:9M0OIq8q/U+X8jAcaAcqrNXjpr/Ee9rJ2Y62lzkde8s=,tag:Ydb9DQ0px0mkdz5UPBpF7A==,type:str]
   pgp: []
   encrypted_regex: ^apiKey$
   version: 3.9.0
