@@ -7,6 +7,6 @@ secretGenerator:
   - name: freenas-api-iscsi-secret-values
     namespace: csi-system
     files:
-      - secret-values.yaml=freenas-api-iscsi/secret-values.sops.yaml
+      - values.yaml=freenas-api-iscsi/secret-values.sops.yaml
 configurations:
   - kustomizeconfig.yaml
