@@ -83,7 +83,7 @@ spec:
           # if both are present, apiKey is preferred
           # apiKey is only available starting in TrueNAS-12
           # provided by encrypted secret
-          #apiKey: "${truenas-api-key}"
+          #apiKey:
           #username: root
           #password:
           allowInsecure: true
