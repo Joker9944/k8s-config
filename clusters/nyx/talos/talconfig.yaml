@@ -39,6 +39,11 @@ controlPlane:
       - ${GATEWAY}
       - ${NAMESERVER_PRIMARY}
       - ${NAMESERVER_SECONDARY}
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/iscsi-tools
 worker:
   nameservers:
       - ${GATEWAY}
