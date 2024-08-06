@@ -25,20 +25,3 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: repositories
-  namespace: flux-system
-spec:
-  interval: 10m0s
-  path: ./repositories
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system

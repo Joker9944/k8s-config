@@ -1,0 +1,43 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: repositories
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/repositories
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: monitoring-system
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/monitoring-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: csi-system
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/csi-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
