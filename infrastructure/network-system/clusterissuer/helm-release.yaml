@@ -27,6 +27,9 @@ spec:
     - kind: Secret
       name: clusterissuer-secret-values
   values:
+    operator:
+      cert-manager:
+        namespace: network-system
     clusterIssuer:
       selfSigned:
         enabled: false
