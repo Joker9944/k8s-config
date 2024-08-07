@@ -77,3 +77,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+  postBuild:
+    substitute:
+      main_namespace: network-system
