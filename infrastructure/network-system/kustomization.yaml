@@ -5,6 +5,7 @@ resources:
   - cert-manager/helm-release.yaml
   - clusterissuer/helm-release.yaml
   - metallb/helm-release.yaml
+  - traefik/helm-release.yaml
 secretGenerator:
   - name: clusterissuer-secret-values
     namespace: ${main_namespace}
