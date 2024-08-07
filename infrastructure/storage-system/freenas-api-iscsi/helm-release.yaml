@@ -169,7 +169,7 @@ spec:
             # NOTE: the ID in the UI does NOT always match the ID in the DB, you must use the DB value
             - targetGroupPortalGroup: 1
               # get the correct ID from the "initiators" section in the UI
-              targetGroupInitiatorGroup: 1
+              targetGroupInitiatorGroup: 3
               # None, CHAP, or CHAP Mutual
               targetGroupAuthType: None
               # get the correct ID from the "Authorized Access" section of the UI
