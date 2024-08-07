@@ -11,5 +11,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=clusterissuer/secret-values.sops.yaml
+  - name: traefik-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=traefik/secret-values.sops.yaml
 configurations:
   - kustomizeconfig.yaml

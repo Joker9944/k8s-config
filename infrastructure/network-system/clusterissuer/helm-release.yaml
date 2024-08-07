@@ -36,11 +36,3 @@ spec:
       clusterCertificates:
         # TODO make this more granular
         replicationNamespaces: ".*"
-        certificates:
-          - name: wildcard-vonarx-online
-            # TODO enable this when ready
-            enabled: false
-            certificateIssuer: cloudflare-production
-            hosts:
-              - '*.vonarx.online'
-              - 'vonarx.online'

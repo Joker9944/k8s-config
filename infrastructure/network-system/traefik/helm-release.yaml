@@ -50,6 +50,9 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: traefik-secret-values
   values:
     workload:
       main:
@@ -57,7 +60,6 @@ spec:
     logs:
       access:
         enabled: true
-    defaultCertificate: wildcard-vonarx-online
     service:
       main:
         type: ClusterIP
