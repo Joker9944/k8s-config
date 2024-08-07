@@ -59,7 +59,7 @@ spec:
                 namespace: network-system
         tls:
           - hosts:
-            - audiobookshelf.vonarx.online
+              - audiobookshelf.vonarx.online
             secretName: wildcard-vonarx-online
     securityContext:
       container:

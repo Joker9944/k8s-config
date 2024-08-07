@@ -18,3 +18,19 @@ spec:
   postBuild:
     substitute:
       main_namespace: media
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./apps/external
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      main_namespace: external
