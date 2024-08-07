@@ -2,14 +2,14 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: audiobookshelf
+  name: jellyfin
   namespace: ${main_namespace}
 spec:
   interval: 5m
   chart:
     spec:
-      chart: audiobookshelf
-      version: 11.3.1
+      chart: jellyfin
+      version: 19.1.11
       sourceRef:
         kind: HelmRepository
         name: truecharts
@@ -27,28 +27,28 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    # TODO enable autodiscovery
     persistence:
       config:
         size: 5Gi
         volsync:
-          - name: audiobookshelf
+          - name: jellyfin
             type: restic
             credentials: pvc
             dest:
               enabled: true
             src:
-              enabled: true
-      audiobooks:
+              enabled: false
+      media:
         type: nfs
         server: 192.168.178.14
         path: /mnt/chronos/media-data
-      metadata:
-        size: 5Gi
+        mountPath: /mnt/media-data
     ingress:
       main:
         enabled: true
         hosts:
-          - host: audiobookshelf.vonarx.online
+          - host: jellyfin.vonarx.online
             paths:
               - path: /
                 pathType: Prefix
@@ -59,13 +59,14 @@ spec:
                 namespace: network-system
         tls:
           - hosts:
-              - audiobookshelf.vonarx.online
+              - jellyfin.vonarx.online
             secretName: wildcard-vonarx-online
     securityContext:
       container:
-        runAsUser: 6011
+        runAsUser: 6003
         runAsGroup: 6000
-        PUID: 6011
+        PUID: 6003
         UMASK: "0002"
       pod:
         fsgroup: 6000
+    # TODO GPU passthrough

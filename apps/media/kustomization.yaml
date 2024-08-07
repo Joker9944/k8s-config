@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - audiobookshelf/helm-release.yaml
+  - jellyfin/helm-release.yaml
 secretGenerator:
   - name: s3-credentials-secret-values
     namespace: ${main_namespace}
