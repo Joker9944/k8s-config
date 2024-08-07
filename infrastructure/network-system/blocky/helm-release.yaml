@@ -25,6 +25,8 @@ spec:
   valuesFrom:
     - kind: Secret
       name: s3-credentials-secret-values
+    - kind: Secret
+      name: blocky-secret-values
   values:
     service:
       # TODO setup DoT

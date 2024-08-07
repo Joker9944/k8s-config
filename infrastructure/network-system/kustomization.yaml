@@ -21,5 +21,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=traefik/secret-values.sops.yaml
+  - name: blocky-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=blocky/secret-values.sops.yaml
 configurations:
   - kustomizeconfig.yaml
