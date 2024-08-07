@@ -37,7 +37,7 @@ spec:
             dest:
               enabled: true
             src:
-              enabled: false
+              enabled: true
       audiobooks:
         type: nfs
         path: /mnt/chronos/media-data
@@ -63,6 +63,8 @@ spec:
             secretName: wildcard-vonarx-online
     securityContext:
       container:
+        runAsUser: 6011
+        runAsGroup: 6000
         PUID: 6011
         UMASK: "0002"
       pod:
