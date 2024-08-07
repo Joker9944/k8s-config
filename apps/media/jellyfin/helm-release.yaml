@@ -40,6 +40,7 @@ spec:
             src:
               enabled: false
       media:
+        enabled: true
         type: nfs
         server: 192.168.178.14
         path: /mnt/chronos/media-data
