@@ -1,0 +1,74 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: blocky
+  namespace: ${main_namespace}
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: blocky
+      version: 16.2.4
+      sourceRef:
+        kind: HelmRepository
+        name: truecharts
+        namespace: flux-system
+      interval: 5m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: s3-credentials-secret-values
+  values:
+    service:
+      # TODO setup DoT
+      dns:
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        loadBalancerIP: 192.168.178.211
+    blocking:
+      whitelist:
+        - name: default
+          lists:
+            - https://gist.githubusercontent.com/Joker9944/1466f46522c4ae290c3377c8160372a0/raw/4c7e9965a758cefe7be45f71b40e70f8c6b3bd8f/whitelist.txt
+      blacklist:
+        - name: default
+          lists: []
+        - name: blocklistproject
+          lists:
+            - https://blocklistproject.github.io/Lists/abuse.txt
+            - https://blocklistproject.github.io/Lists/ads.txt
+            - https://blocklistproject.github.io/Lists/crypto.txt
+            - https://blocklistproject.github.io/Lists/facebook.txt
+            - https://blocklistproject.github.io/Lists/fraud.txt
+            - https://blocklistproject.github.io/Lists/gambling.txt
+            - https://blocklistproject.github.io/Lists/malware.txt
+            - https://blocklistproject.github.io/Lists/phishing.txt
+            - https://blocklistproject.github.io/Lists/ransomware.txt
+            - https://blocklistproject.github.io/Lists/scam.txt
+            - https://blocklistproject.github.io/Lists/tiktok.txt
+            - https://blocklistproject.github.io/Lists/tracking.txt
+        - name: StevenBlack
+          lists:
+            - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
+            - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
+            - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    # TODO setup k8sgateway
+    cnpg:
+      main:
+        storage:
+          size: 1Gi
+        walStorage:
+          size: 1Gi
+        backups:
+          enabled: true
+          credentials: cnpg
+        recovery:
+          method: object_store
+          credentials: cnpg
