@@ -6,6 +6,7 @@ resources:
   - clusterissuer/helm-release.yaml
   - metallb/helm-release.yaml
   - traefik/helm-release.yaml
+  - reflector/helm-release.yaml
 secretGenerator:
   - name: clusterissuer-secret-values
     namespace: ${main_namespace}
