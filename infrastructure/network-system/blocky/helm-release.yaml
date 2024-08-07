@@ -64,10 +64,11 @@ spec:
     # TODO setup k8sgateway
     cnpg:
       main:
-        storage:
-          size: 1Gi
-        walStorage:
-          size: 1Gi
+        cluster:
+          storage:
+            size: 1Gi
+          walStorage:
+            size: 1Gi
         backups:
           enabled: true
           credentials: cnpg
