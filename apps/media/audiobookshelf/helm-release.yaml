@@ -1,0 +1,69 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: audiobookshelf
+  namespace: ${main_namespace}
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: audiobookshelf
+      version: 10.1.3
+      sourceRef:
+        kind: HelmRepository
+        name: truecharts
+        namespace: flux-system
+      interval: 5m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: s3-credentials-secret-values
+  values:
+    persistence:
+      config:
+        size: 5Gi
+        volsync:
+          - name: audiobookshelf
+            type: restic
+            credentials: pvc
+            dest:
+              enabled: true
+            src:
+              enabled: false
+      audiobooks:
+        type: nfs
+        path: /mnt/chronos/media-data
+        server: 192.168.178.14
+      metadata:
+        size: 5Gi
+    ingress:
+      main:
+        enabled: true
+        hosts:
+          - host: audiobookshelf.vonarx.online
+            paths:
+              - path: /
+                pathType: Prefix
+        integrations:
+          traefik:
+            middlewares:
+              - name: country-whitelist
+                namespace: network-system
+        tls:
+          - hosts:
+            - audiobookshelf.vonarx.online
+            secretName: wildcard-vonarx-online
+    securityContext:
+      container:
+        PUID: 6011
+        UMASK: "0002"
+      pod:
+        fsgroup: 6000
