@@ -63,6 +63,7 @@ spec:
           #      node-db.node.session.auth.password_in: bar
           node-publish-secret:
           controller-expand-secret:
+    # TODO enable snapshots
     # if your cluster supports snapshots you may enable below
     volumeSnapshotClasses: []
     #- name: freenas-iscsi-csi
