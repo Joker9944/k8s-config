@@ -5,7 +5,7 @@ resources:
   - freenas-api-iscsi/helm-release.yaml
 secretGenerator:
   - name: freenas-api-iscsi-secret-values
-    namespace: csi-system
+    namespace: ${main_namespace}
     files:
       - values.yaml=freenas-api-iscsi/secret-values.sops.yaml
 configurations:

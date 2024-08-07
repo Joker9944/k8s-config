@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: freenas-api-iscsi
-  namespace: csi-system
+  namespace: ${main_namespace}
 spec:
   interval: 5m
   chart:
