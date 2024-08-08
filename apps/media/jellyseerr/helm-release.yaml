@@ -2,14 +2,14 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: jellyfin
+  name: jellyseerr
   namespace: ${main_namespace}
 spec:
   interval: 5m
   chart:
     spec:
-      chart: jellyfin
-      version: 19.1.11
+      chart: jellyseerr
+      version: 10.0.8
       sourceRef:
         kind: HelmRepository
         name: truecharts
@@ -27,29 +27,22 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
-    # TODO enable autodiscovery
     persistence:
       config:
         size: 5Gi
         volsync:
-          - name: jellyfin
+          - name: jellyseerr
             type: restic
             credentials: pvc
             dest:
               enabled: true
             src:
-              enabled: true
-      media:
-        enabled: true
-        type: nfs
-        server: 192.168.178.14
-        path: /mnt/chronos/media-data
-        mountPath: /mnt/media-data
+              enabled: false
     ingress:
       main:
         enabled: true
         hosts:
-          - host: jellyfin.vonarx.online
+          - host: jellyseerr.vonarx.online
             paths:
               - path: /
                 pathType: Prefix
@@ -60,14 +53,5 @@ spec:
                 namespace: network-system
         tls:
           - hosts:
-              - jellyfin.vonarx.online
+              - jellyseerr.vonarx.online
             secretName: wildcard-vonarx-online
-    securityContext:
-      container:
-        runAsUser: 6003
-        runAsGroup: 6000
-        PUID: 6003
-        UMASK: "0002"
-      pod:
-        fsgroup: 6000
-    # TODO GPU passthrough
