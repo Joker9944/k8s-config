@@ -26,6 +26,8 @@ spec:
   valuesFrom:
     - kind: Secret
       name: s3-credentials-secret-values
+    - kind: Secret
+      name: nextcloud-secret-values
   values:
     nextcloud:
       general:
