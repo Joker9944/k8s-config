@@ -55,3 +55,11 @@ spec:
           - hosts:
               - jellyseerr.vonarx.online
             secretName: wildcard-vonarx-online
+    securityContext:
+      container:
+        runAsUser: 6008
+        runAsGroup: 6000
+        PUID: 6008
+        UMASK: "0002"
+      pod:
+        fsgroup: 6000
