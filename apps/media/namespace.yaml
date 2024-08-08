@@ -4,5 +4,9 @@ metadata:
   name: ${main_namespace}
   annotations:
     volsync.backube/privileged-movers: "true"
+  # TODO remove priviliges
+  # dependencies:
+  # - qbittorrent
+  # - openaudible
   labels:
     pod-security.kubernetes.io/enforce: privileged
