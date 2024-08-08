@@ -1,0 +1,67 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prowlarr
+  namespace: ${main_namespace}
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: prowlarr
+      version: 17.1.7
+      sourceRef:
+        kind: HelmRepository
+        name: truecharts
+        namespace: flux-system
+      interval: 5m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: s3-credentials-secret-values
+  values:
+    persistence:
+      config:
+        size: 5Gi
+        volsync:
+          - name: prowlarr
+            type: restic
+            credentials: pvc
+            dest:
+              enabled: true
+            src:
+              enabled: true
+    ingress:
+      main:
+        enabled: true
+        hosts:
+          - host: prowlarr.vonarx.online
+            paths:
+              - path: /
+                pathType: Prefix
+        integrations:
+          traefik:
+            middlewares:
+              - name: internal-whitelist
+                namespace: network-system
+              - name: country-whitelist
+                namespace: network-system
+        tls:
+          - hosts:
+              - prowlarr.vonarx.online
+            secretName: wildcard-vonarx-online
+    # TODO own files in pvc default user
+    securityContext:
+      container:
+        runAsUser: 6008
+        runAsGroup: 6000
+        UMASK: "0002"
+      pod:
+        fsgroup: 6000
