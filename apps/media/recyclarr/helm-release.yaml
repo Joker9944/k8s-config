@@ -27,6 +27,12 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    workload:
+      main:
+        podSpec:
+          initContainers:
+            initconfig:
+              enabled: false
     persistence:
       config:
         size: 5Gi
