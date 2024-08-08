@@ -8,6 +8,8 @@ spec:
   interval: 5m
   chart:
     spec:
+      # TODO chart is based on official openaudible docker which requires root to run
+      # replace with https://github.com/Lanjelin/openaudible-docker/tree/main
       chart: openaudible
       version: 6.0.9
       sourceRef:
@@ -44,7 +46,7 @@ spec:
             dest:
               enabled: true
             src:
-              enabled: false
+              enabled: true
       media:
         enabled: true
         type: nfs

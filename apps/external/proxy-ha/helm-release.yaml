@@ -34,7 +34,7 @@ spec:
       main:
         enabled: true
         hosts:
-          - host: truenas.vonarx.online
+          - host: home.vonarx.online
             paths:
               - path: /
                 pathType: Prefix
@@ -47,5 +47,5 @@ spec:
                 namespace: network-system
         tls:
           - hosts:
-              - truenas.vonarx.online
+              - home.vonarx.online
             secretName: wildcard-vonarx-online
