@@ -37,7 +37,7 @@ spec:
             dest:
               enabled: true
             src:
-              enabled: false
+              enabled: true
     ingress:
       main:
         enabled: true
@@ -55,6 +55,7 @@ spec:
           - hosts:
               - jellyseerr.vonarx.online
             secretName: wildcard-vonarx-online
+    # TODO own files in pvc default user
     securityContext:
       container:
         runAsUser: 6008
