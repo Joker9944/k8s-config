@@ -6,6 +6,7 @@ resources:
   - jellyfin/helm-release.yaml
   - jellyseerr/helm-release.yaml
   - flaresolverr/helm-release.yaml
+  - openaudible/helm-release.yaml
 secretGenerator:
   - name: s3-credentials-secret-values
     namespace: ${main_namespace}
