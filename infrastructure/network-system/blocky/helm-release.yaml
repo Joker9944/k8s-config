@@ -64,7 +64,9 @@ spec:
             - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
             - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
             - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-    # TODO setup k8sgateway
+    k8sgateway:
+      domains:
+        - domain: "vonarx.online"
     cnpg:
       main:
         cluster:
