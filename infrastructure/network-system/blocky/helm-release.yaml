@@ -67,6 +67,8 @@ spec:
     k8sgateway:
       domains:
         - domain: "vonarx.online"
+          dnsChallenge:
+            enabled: false
     cnpg:
       main:
         cluster:
