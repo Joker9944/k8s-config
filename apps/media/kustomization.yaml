@@ -30,5 +30,30 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - recyclarr.yaml=recyclarr/recyclarr.yaml
+replacements:
+  - source:
+      kind: ConfigMap
+      name: recyclarr-config-overlay
+      namespace: ${main_namespace}
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Deployment
+          name: recyclarr
+          namespace: ${main_namespace}
+        fieldPaths:
+          - spec.template.spec.volumes.[name=config-overlay].configMap.name
+  - source:
+      kind: Secret
+      name: recyclarr-secret-overlay
+      namespace: ${main_namespace}
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Deployment
+          name: recyclarr
+          namespace: ${main_namespace}
+        fieldPaths:
+          - spec.template.spec.volumes.[name=secret-overlay].secret.secretName
 configurations:
   - kustomizeconfig.yaml
