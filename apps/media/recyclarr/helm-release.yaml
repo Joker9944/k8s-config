@@ -76,7 +76,7 @@ spec:
                     volumes:
                       - name: config-overlay
                         configMap:
-                          name: $(recyclarr-config-overlay)
+                          name: recyclarr-config-overlay
                       - name: secret-overlay
                         secret:
-                          secretName: $(recyclarr-secret-overlay)
+                          secretName: recyclarr-secret-overlay

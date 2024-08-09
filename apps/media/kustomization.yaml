@@ -30,20 +30,7 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - recyclarr.yaml=recyclarr/recyclarr.yaml
-var:
-  - name: recyclarr-config-overlay
-    objref:
-      kind: ConfigMap
-      name: recyclarr-config-overlay
-      namespace: ${main_namespace}
-    fieldref:
-      fieldpath: metadata.name
-  - name: recyclarr-secret-overlay
-    objref:
-      kind: Secret
-      name: recyclarr-secret-overlay
-      namespace: ${main_namespace}
-    fieldref:
-      fieldpath: metadata.name
+generatorOptions:
+  disableNameSuffixHash: true
 configurations:
   - kustomizeconfig.yaml
