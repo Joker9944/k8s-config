@@ -30,6 +30,7 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - recyclarr.yaml=recyclarr/recyclarr.yaml
+# TODO find a way to use generated resources with hash in patches
 generatorOptions:
   disableNameSuffixHash: true
 configurations:
