@@ -56,11 +56,11 @@ spec:
     - kustomize:
         patches:
           - target:
-              kind: Deployment
+              kind: ReplicaSet
               name: recyclarr.*
             patch: |-
               apiVersion: apps/v1
-              kind: Deployment
+              kind: ReplicaSet
               metadata:
                 name: not-used
               spec:
