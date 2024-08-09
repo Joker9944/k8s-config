@@ -68,8 +68,3 @@ spec:
     defaultCertificate: wildcard-vonarx-online
     middlewares:
       # TODO Implement bouncer
-      customRequestHeaders:
-        - name: ha-custom-request-header
-          headers:
-            - name: X-Forwarded-Proto
-              value: https

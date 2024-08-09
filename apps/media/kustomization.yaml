@@ -21,5 +21,14 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=qbittorrent/secret-values.sops.yaml
+  - name: recyclarr-secret-overlay
+    namespace: ${main_namespace}
+    files:
+      - secrets.yaml=recyclarr/secrets.sops.yaml
+configMapGenerator:
+  - name: recyclarr-config-overlay
+    namespace: ${main_namespace}
+    files:
+      - recyclarr.yaml=recyclarr/recyclarr.yaml
 configurations:
   - kustomizeconfig.yaml
