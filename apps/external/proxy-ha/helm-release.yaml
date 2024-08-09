@@ -33,8 +33,6 @@ spec:
     ingress:
       main:
         enabled: true
-        annotations:
-          traefik.frontend.passHostHeader: "true"
         hosts:
           - host: home.vonarx.online
             paths:
@@ -44,8 +42,6 @@ spec:
           traefik:
             middlewares:
               - name: country-whitelist
-                namespace: network-system
-              - name: ha-custom-request-header
                 namespace: network-system
         tls:
           - hosts:
