@@ -61,10 +61,10 @@ spec:
                         volumeMounts:
                           - name: config-overlay
                             mountPath: /config/recyclarr.yml
-                            subPath: recyclarr.yaml
+                            subPath: recyclarr.yml
                           - name: secret-overlay
                             mountPath: /config/secrets.yml
-                            subPath: secrets.yaml
+                            subPath: secrets.yml
                     volumes:
                       - name: config-overlay
                         configMap:
