@@ -55,7 +55,30 @@ spec:
   postRenderers:
     - kustomize:
         patches:
-          - path: deployment.patch.yaml
-            target:
+          - target:
               kind: Deployment
               name: recyclarr.*
+            patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: not-used
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: recyclarr
+                        volumeMounts:
+                          - name: recyclarr-config-overlay
+                            mountPath: /config/recyclarr.yaml
+                            subPath: recyclarr.yaml
+                          - name: recyclarr-secret-overlay
+                            mountPath: /config/secrets.yaml
+                            subPath: secrets.yaml
+                    volumes:
+                      - name: recyclarr-config-overlay
+                        configMap:
+                          name: recyclarr-config-overlay
+                      - name: recyclarr-secret-overlay
+                        secret:
+                          name: recyclarr-secret-overlay
