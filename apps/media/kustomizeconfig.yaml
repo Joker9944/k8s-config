@@ -1,10 +1,9 @@
 nameReference:
   - kind: Secret
-    version: v1
     fieldSpecs:
       - path: spec/valuesFrom/name
         kind: HelmRelease
-      - path: spec/postRenderers/kustomize/patches/patch//spec/template/spec/volumes/name
-        Kind: HelmRelease
   - kind: ConfigMap
     fieldSpecs:
+      - path: spec/valuesFrom/name
+        kind: HelmRelease
