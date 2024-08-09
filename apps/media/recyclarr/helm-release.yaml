@@ -79,4 +79,4 @@ spec:
                           name: recyclarr-config-overlay
                       - name: secret-overlay
                         secret:
-                          name: recyclarr-secret-overlay
+                          secretName: recyclarr-secret-overlay
