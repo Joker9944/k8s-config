@@ -24,12 +24,12 @@ secretGenerator:
   - name: recyclarr-secret-overlay
     namespace: ${main_namespace}
     files:
-      - secrets.yaml=recyclarr/secrets.sops.yaml
+      - secrets.yml=recyclarr/secrets.sops.yml
 configMapGenerator:
   - name: recyclarr-config-overlay
     namespace: ${main_namespace}
     files:
-      - recyclarr.yaml=recyclarr/recyclarr.yaml
+      - recyclarr.yml=recyclarr/recyclarr.yml
 # TODO find a way to use generated resources with hash in patches
 generatorOptions:
   disableNameSuffixHash: true
