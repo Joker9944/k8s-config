@@ -41,7 +41,7 @@ spec:
             type: restic
             credentials: pvc
             dest:
-              enabled: false
+              enabled: true
             src:
               enabled: true
     # TODO own files in pvc default user
