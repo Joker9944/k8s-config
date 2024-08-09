@@ -67,16 +67,16 @@ spec:
                     containers:
                       - name: recyclarr
                         volumeMounts:
-                          - name: recyclarr-config-overlay
+                          - name: config-overlay
                             mountPath: /config/recyclarr.yaml
                             subPath: recyclarr.yaml
-                          - name: recyclarr-secret-overlay
+                          - name: secret-overlay
                             mountPath: /config/secrets.yaml
                             subPath: secrets.yaml
                     volumes:
-                      - name: recyclarr-config-overlay
+                      - name: config-overlay
                         configMap:
                           name: recyclarr-config-overlay
-                      - name: recyclarr-secret-overlay
+                      - name: secret-overlay
                         secret:
                           name: recyclarr-secret-overlay
