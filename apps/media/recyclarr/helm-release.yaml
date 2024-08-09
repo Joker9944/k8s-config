@@ -55,14 +55,12 @@ spec:
   postRenderers:
     - kustomize:
         patches:
-          - target:
-              kind: ReplicaSet
-              name: recyclarr.*
-            patch: |-
+          - patch: |-
               apiVersion: apps/v1
-              kind: ReplicaSet
+              kind: Deployment
               metadata:
-                name: not-used
+                name: recyclarr
+                namespace: ${main_namespace}
               spec:
                 template:
                   spec:
