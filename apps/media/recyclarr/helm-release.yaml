@@ -23,9 +23,6 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
-  valuesFrom:
-    - kind: Secret
-      name: s3-credentials-secret-values
   values:
     workload:
       main:
@@ -35,15 +32,7 @@ spec:
               enabled: false
     persistence:
       config:
-        size: 5Gi
-    # TODO own files in pvc default user
-    securityContext:
-      container:
-        runAsUser: 6007
-        runAsGroup: 6000
-        UMASK: "0002"
-      pod:
-        fsgroup: 6000
+        size: 1Gi
   postRenderers:
     - kustomize:
         patches:
@@ -59,9 +48,12 @@ spec:
                     containers:
                       - name: recyclarr
                         volumeMounts:
-                          - name: config-overlay
+                          - name: recyclarr-config-overlay
                             mountPath: /config/recyclarr.yml
                             subPath: recyclarr.yml
+                          - name: settings-config-overlay
+                            mountPath: /config/settings.yml
+                            subPath: settings.yml
                           - name: secret-overlay
                             mountPath: /config/secrets.yml
                             subPath: secrets.yml
