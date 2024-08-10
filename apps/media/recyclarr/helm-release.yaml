@@ -40,29 +40,31 @@ spec:
         patches:
           - patch: |-
               apiVersion: apps/v1
-              kind: Deployment
+              kind: CronJob
               metadata:
                 name: recyclarr
                 namespace: ${main_namespace}
               spec:
-                template:
+                jobTemplate:
                   spec:
-                    containers:
-                      - name: recyclarr
-                        volumeMounts:
+                    template:
+                      spec:
+                        containers:
+                          - name: recyclarr
+                            volumeMounts:
+                              - name: config-overlay
+                                mountPath: /config/recyclarr.yml
+                                subPath: recyclarr.yml
+                              - name: config-overlay
+                                mountPath: /config/settings.yml
+                                subPath: settings.yml
+                              - name: secret-overlay
+                                mountPath: /config/secrets.yml
+                                subPath: secrets.yml
+                        volumes:
                           - name: config-overlay
-                            mountPath: /config/recyclarr.yml
-                            subPath: recyclarr.yml
-                          - name: config-overlay
-                            mountPath: /config/settings.yml
-                            subPath: settings.yml
+                            configMap:
+                              name: recyclarr-config-overlay
                           - name: secret-overlay
-                            mountPath: /config/secrets.yml
-                            subPath: secrets.yml
-                    volumes:
-                      - name: config-overlay
-                        configMap:
-                          name: recyclarr-config-overlay
-                      - name: secret-overlay
-                        secret:
-                          secretName: recyclarr-secret-overlay
+                            secret:
+                              secretName: recyclarr-secret-overlay
