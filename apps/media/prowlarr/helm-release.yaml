@@ -58,8 +58,8 @@ spec:
     # TODO own files in pvc default user
     securityContext:
       container:
-        runAsUser: 6008
-        runAsGroup: 6000
+        runAsUser: 0
+        runAsGroup: 0
         UMASK: "0002"
       pod:
         fsGroup: 6000
