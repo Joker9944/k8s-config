@@ -59,8 +59,6 @@ spec:
             middlewares:
               - name: internal-whitelist
                 namespace: network-system
-              - name: country-whitelist
-                namespace: network-system
         tls:
           - hosts:
               - sonarr-standard.vonarx.online
@@ -132,8 +130,6 @@ spec:
           traefik:
             middlewares:
               - name: internal-whitelist
-                namespace: network-system
-              - name: country-whitelist
                 namespace: network-system
         tls:
           - hosts:

@@ -51,8 +51,6 @@ spec:
             middlewares:
               - name: internal-whitelist
                 namespace: network-system
-              - name: country-whitelist
-                namespace: network-system
         tls:
           - hosts:
               - prowlarr.vonarx.online
