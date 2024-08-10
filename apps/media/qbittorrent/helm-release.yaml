@@ -29,7 +29,11 @@ spec:
     - kind: Secret
       name: qbittorrent-secret-values
   values:
-    # TODO Investigate gluetun portforward options in chart
+    service:
+      torrent:
+        enabled: false
+      gluetun:
+        enabled: false
     persistence:
       config:
         size: 5Gi
