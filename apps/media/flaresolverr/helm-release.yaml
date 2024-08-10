@@ -23,18 +23,7 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
-  valuesFrom:
-    - kind: Secret
-      name: s3-credentials-secret-values
   values:
     persistence:
       config:
-        size: 5Gi
-        volsync:
-          - name: flaresolverr
-            type: restic
-            credentials: pvc
-            dest:
-              enabled: true
-            src:
-              enabled: true
+        enabled: false
