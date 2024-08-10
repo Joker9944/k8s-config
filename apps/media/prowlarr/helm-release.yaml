@@ -55,11 +55,3 @@ spec:
           - hosts:
               - prowlarr.vonarx.online
             secretName: wildcard-vonarx-online
-    # TODO own files in pvc default user
-    securityContext:
-      container:
-        runAsUser: 0
-        runAsGroup: 0
-        UMASK: "0002"
-      pod:
-        fsGroup: 6000
