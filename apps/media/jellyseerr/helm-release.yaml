@@ -63,4 +63,4 @@ spec:
         PUID: 6008
         UMASK: "0002"
       pod:
-        fsgroup: 6000
+        fsGroup: 6000

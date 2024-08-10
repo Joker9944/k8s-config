@@ -71,7 +71,7 @@ spec:
         runAsGroup: 6000
         UMASK: "0002"
       pod:
-        fsgroup: 6000
+        fsGroup: 6000
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -145,4 +145,4 @@ spec:
         runAsGroup: 6000
         UMASK: "0002"
       pod:
-        fsgroup: 6000
+        fsGroup: 6000

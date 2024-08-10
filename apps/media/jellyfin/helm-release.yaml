@@ -69,5 +69,5 @@ spec:
         PUID: 6003
         UMASK: "0002"
       pod:
-        fsgroup: 6000
+        fsGroup: 6000
     # TODO GPU passthrough

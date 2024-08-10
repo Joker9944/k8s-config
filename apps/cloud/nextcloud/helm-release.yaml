@@ -72,7 +72,7 @@ spec:
         runAsGroup: 6001
         UMASK: "0022"
       pod:
-        fsgroup: 6001
+        fsGroup: 6001
     cnpg:
       main:
         cluster:
