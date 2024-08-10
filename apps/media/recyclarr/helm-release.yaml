@@ -28,6 +28,7 @@ spec:
       main:
         type: CronJob
         schedule: "@daily"
+        completions: 1
         startingDeadlineSeconds: 120
         activeDeadlineSeconds: 120
         podSpec:
