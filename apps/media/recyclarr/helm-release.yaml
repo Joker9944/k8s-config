@@ -29,6 +29,7 @@ spec:
         type: CronJob
         schedule: "@daily"
         podSpec:
+          restartPolicy: OnFailure
           initContainers:
             initconfig:
               enabled: false
