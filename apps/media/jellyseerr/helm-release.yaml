@@ -57,6 +57,8 @@ spec:
             secretName: wildcard-vonarx-online
     # TODO own files in pvc default user
     securityContext:
+      privileged: true
+      allowPrivilegeEscalation: true
       container:
         runAsUser: 6008
         runAsGroup: 6000
