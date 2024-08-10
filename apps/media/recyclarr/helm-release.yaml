@@ -30,6 +30,9 @@ spec:
         schedule: "@daily"
         podSpec:
           restartPolicy: OnFailure
+          containers:
+            main:
+              command: ["recyclarr", "sync"]
           initContainers:
             initconfig:
               enabled: false
