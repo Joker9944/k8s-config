@@ -55,14 +55,3 @@ spec:
           - hosts:
               - jellyseerr.vonarx.online
             secretName: wildcard-vonarx-online
-    # TODO own files in pvc default user
-    securityContext:
-      privileged: true
-      allowPrivilegeEscalation: true
-      container:
-        runAsUser: 0
-        runAsGroup: 0
-        PUID: 6008
-        UMASK: "0002"
-      pod:
-        fsGroup: 6000
