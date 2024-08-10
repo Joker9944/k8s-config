@@ -32,14 +32,6 @@ spec:
       # The original official image requires root to run
       repository: ghcr.io/lanjelin/openaudible-docker
       tag: 4.4.3@sha256:f6aa52d849c46008fd3d4125c66a6c8d832a2af95089decc185dd3e69765b5c7
-    workload:
-      main:
-        podSpec:
-          containers:
-            main:
-              env:
-                PUID: "{{ .Values.securityContext.container.PUID }}"
-                PGID: "{{ .Values.securityContext.pod.fsGroup }}"
     persistence:
       config:
         size: 5Gi
