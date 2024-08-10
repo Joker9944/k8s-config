@@ -28,6 +28,8 @@ spec:
       main:
         type: CronJob
         schedule: "@daily"
+        startingDeadlineSeconds: 120
+        activeDeadlineSeconds: 120
         podSpec:
           restartPolicy: OnFailure
           containers:
