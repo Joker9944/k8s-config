@@ -32,7 +32,6 @@ spec:
       config:
         size: 5Gi
         volsync:
-        # TODO look into renaming this
           - name: sonarr-standard
             type: restic
             credentials: pvc
@@ -104,7 +103,6 @@ spec:
       config:
         size: 5Gi
         volsync:
-        # TODO look into renaming this
           - name: sonarr-anime
             type: restic
             credentials: pvc
