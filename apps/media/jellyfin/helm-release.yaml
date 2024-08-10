@@ -64,8 +64,8 @@ spec:
             secretName: wildcard-vonarx-online
     securityContext:
       container:
-        runAsUser: 0
-        runAsGroup: 0
+        runAsUser: 6003
+        runAsGroup: 6000
         UMASK: "0002"
       pod:
         fsGroup: 6000

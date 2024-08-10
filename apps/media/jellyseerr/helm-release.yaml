@@ -60,8 +60,8 @@ spec:
       privileged: true
       allowPrivilegeEscalation: true
       container:
-        runAsUser: 6008
-        runAsGroup: 6000
+        runAsUser: 0
+        runAsGroup: 0
         PUID: 6008
         UMASK: "0002"
       pod:
