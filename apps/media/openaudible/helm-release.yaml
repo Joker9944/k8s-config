@@ -8,8 +8,6 @@ spec:
   interval: 5m
   chart:
     spec:
-      # TODO chart is based on official openaudible docker which requires root to run
-      # replace with https://github.com/Lanjelin/openaudible-docker/tree/main
       chart: openaudible
       version: 6.0.9
       sourceRef:
@@ -29,13 +27,19 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    image:
+      # Replaced image with https://github.com/Lanjelin/openaudible-docker/tree/main
+      # The original official image requires root to run
+      repository: ghcr.io/lanjelin/openaudible-docker
+      tag: 4.4.3@sha256:f6aa52d849c46008fd3d4125c66a6c8d832a2af95089decc185dd3e69765b5c7
     workload:
       main:
         podSpec:
           containers:
             main:
               env:
-                GUIAUTOSTART: "true"
+                PUID: "{{ .Values.securityContext.container.PUID }}"
+                PGID: "{{ .Values.securityContext.pod.fsGroup }}"
     persistence:
       config:
         size: 5Gi
