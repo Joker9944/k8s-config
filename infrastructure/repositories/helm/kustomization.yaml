@@ -6,3 +6,4 @@ metadata:
 resources:
   - truecharts.yaml
   - democratic-csi.yaml
+  - nvidia.yaml
