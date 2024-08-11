@@ -38,7 +38,8 @@ spec:
       config:
         size: 5Gi
         volsync:
-          - name: qbittorrent
+            # TODO rename to qbittorrent once restored
+          - name: downloader
             type: restic
             credentials: pvc
             dest:
