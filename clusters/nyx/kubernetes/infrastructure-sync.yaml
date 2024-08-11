@@ -67,3 +67,19 @@ spec:
   postBuild:
     substitute:
       main_namespace: network-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gpu-system
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/gpu-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      main_namespace: gpu-system
