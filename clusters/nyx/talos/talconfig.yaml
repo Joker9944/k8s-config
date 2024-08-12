@@ -47,11 +47,19 @@ nodes:
             - siderolabs/qemu-guest-agent
             - siderolabs/nonfree-kmod-nvidia
             - siderolabs/nvidia-container-toolkit
+    machineFiles:
+      - content: |
+          [plugins]
+            [plugins."io.containerd.grpc.v1.cri"]
+              [plugins."io.containerd.grpc.v1.cri".containerd]
+                default_runtime_name = "nvidia"
+        path: /etc/cri/conf.d/20-customization.part
+        op: create
     patches:
-        - |-
-          machine:
-            sysctls:
-              net.core.bpf_jit_harden: 1
+      - |-
+        machine:
+          sysctls:
+            net.core.bpf_jit_harden: 1
 controlPlane:
   nameservers:
       - ${GATEWAY}
