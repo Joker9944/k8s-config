@@ -30,5 +30,12 @@
   "pin": {
     "automerge": true,
     "ignoreTests": true
-  }
+  },
+  "packageRules": [
+    {
+      "matchDatasources": ["helm"],
+      "matchDepNames": ["nvidia-device-plugin"],
+      "allowedVersions": "<=0.13.0"
+    }
+  ]
 }
