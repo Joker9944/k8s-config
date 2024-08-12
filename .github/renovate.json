@@ -20,12 +20,15 @@
     "Joker9944"
   ],
   "minor": {
-    "automerge": true
+    "automerge": true,
+    "ignoreTests": true
   },
   "patch": {
-    "automerge": true
+    "automerge": true,
+    "ignoreTests": true
   },
   "pin": {
-    "automerge": true
+    "automerge": true,
+    "ignoreTests": true
   }
 }
