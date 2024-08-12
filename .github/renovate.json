@@ -11,7 +11,9 @@
     "fileMatch": [
       "(?:^|/)helm-release\\.ya?ml$",
       "(?:^|/)kustomization\\.ya?ml$",
-      "(?:^|/)repository\\.ya?ml$"
+      "(?:^|/)helm-repository\\.ya?ml$",
+      "(?:^|/)git-repository\\.ya?ml$",
+      "(?:^|/)oci-repository\\.ya?ml$"
     ]
   }
 }

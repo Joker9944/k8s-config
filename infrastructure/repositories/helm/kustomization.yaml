@@ -4,6 +4,6 @@ metadata:
   name: helm-repositories
   namespace: flux-system
 resources:
-  - truecharts.yaml
-  - democratic-csi.yaml
-  - nvidia.yaml
+  - democratic-csi/helm-repository.yaml
+  - nvidia-device-plugin/helm-repository.yaml
+  - truecharts/helm-repository.yaml
