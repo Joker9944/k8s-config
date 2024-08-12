@@ -6,5 +6,12 @@
   ],
   "major": {
     "dependencyDashboardApproval": true
+  },
+  "flux": {
+    "fileMatch": [
+      "(?:^|/)helm-release\\.ya?ml$",
+      "(?:^|/)kustomization\\.ya?ml$",
+      "(?:^|/)repository\\.ya?ml$"
+    ]
   }
 }
