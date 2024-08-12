@@ -34,6 +34,24 @@ nodes:
         routes:
           - network: 0.0.0.0/0
             gateway: ${GATEWAY}
+    kernelModules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+      - name: nvidia_modeset
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/qemu-guest-agent
+            - siderolabs/nonfree-kmod-nvidia
+            - siderolabs/nvidia-container-toolkit
+    patches:
+        - |-
+          machine:
+            sysctls:
+              net.core.bpf_jit_harden: 1
 controlPlane:
   nameservers:
       - ${GATEWAY}
@@ -49,8 +67,3 @@ worker:
       - ${GATEWAY}
       - ${NAMESERVER_PRIMARY}
       - ${NAMESERVER_SECONDARY}
-  schematic:
-      customization:
-        systemExtensions:
-          officialExtensions:
-            - siderolabs/iscsi-tools
