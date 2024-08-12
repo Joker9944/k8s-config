@@ -15,5 +15,17 @@
       "(?:^|/)git-repository\\.ya?ml$",
       "(?:^|/)oci-repository\\.ya?ml$"
     ]
+  },
+  "assignees": [
+    "Joker9944"
+  ],
+  "minor": {
+    "automerge": true
+  },
+  "patch": {
+    "automerge": true
+  },
+  "pin": {
+    "automerge": true
   }
 }
