@@ -29,6 +29,14 @@ spec:
   values:
     autodiscovery:
       enabled: true
+    workload:
+      main:
+        podSpec:
+          containers:
+            main:
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
     persistence:
       config:
         size: 5Gi
@@ -70,4 +78,3 @@ spec:
         UMASK: "0002"
       pod:
         fsGroup: 6000
-    # TODO GPU passthrough
