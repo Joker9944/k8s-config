@@ -16,6 +16,9 @@
       "(?:^|/)oci-repository\\.ya?ml$"
     ]
   },
+  "schedule": [
+    "every weekend"
+  ],
   "assignees": [
     "Joker9944"
   ],
