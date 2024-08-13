@@ -47,7 +47,7 @@ spec:
       main:
         enabled: true
         hosts:
-          - host: home2.vonarx.online
+          - host: home.vonarx.online
             paths:
               - path: /
                 pathType: Prefix
@@ -58,7 +58,7 @@ spec:
                 namespace: network-system
         tls:
           - hosts:
-              - home2.vonarx.online
+              - home.vonarx.online
             secretName: wildcard-vonarx-online
     cnpg:
       main:

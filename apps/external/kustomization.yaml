@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - proxy-truenas/helm-release.yaml
-  - proxy-ha/helm-release.yaml
