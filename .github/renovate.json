@@ -16,6 +16,11 @@
       "(?:^|/)oci-repository\\.ya?ml$"
     ]
   },
+  "helm": {
+    "fileMatch": [
+      "(?:^|/)helm-release\\.ya?ml$"
+    ]
+  },
   "schedule": [
     "every weekend"
   ],
