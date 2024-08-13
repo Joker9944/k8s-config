@@ -26,4 +26,4 @@ secretGenerator:
     files:
       - values.yaml=blocky/secret-values.sops.yaml
 configurations:
-  - kustomizeconfig.yaml
+  - ../../shared/kustomizeconfig.yaml

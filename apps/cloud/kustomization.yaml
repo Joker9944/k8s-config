@@ -12,4 +12,4 @@ secretGenerator:
     files:
       - values.yaml=nextcloud/secret-values.sops.yaml
 configurations:
-  - kustomizeconfig.yaml
+  - ../../shared/kustomizeconfig.yaml

@@ -21,4 +21,4 @@ secretGenerator:
     files:
       - values.yaml=qbittorrent/secret-values.sops.yaml
 configurations:
-  - kustomizeconfig.yaml
+  - ../../shared/kustomizeconfig.yaml
