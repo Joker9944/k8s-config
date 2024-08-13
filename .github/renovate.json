@@ -37,19 +37,12 @@
   "assignees": [
     "Joker9944"
   ],
-  "minor": {
-    "automerge": true,
-    "ignoreTests": true
-  },
-  "patch": {
-    "automerge": true,
-    "ignoreTests": true
-  },
-  "pin": {
-    "automerge": true,
-    "ignoreTests": true
-  },
   "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "ignoreTests": true
+    },
     {
       "matchDatasources": ["helm"],
       "matchDepNames": ["nvidia-device-plugin"],
