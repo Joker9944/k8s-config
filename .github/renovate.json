@@ -11,9 +11,7 @@
     "fileMatch": [
       "(?:^|/)helm-release\\.ya?ml$",
       "(?:^|/)kustomization\\.ya?ml$",
-      "(?:^|/)helm-repository\\.ya?ml$",
-      "(?:^|/)git-repository\\.ya?ml$",
-      "(?:^|/)oci-repository\\.ya?ml$"
+      "(?:^|/)(?:helm|git|oci)-repository\\.ya?ml$"
     ]
   },
   "helm-values": {
@@ -21,6 +19,18 @@
       "(?:^|/)helm-release\\.ya?ml$"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Talos and Kubernetes versions in talconfig",
+      "fileMatch": [
+        "(?:^|/)talconfig\\.ya?ml$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s(?:talos|kubernetes)Version: (?<currentValue>.+?)(?:\\s|$)"
+      ]
+    }
+  ],
   "schedule": [
     "every weekend"
   ],
@@ -44,6 +54,11 @@
       "matchDatasources": ["helm"],
       "matchDepNames": ["nvidia-device-plugin"],
       "allowedVersions": "<=0.13.0"
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["talos", "kubelet"],
+      "automerge": false
     }
   ]
 }
