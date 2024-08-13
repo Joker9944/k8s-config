@@ -79,7 +79,7 @@ spec:
           walStorage:
             size: 5Gi
         backups:
-          enabled: true
+          enabled: false
           credentials: cnpg
         recovery:
           method: object_store
