@@ -48,7 +48,7 @@ spec:
             dest:
               enabled: false
             src:
-              enabled: true
+              enabled: false
       init:
         enabled: false
     configmap:
