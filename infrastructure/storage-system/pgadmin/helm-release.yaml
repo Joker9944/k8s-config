@@ -23,6 +23,9 @@ spec:
     remediation:
       retries: 3
   values:
+    persistence:
+      config:
+        size: 1Gi
     ingress:
       main:
         enabled: true
