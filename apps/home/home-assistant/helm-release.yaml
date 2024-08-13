@@ -32,12 +32,6 @@ spec:
     homeassistant:
       trusted_proxies:
         - 10.244.0.0/16
-    workload:
-      main:
-        podSpec:
-          initContainers:
-            init:
-              enabled: false
     persistence:
       config:
         size: 5Gi
@@ -49,11 +43,6 @@ spec:
               enabled: false
             src:
               enabled: false
-      init:
-        enabled: false
-    configmap:
-      init:
-        enabled: false
     ingress:
       main:
         enabled: true
