@@ -46,7 +46,7 @@ spec:
             type: restic
             credentials: pvc
             dest:
-              enabled: true
+              enabled: false
             src:
               enabled: true
       init:
