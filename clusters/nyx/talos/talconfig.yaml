@@ -14,6 +14,8 @@ nodes:
     ipAddress: ${CONTROL_PLANE_1_IP}
     controlPlane: true
     installDisk: /dev/mmcblk0
+    machineSpec:
+      arch: arm64
     networkInterfaces:
       - interface: enxdca6325aa72d
         addresses:
@@ -23,6 +25,14 @@ nodes:
             gateway: ${GATEWAY}
         vip:
           ip: ${VIP}
+    schematic:
+      overlay:
+        image: siderolabs/sbc-raspberrypi
+        name: rpi_generic
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
@@ -60,18 +70,30 @@ nodes:
         machine:
           sysctls:
             net.core.bpf_jit_harden: 1
+  - hostname: nyx-worker-2
+    ipAddress: ${WORKER_2_IP}
+    controlPlane: false
+    installDisk: /dev/mmcblk0
+    machineSpec:
+      arch: arm64
+    networkInterfaces:
+      - interface: enxdca632d938d0
+        addresses:
+          - ${WORKER_2_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+    schematic:
+      overlay:
+        image: siderolabs/sbc-raspberrypi
+        name: rpi_generic
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
 controlPlane:
   nameservers:
       - ${GATEWAY}
-      - ${NAMESERVER_PRIMARY}
-      - ${NAMESERVER_SECONDARY}
-  schematic:
-    customization:
-      systemExtensions:
-        officialExtensions:
-          - siderolabs/iscsi-tools
 worker:
   nameservers:
       - ${GATEWAY}
-      - ${NAMESERVER_PRIMARY}
-      - ${NAMESERVER_SECONDARY}
