@@ -26,10 +26,18 @@ spec:
   valuesFrom:
     - kind: Secret
       name: s3-credentials-secret-values
+    - kind: Secret
+      name: home-assistant-secret-values
   values:
     homeassistant:
       trusted_proxies:
         - 10.244.0.0/16
+    workload:
+      main:
+        podSpec:
+          initContainers:
+            init:
+              enabled: false
     persistence:
       config:
         size: 5Gi
@@ -41,6 +49,11 @@ spec:
               enabled: true
             src:
               enabled: true
+      init:
+        enabled: false
+    configmap:
+      init:
+        enabled: false
     ingress:
       main:
         enabled: true

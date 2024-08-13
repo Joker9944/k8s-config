@@ -8,5 +8,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=../../shared/s3-credentials-values.sops.yaml
+  - name: home-assistant-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=home-assistant/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
