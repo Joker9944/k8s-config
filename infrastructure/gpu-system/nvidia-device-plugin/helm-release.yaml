@@ -26,3 +26,5 @@ spec:
     runtimeClassName: nvidia
     gfd:
       enabled: true
+    nfd:
+      enableNodeFeatureApi: true
