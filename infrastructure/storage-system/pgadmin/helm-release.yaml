@@ -26,6 +26,8 @@ spec:
     - kind: Secret
       name: pgadmin-secret-values
   values:
+    podOptions:
+      nodeSelector: null
     persistence:
       config:
         size: 1Gi

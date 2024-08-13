@@ -27,6 +27,8 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    podOptions:
+      nodeSelector: null
     # TODO look into simplifing this
     persistence:
       config:
@@ -99,6 +101,8 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    podOptions:
+      nodeSelector: null
     # TODO look into simplifing this
     persistence:
       config:

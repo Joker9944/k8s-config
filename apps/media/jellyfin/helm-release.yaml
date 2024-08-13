@@ -27,6 +27,8 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
+    podOptions:
+      nodeSelector: null
     autodiscovery:
       enabled: true
     workload:

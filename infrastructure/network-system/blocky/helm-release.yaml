@@ -28,6 +28,8 @@ spec:
     - kind: Secret
       name: blocky-secret-values
   values:
+    podOptions:
+      nodeSelector: null
     service:
       # TODO setup DoT
       dns:
