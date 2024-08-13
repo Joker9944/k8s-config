@@ -11,5 +11,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=freenas-api-iscsi/secret-values.sops.yaml
+  - name: pgadmin-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=pgadmin/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
