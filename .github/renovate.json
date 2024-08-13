@@ -44,11 +44,6 @@
       "ignoreTests": true
     },
     {
-      "matchDatasources": ["helm"],
-      "matchDepNames": ["nvidia-device-plugin"],
-      "allowedVersions": "<=0.13.0"
-    },
-    {
       "matchDatasources": ["docker"],
       "matchDepNames": ["talos", "kubelet"],
       "automerge": false
