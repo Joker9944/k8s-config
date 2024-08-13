@@ -16,7 +16,7 @@
       "(?:^|/)oci-repository\\.ya?ml$"
     ]
   },
-  "helm": {
+  "helm-values": {
     "fileMatch": [
       "(?:^|/)helm-release\\.ya?ml$"
     ]
