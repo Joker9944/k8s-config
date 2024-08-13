@@ -73,6 +73,11 @@ spec:
             secretName: wildcard-vonarx-online
     cnpg:
       main:
+        cluster:
+          storage:
+            size: 5Gi
+          walStorage:
+            size: 5Gi
         backups:
           enabled: true
           credentials: cnpg
