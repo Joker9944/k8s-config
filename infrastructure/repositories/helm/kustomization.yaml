@@ -7,4 +7,3 @@ resources:
   - democratic-csi/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - truecharts/helm-repository.yaml
-  - node-feature-discovery/helm-repository.yaml
