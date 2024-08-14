@@ -11,6 +11,7 @@ resources:
   - qbittorrent/helm-release.yaml
   - radarr/helm-release.yaml
   - sonarr/helm-release.yaml
+  - recyclarr
 secretGenerator:
   - name: s3-credentials-secret-values
     namespace: ${main_namespace}
