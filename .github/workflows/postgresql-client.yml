@@ -15,3 +15,7 @@ jobs:
       image_name: Joker9944/postgresql-client
       context: images/postgresql-client/Dockerfile
     secrets: inherit
+    permissions:
+      packages: write
+      id-token: write
+      contents: read
