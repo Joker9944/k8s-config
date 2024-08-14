@@ -29,9 +29,32 @@ spec:
   values:
     podOptions:
       nodeSelector: null
+    service:
+      metrics:
+        targetSelector: null
+        ports:
+          metrics:
+            targetSelector: null
+    workload:
+      main:
+        podSpec:
+          containers:
+            exportarr: {{ .Values.workload.exportarr.podspec.containers.exportarr }}
+      exportarr:
+        enabled: false
+        podSpec:
+          containers:
+            exportarr:
+              primary: false
     persistence:
       config:
         size: 5Gi
+        targetSelector:
+          main:
+            exportarr:
+              mountPath: /config
+              readOnly: true
+          exportarr: null
         volsync:
           - name: prowlarr
             type: restic
