@@ -53,7 +53,8 @@ spec:
       name: traefik-secret-values
   values:
     podOptions:
-      nodeSelector: null
+      nodeSelector:
+        kubernetes.io/os: linux
     workload:
       main:
         type: DaemonSet
