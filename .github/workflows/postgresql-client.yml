@@ -12,7 +12,7 @@ jobs:
   call-workflow-passing-data:
     uses: Joker9944/k8s-config/.github/workflows/docker-publish.yml@main
     with:
-      image_name: Joker9944/postgresql-client
+      image_name: joker9944/postgresql-client
       context: images/postgresql-client/Dockerfile
     secrets: inherit
     permissions:
