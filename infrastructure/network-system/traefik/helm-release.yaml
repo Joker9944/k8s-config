@@ -54,6 +54,7 @@ spec:
   values:
     podOptions:
       nodeSelector:
+        kubernetes.io/arch: null
         kubernetes.io/os: linux
     workload:
       main:
