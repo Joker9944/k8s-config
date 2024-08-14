@@ -1,6 +1,7 @@
 name: postgresql-client
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - images/postgresql-client/Dockerfile
