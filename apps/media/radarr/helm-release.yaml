@@ -27,8 +27,10 @@ spec:
     - kind: Secret
       name: s3-credentials-secret-values
   values:
-    podOptions:
-      nodeSelector: null
+    # TODO Chart is currently bugged for multi node clusters, wait for resolution:
+    # https://github.com/truecharts/charts/pull/25111
+    #podOptions:
+    #  nodeSelector: null
     persistence:
       config:
         size: 5Gi

@@ -16,7 +16,8 @@
   },
   "helm-values": {
     "fileMatch": [
-      "(?:^|/)helm-release\\.ya?ml$"
+      "(?:^|/)helm-release\\.ya?ml$",
+      "(^|/).+\\.values\\.ya?ml$"
     ]
   },
   "customManagers": [

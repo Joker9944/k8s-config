@@ -20,5 +20,10 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=qbittorrent/secret-values.sops.yaml
+configMapGenerator:
+  - name: sonarr-common-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=common.values.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
