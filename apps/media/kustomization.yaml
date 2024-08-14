@@ -24,6 +24,6 @@ configMapGenerator:
   - name: sonarr-common-values
     namespace: ${main_namespace}
     files:
-      - values.yaml=common.values.yaml
+      - values.yaml=sonarr/common.values.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
