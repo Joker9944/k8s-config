@@ -61,12 +61,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Extract Docker upstream tags
+      - name: Extract Docker upstream tags metadata
         id: meta_tags
         run: |
           UPSTREAM_IMAGE_VERSION=$(head -n 1 "${inputs.context}/Dockerfile" | sed -r 's/^FROM .+:(.+)@.+$/\1/')
           IFS='.' read -ra UPSTREAM_IMAGE_VERSION_ARRAY <<< "$UPSTREAM_IMAGE_VERSION"
-          IMAGE_NAME=${env.REGISTRY }/${env.IMAGE_NAME}
+          IMAGE_NAME="${env.REGISTRY }/${env.IMAGE_NAME}"
           echo "tags=$IMAGE_NAME:latest,$IMAGE_NAME:$UPSTREAM_IMAGE_VERSION,$IMAGE_NAME:${UPSTREAM_IMAGE_VERSION_ARRAY[0]}.${UPSTREAM_IMAGE_VERSION_ARRAY[1]}" >> "$GITHUB_OUTPUT"
 
       # Build and push Docker image with Buildx

@@ -1,0 +1,16 @@
+name: postgresql-client
+
+on:
+  push:
+    paths:
+      - images/postgresql-client/Dockerfile
+    branches:
+      - main
+
+jobs:
+  call-workflow-passing-data:
+    uses: Joker9944/k8s-config/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: Joker9944/postgresql-client
+      context: images/postgresql-client/Dockerfile
+    secrets: inherit
