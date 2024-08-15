@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":dependencyDashboard"
+    ":dependencyDashboard",
+    "schedule:weekends"
   ],
   "major": {
     "dependencyDashboardApproval": true
@@ -31,10 +32,17 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update versions in Dockerfile ENV statements marked by comment",
+      "fileMatch": [
+        "(?:^|/)Dockerfile$"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\sARG [\\w_]+=(?<currentValue>.+?)(?:\\s|$)"
+      ]
     }
-  ],
-  "schedule": [
-    "every weekend"
   ],
   "assignees": [
     "Joker9944"
