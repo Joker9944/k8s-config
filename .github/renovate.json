@@ -29,7 +29,7 @@
         "(?:^|/)docker-publish\\.ya?ml$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>\\w+?))? packageName=(?<packageName>\\w+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s\\w+: (?<currentValue>\\w+?)(?:\\s|$)"
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)"
       ]
     }
   ],
