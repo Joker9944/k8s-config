@@ -23,7 +23,7 @@ ARG PLUGIN_MODSECURITY_VERSION=v1.3.0
 ARG PLUGIN_CROWDSEC_BOUNCER_METHOD=https
 ARG PLUGIN_CROWDSEC_BOUNCER_REPO=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
 # renovate: datasource=github-tags depName=crowdsec-bouncer-plugin packageName=maxlerebourg/crowdsec-bouncer-traefik-plugin versioning=semver-coerced
-ARG PLUGIN_CROWDSEC_BOUNCER_VERSION=v1.3.0
+ARG PLUGIN_CROWDSEC_BOUNCER_VERSION=v1.3.3
 
 ARG PLUGIN_REWRITERESPONSEHEADERS_METHOD=https
 ARG PLUGIN_REWRITERESPONSEHEADERS_REPO=github.com/XciD/traefik-plugin-rewrite-headers
