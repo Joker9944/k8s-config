@@ -22,6 +22,10 @@ secretGenerator:
     files:
       - values.yaml=qbittorrent/secret-values.sops.yaml
 configMapGenerator:
+  - name: truecharts-custom-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=../../shared/truecharts-custom.values.yaml
   - name: sonarr-common-values
     namespace: ${main_namespace}
     files:

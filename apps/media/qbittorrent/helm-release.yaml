@@ -26,6 +26,8 @@ spec:
   valuesFrom:
     - kind: Secret
       name: s3-credentials-secret-values
+    - kind: ConfigMap
+      name: truecharts-custom-values
     - kind: Secret
       name: qbittorrent-secret-values
   values:
