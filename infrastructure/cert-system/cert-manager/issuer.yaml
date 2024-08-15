@@ -3,6 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: cloudflare-production
+  namespace: ${main_namespace}
 spec:
   acme:
     email: postmaster@vonarx.online
@@ -21,6 +22,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: cloudflare-staging
+  namespace: ${main_namespace}
 spec:
   acme:
     email: postmaster@vonarx.online
