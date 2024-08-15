@@ -6,6 +6,9 @@ on:
       image_name:
         required: true
         type: string
+      upstream_image_name:
+        required: true
+        type: string
       context:
         required: true
         type: string
@@ -53,22 +56,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker label metadata
-        id: meta_label
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Extract Docker upstream tags metadata
         id: meta_tags
         env:
           CONTEXT: ${{ inputs.context }}
           IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          UPSTREAM_IMAGE_NAME: ${{ inputs.upstream_image_name }}
         run: |
-          UPSTREAM_IMAGE_VERSION=$(head -n 1 "$CONTEXT/Dockerfile" | sed -r 's/^FROM .+:(.+)@.+$/\1/')
+          UPSTREAM_IMAGE_VERSION=$(cat "$CONTEXT/Dockerfile" | sed --silent --regexp-extended "s/^FROM $UPSTREAM_IMAGE_NAME:(.+)@.+$/\1/p")
           IFS='.' read -ra UPSTREAM_IMAGE_VERSION_ARRAY <<< "$UPSTREAM_IMAGE_VERSION"
+          echo "upstream_image_version=$UPSTREAM_IMAGE_VERSION" >> "$GITHUB_OUTPUT"
           {
             echo 'tags<<EOF'
             echo "$IMAGE_NAME:latest"
@@ -77,6 +74,19 @@ jobs:
             echo "$IMAGE_NAME:${UPSTREAM_IMAGE_VERSION_ARRAY[0]}"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker label metadata
+        id: meta_label
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.version=${{ steps.meta_tags.outputs.upstream_image_version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref }}/${{ inputs.context }}
+            org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref }}/${{ inputs.context }}
 
       # Build and push Docker image with Buildx
       # https://github.com/docker/build-push-action

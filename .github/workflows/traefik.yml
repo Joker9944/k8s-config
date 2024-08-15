@@ -1,10 +1,10 @@
-name: postgresql-client
+name: traefik
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - images/postgresql-client/Dockerfile
+      - images/traefik/Dockerfile
     branches:
       - main
 
@@ -12,9 +12,9 @@ jobs:
   call-workflow-passing-data:
     uses: Joker9944/k8s-config/.github/workflows/docker-publish.yml@main
     with:
-      image_name: joker9944/postgresql-client
-      upstream_image_name: alpine
-      context: images/postgresql-client
+      image_name: joker9944/traefik
+      upstream_image_name: traefik
+      context: images/traefik
     secrets: inherit
     permissions:
       packages: write

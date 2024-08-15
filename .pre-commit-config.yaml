@@ -14,10 +14,6 @@ repos:
     rev: v1.5.5
     hooks:
       - id: remove-crlf
-      - id: remove-tabs
-        args: [--whitespaces-count, '2']
-      - id: forbid-crlf
-      - id: forbid-tabs
   - repo: https://github.com/k8s-at-home/sops-pre-commit
     rev: v2.1.1
     hooks:
