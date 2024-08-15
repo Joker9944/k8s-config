@@ -12,5 +12,10 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=home-assistant/secret-values.sops.yaml
+configMapGenerator:
+  - name: truecharts-custom-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=../../shared/truecharts-custom.values.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
