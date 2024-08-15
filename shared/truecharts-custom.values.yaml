@@ -3,7 +3,7 @@ gluetunImage:
   tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
 postgresClientImage:
   repository: ghcr.io/joker9944/postgresql-client
-  tag: 3.20.2@sha256:a95b0a6339a2dd862c64699b003fa58d5304bb4709bb43e4f72b208bbd11e242
+  tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
 redisClientImage:
   repository: redis
   tag: 7.4.0@sha256:878983f8f5045b28384fc300268cec62bca3b14d5e1a448bec21f28cfcc7bf78
