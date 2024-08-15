@@ -29,8 +29,8 @@ spec:
   values:
     # TODO Chart is currently bugged for multi node clusters, wait for resolution:
     # https://github.com/truecharts/charts/pull/25111
-    podOptions:
-      nodeSelector: null
+    #podOptions:
+    #  nodeSelector: null
     persistence:
       config:
         size: 5Gi
