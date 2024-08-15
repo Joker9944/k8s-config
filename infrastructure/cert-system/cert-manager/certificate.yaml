@@ -1,0 +1,22 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-vonarx-online
+  namespace: ${main_namespace}
+spec:
+  dnsNames:
+  - '*.vonarx.online'
+  - vonarx.online
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: cloudflare-production
+  secretName: wildcard-vonarx-online
+secretTemplate:
+    annotations:
+      # TODO remove network-system once traefik is moved
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},home,media,network-system
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: home,media,network-system

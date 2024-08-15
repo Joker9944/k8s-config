@@ -5,5 +5,6 @@ metadata:
   namespace: flux-system
 resources:
   - democratic-csi/helm-repository.yaml
+  - jetstack/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - truecharts/helm-repository.yaml
