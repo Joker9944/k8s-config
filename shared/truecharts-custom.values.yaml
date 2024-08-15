@@ -1,3 +1,6 @@
+gluetunImage:
+  repository: ghcr.io/qdm12/gluetun
+  tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
 postgresClientImage:
   repository: ghcr.io/joker9944/postgresql-client
   tag: 3.20.2@sha256:a95b0a6339a2dd862c64699b003fa58d5304bb4709bb43e4f72b208bbd11e242
