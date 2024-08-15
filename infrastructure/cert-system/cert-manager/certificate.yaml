@@ -11,12 +11,12 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: Issuer
-    name: cloudflare-production
+    name: cloudflare-staging
   secretName: wildcard-vonarx-online
   secretTemplate:
     annotations:
       # TODO remove network-system once traefik is moved
-      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},home,media,network-system
-      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: home,media,network-system
+      #reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      #reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},home,media,network-system
+      #reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      #reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: home,media,network-system
