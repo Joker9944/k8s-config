@@ -52,7 +52,10 @@
     },
     {
       "matchDatasources": ["helm-values"],
-      "matchDepNames": ["ghcr.io/joker9944/postgresql-client"],
+      "matchDepNames": [
+        "ghcr.io/joker9944/postgresql-client",
+        "ghcr.io/joker9944/traefik"
+      ],
       "automerge": true,
       "schedule": []
     }

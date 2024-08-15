@@ -52,8 +52,14 @@ spec:
     - kind: Secret
       name: traefik-secret-values
   values:
-    # TODO tccr traefik image only supports amd64 at the moment. Make this comptaible with diffrent arches
+    # tccr traefik image only supports amd64 at the moment. Make this comptaible with diffrent arches.
+    # Workaround: sourced own images.
     # https://github.com/truecharts/containers/issues/35736
+    podOptions:
+      nodeSelector: null
+    image:
+      repository: ghcr.io/joker9944/traefik
+      tag: v3.1.2@sha256:ea451656f150d56797e0eddb7f812b3c2fbbc2cb3df841a9527f26f6b711438a
     workload:
       main:
         type: DaemonSet
