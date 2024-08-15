@@ -69,7 +69,14 @@ jobs:
         run: |
           UPSTREAM_IMAGE_VERSION=$(head -n 1 "$CONTEXT/Dockerfile" | sed -r 's/^FROM .+:(.+)@.+$/\1/')
           IFS='.' read -ra UPSTREAM_IMAGE_VERSION_ARRAY <<< "$UPSTREAM_IMAGE_VERSION"
-          echo "tags=$IMAGE_NAME:latest,$IMAGE_NAME:$UPSTREAM_IMAGE_VERSION,$IMAGE_NAME:${UPSTREAM_IMAGE_VERSION_ARRAY[0]}.${UPSTREAM_IMAGE_VERSION_ARRAY[1]}" >> "$GITHUB_OUTPUT"
+          {
+            echo 'tags<<EOF'
+            echo "$IMAGE_NAME:latest"
+            echo "$IMAGE_NAME:$UPSTREAM_IMAGE_VERSION"
+            echo "$IMAGE_NAME:${UPSTREAM_IMAGE_VERSION_ARRAY[0]}.${UPSTREAM_IMAGE_VERSION_ARRAY[1]}"
+            echo "$IMAGE_NAME:${UPSTREAM_IMAGE_VERSION_ARRAY[0]}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       # Build and push Docker image with Buildx
       # https://github.com/docker/build-push-action
