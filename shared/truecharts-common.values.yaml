@@ -1,0 +1,6 @@
+postgresClientImage:
+  repository: ghcr.io/joker9944/postgresql-client
+  tag: 3.20.2@sha256:a95b0a6339a2dd862c64699b003fa58d5304bb4709bb43e4f72b208bbd11e242
+redisClientImage:
+  repository: redis
+  tag: 7.4.0-alpine@sha256:eaea8264f74a95ea9a0767c794da50788cbd9cf5223951674d491fa1b3f4f2d2

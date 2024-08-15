@@ -27,9 +27,14 @@ spec:
       name: s3-credentials-secret-values
     - kind: Secret
       name: blocky-secret-values
+    - kind: ConfigMap
+      name: truecharts-common-values
   values:
-    # TODO tccr traefik image only supports amd64 at the moment. Make this comptaible with diffrent arches
+    # tccr traefik image only supports amd64 at the moment. Make this comptaible with diffrent arches
+    # Workaround: sourced own images.
     # https://github.com/truecharts/containers/issues/35736
+    podOptions:
+      nodeSelector: null
     service:
       # TODO setup DoT
       dns:

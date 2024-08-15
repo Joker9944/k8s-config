@@ -25,5 +25,10 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=blocky/secret-values.sops.yaml
+configMapGenerator:
+  - name: truecharts-common-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=../../shared/truecharts-common.values.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
