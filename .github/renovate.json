@@ -23,12 +23,13 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update Talos and Kubernetes versions in talconfig",
+      "description": "Update versions in yaml files marked by comment",
       "fileMatch": [
-        "(?:^|/)talconfig\\.ya?ml$"
+        "(?:^|/)talconfig\\.ya?ml$",
+        "(?:^|/)docker-publish\\.ya?ml$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s(?:talos|kubernetes)Version: (?<currentValue>.+?)(?:\\s|$)"
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>\\w+?))? packageName=(?<packageName>\\w+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s\\w+: (?<currentValue>\\w+?)(?:\\s|$)"
       ]
     }
   ],
@@ -48,6 +49,12 @@
       "matchDatasources": ["docker"],
       "matchDepNames": ["talos", "kubelet"],
       "automerge": false
+    },
+    {
+      "matchDatasources": ["helm-values"],
+      "matchDepNames": ["ghcr.io/joker9944/postgresql-client"],
+      "automerge": true,
+      "schedule": []
     }
   ]
 }
