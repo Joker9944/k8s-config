@@ -103,11 +103,8 @@ spec:
       - apiVersion: traefik.io/v1alpha1
         kind: Middleware
         metadata:
-          labels:
-            helm.toolkit.fluxcd.io/name: traefik
-            helm.toolkit.fluxcd.io/namespace: network-system
           name: internal-whitelist
-          namespace: network-system
+          namespace: ${main_namespace}
         spec:
           ipAllowList:
             ipStrategy: null

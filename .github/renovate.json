@@ -27,7 +27,8 @@
       "description": "Update versions in yaml files marked by comment",
       "fileMatch": [
         "(?:^|/)talconfig\\.ya?ml$",
-        "(?:^|/)docker-publish\\.ya?ml$"
+        "(?:^|/)docker-publish\\.ya?ml$",
+      "(?:^|/)helm-release\\.ya?ml$"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)"
