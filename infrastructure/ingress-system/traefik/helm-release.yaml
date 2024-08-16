@@ -33,7 +33,7 @@ spec:
       plugins:
         geoblock:
           moduleName: github.com/PascalMinder/geoblock
-          # renovate: datasource=github-tags depName=geoblock-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
+          # renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
           version: v0.2.8
     logs:
       access:
