@@ -26,6 +26,9 @@ spec:
     - kind: Secret
       name: traefik-secret-values
   values:
+    globalArguments:
+      - "--global.sendanonymoususage"
+      - '--api.dashboard=true'
     deployment:
       kind: DaemonSet
     experimental:
