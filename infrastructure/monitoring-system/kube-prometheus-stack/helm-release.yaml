@@ -56,7 +56,7 @@ spec:
     prometheus:
       prometheusSpec:
         retention: 30d
-        retentionSize: 100Gi
+        retentionSize: 100GB
       ingress:
         enabled: true
         annotations:
