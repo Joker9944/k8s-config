@@ -7,6 +7,7 @@ resources:
   - democratic-csi/helm-repository.yaml
   - emberstack/helm-repository.yaml
   - jetstack/helm-repository.yaml
+  - metallb/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - prometheus-community/helm-repository.yaml
   - traefik/helm-repository.yaml
