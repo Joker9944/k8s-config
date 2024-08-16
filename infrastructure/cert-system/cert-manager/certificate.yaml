@@ -16,6 +16,6 @@ spec:
   secretTemplate:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},ingress-system,monitoring-system,storage-system,home,media,external
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},ingress-system,monitoring-system,*-apps,home,media,external
       reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: ingress-system,monitoring-system,storage-system,home,media,external
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: ingress-system,monitoring-system,*-apps,home,media,external
