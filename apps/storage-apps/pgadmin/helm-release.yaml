@@ -28,7 +28,6 @@ spec:
   values:
     serverDefinitions:
       enabled: true
-      resourceType: Secret
       server:
         blocky:
           Name: blocky
