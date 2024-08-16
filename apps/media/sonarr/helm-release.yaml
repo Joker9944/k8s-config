@@ -56,7 +56,6 @@ spec:
           traefik:
             middlewares:
               - name: internal-whitelist
-                namespace: ingress-system
         tls:
           - hosts:
               - sonarr-standard.vonarx.online
@@ -119,7 +118,6 @@ spec:
           traefik:
             middlewares:
               - name: internal-whitelist
-                namespace: ingress-system
         tls:
           - hosts:
               - sonarr-anime.vonarx.online

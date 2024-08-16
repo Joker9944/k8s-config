@@ -58,7 +58,6 @@ spec:
           traefik:
             middlewares:
               - name: country-whitelist
-                namespace: ingress-system
         tls:
           - hosts:
               - audiobookshelf.vonarx.online

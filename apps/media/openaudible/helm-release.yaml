@@ -61,7 +61,6 @@ spec:
           traefik:
             middlewares:
               - name: internal-whitelist
-                namespace: ingress-system
         tls:
           - hosts:
               - openaudible.vonarx.online
