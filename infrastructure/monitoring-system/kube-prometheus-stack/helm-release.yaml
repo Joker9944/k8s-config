@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: ${main_namespace}
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: 61.9.0
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 5m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    alertmanager:
+      ingress:
+        enabled: true
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: network-system-chain-basic@kubernetescrd,network-system-internal-whitelist@kubernetescrd
+        hosts:
+          - alertmanager.vonarx.online
+        paths:
+          - /
+        tls:
+          - secretName: wildcard-vonarx-online
+            hosts:
+              - alertmanager.vonarx.online
+    grafana:
+      ingress:
+        enabled: true
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: network-system-chain-basic@kubernetescrd,network-system-internal-whitelist@kubernetescrd
+        hosts:
+          - grafana.vonarx.online
+        paths:
+          - /
+        tls:
+          - secretName: wildcard-vonarx-online
+            hosts:
+              - grafana.vonarx.online.vonarx.online
+    prometheus:
+      prometheusSpec:
+        retention: 30d
+        retentionSize: 100Gi
+      ingress:
+        enabled: true
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: network-system-chain-basic@kubernetescrd,network-system-internal-whitelist@kubernetescrd
+        hosts:
+          - prometheus.vonarx.online
+        paths:
+          - /
+        tls:
+          - secretName: wildcard-vonarx-online
+            hosts:
+              - prometheus.vonarx.online.vonarx.online

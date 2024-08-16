@@ -8,4 +8,5 @@ resources:
   - emberstack/helm-repository.yaml
   - jetstack/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
+  - prometheus-community/helm-repository.yaml
   - truecharts/helm-repository.yaml
