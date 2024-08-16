@@ -60,7 +60,7 @@ spec:
           traefik:
             middlewares:
               - name: internal-whitelist
-                namespace: network-system
+                namespace: ingress-system
         tls:
           - hosts:
               - radarr.vonarx.online

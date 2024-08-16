@@ -30,7 +30,7 @@ spec:
     - kind: ConfigMap
       name: truecharts-custom-values
   values:
-    # tccr traefik image only supports amd64 at the moment. Make this comptaible with diffrent arches.
+    # tccr image only supports amd64 at the moment. Make this comptaible with diffrent arches.
     # Workaround: sourced own images.
     # https://github.com/truecharts/containers/issues/35736
     podOptions:

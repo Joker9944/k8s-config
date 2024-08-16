@@ -72,7 +72,7 @@ spec:
           traefik:
             middlewares:
               - name: country-whitelist
-                namespace: network-system
+                namespace: ingress-system
         tls:
           - hosts:
               - jellyfin.vonarx.online

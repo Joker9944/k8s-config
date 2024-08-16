@@ -1,0 +1,115 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: ${main_namespace}
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: traefik
+      version: 30.0.2
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+      interval: 5m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    deployment:
+      kind: DaemonSet
+    experimental:
+      # TODO Implement bouncer
+      plugins:
+        geoblock:
+          moduleName: github.com/PascalMinder/geoblock
+          # renovate: datasource=github-tags depName=geoblock-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
+          version: v0.2.8
+    logs:
+      access:
+        enabled: true
+    tlsStore:
+        default:
+          defaultCertificate:
+            secretName: wildcard-vonarx-online
+    service:
+      externalIPs:
+        - 192.168.178.210
+    extraObjects:
+      - # Middleware ported from TrueCharts Traefik chart.
+        # Keeping this so not to break compatibility with other TrueCharts charts.
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: chain-basic
+          namespace: ${main_namespace}
+        spec:
+          chain:
+            middlewares:
+            - name: basic-ratelimit
+            - name: basic-secure-headers
+            - name: compress
+      - # Middleware ported from TrueCharts Traefik chart.
+        # Keeping this so not to break compatibility with other TrueCharts charts.
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: basic-ratelimit
+          namespace: ${main_namespace}
+        spec:
+          rateLimit:
+            average: 600
+            burst: 400
+      - # Middleware ported from TrueCharts Traefik chart.
+        # Keeping this so not to break compatibility with other TrueCharts charts.
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: basic-secure-headers
+          namespace: ${main_namespace}
+        spec:
+          headers:
+            accessControlAllowMethods:
+            - GET
+            - OPTIONS
+            - HEAD
+            - PUT
+            accessControlMaxAge: 100
+            browserXssFilter: true
+            contentTypeNosniff: true
+            customRequestHeaders:
+              X-Forwarded-Proto: https
+            customResponseHeaders:
+              server: ""
+            forceSTSHeader: true
+            referrerPolicy: same-origin
+            stsSeconds: 63072000
+      - # Middleware ported from TrueCharts Traefik chart.
+        # Keeping this so not to break compatibility with other TrueCharts charts.
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: compress
+          namespace: ${main_namespace}
+        spec:
+          compress: {}
+      - apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          labels:
+            helm.toolkit.fluxcd.io/name: traefik
+            helm.toolkit.fluxcd.io/namespace: network-system
+          name: internal-whitelist
+          namespace: network-system
+        spec:
+          ipAllowList:
+            ipStrategy: null
+            sourceRange:
+            - 192.168.178.0/24
