@@ -28,7 +28,6 @@ spec:
   values:
     globalArguments:
       - "--global.sendanonymoususage"
-      - '--api.dashboard=true'
     deployment:
       kind: DaemonSet
     experimental:
