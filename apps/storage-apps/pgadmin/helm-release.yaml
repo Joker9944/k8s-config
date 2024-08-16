@@ -28,7 +28,7 @@ spec:
   values:
     serverDefinitions:
       enabled: true
-      server:
+      servers:
         blocky:
           Name: blocky
           Group: Servers
