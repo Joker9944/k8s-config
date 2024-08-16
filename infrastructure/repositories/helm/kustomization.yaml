@@ -4,6 +4,7 @@ metadata:
   name: helm-repositories
   namespace: flux-system
 resources:
+  - cnpg/helm-repository.yaml
   - democratic-csi/helm-repository.yaml
   - emberstack/helm-repository.yaml
   - jetstack/helm-repository.yaml
