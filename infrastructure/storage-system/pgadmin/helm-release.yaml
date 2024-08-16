@@ -35,7 +35,7 @@ spec:
       main:
         enabled: true
         hosts:
-          - host: postgresql.vonarx.online
+          - host: pgadmin.vonarx.online
             paths:
               - path: /
                 pathType: Prefix
@@ -45,5 +45,5 @@ spec:
               - name: internal-whitelist
         tls:
           - hosts:
-              - postgresql.vonarx.online
+              - pgadmin.vonarx.online
             secretName: wildcard-vonarx-online
