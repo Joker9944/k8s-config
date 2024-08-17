@@ -29,7 +29,7 @@ spec:
     globalArguments:
       - "--global.sendanonymoususage"
     deployment:
-      kind: DaemonSet
+      replicas: 1
     experimental:
       # TODO Implement bouncer
       plugins:
