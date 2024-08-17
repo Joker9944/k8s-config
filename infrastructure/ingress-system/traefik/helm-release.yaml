@@ -45,6 +45,7 @@ spec:
           defaultCertificate:
             secretName: wildcard-vonarx-online
     service:
-      externalTrafficPolicy: Local
+      spec:
+        externalTrafficPolicy: Local
       externalIPs:
         - 192.168.178.210
