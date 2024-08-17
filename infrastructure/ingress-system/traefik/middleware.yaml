@@ -67,6 +67,8 @@ metadata:
   namespace: ${main_namespace}
 spec:
   ipAllowList:
+    ipStrategy:
+      depth: 0
     sourceRange:
-      - 169.254.0.0/16
+      - 192.168.178.0/24
       - fe80::/10
