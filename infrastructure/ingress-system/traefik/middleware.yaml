@@ -64,7 +64,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: local-link-whitelist
-  namespace: '{{ template "traefik.namespace" . }}'
+  namespace: ${main_namespace}
 spec:
   ipAllowList:
     sourceRange:
