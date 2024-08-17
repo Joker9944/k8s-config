@@ -1,0 +1,72 @@
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-basic
+  namespace: ${main_namespace}
+spec:
+  chain:
+    middlewares:
+      - name: basic-ratelimit
+      - name: basic-secure-headers
+      - name: compress
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-ratelimit
+  namespace: ${main_namespace}
+spec:
+  rateLimit:
+    average: 600
+    burst: 400
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-secure-headers
+  namespace: ${main_namespace}
+spec:
+  headers:
+    accessControlAllowMethods:
+      - GET
+      - OPTIONS
+      - HEAD
+      - PUT
+    accessControlMaxAge: 100
+    browserXssFilter: true
+    contentTypeNosniff: true
+    customRequestHeaders:
+      X-Forwarded-Proto: https
+    customResponseHeaders:
+      server: ""
+    forceSTSHeader: true
+    referrerPolicy: same-origin
+    stsSeconds: 63072000
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+  namespace: ${main_namespace}
+spec:
+  compress: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: local-link-whitelist
+  namespace: '{{ template "traefik.namespace" . }}'
+spec:
+  ipAllowList:
+    sourceRange:
+      - 169.254.0.0/16
+      - fe80::/10

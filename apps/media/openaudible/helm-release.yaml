@@ -60,7 +60,7 @@ spec:
         integrations:
           traefik:
             middlewares:
-              - name: internal-whitelist
+              - name: local-link-whitelist
         tls:
           - hosts:
               - openaudible.vonarx.online
