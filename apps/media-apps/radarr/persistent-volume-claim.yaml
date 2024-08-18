@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radarr-config
+  namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: config
+    app.kubernetes.io/part-of: servarr
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+    - ReadWriteOnce

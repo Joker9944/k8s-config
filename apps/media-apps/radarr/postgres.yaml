@@ -4,6 +4,10 @@ kind: Postgres
 metadata:
   name: radarr-main
   namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: main
+    app.kubernetes.io/part-of: servarr
 spec:
   database: radarr-main
   dropOnDelete: false
@@ -13,6 +17,10 @@ kind: Postgres
 metadata:
   name: radarr-log
   namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: log
+    app.kubernetes.io/part-of: servarr
 spec:
   database: radarr-log
   dropOnDelete: false

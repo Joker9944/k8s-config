@@ -24,7 +24,8 @@ spec:
     remediation:
       retries: 3
   values:
-    # Using the operatur to get more dbs into cnpg
+    # TODO Using this operator as a workaround for microservice db
+    # https://github.com/orgs/cloudnative-pg/projects/1?pane=issue&itemId=3828782
     watchNamespace: ${main_namespace}
     existingSecret: dummy
   postRenderers:
