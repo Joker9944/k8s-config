@@ -179,7 +179,7 @@ spec:
               done
               echo "Database $MAIN_DATABASE avilable on $HOST"
               echo "Changing owner of the $LOG_DATABASE database on $HOST"
-              PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE $LOG_DATABASE OWNER TO $MAIN_USERNAME;"
+              PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_USERNAME\";"
       serviceAccountName: default
       strategy: Recreate
       topologySpreadConstraints:
