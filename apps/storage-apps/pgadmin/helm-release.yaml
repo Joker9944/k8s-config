@@ -59,14 +59,15 @@ spec:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
         traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+      ingressClassName: traefik
       hosts:
         - host: pgadmin.vonarx.online
           paths:
             - path: /
               pathType: Prefix
       tls:
-        - hosts:
+        - secretName: wildcard-vonarx-online
+          hosts:
             - pgadmin.vonarx.online
-          secretName: wildcard-vonarx-online
     persistentVolume:
       enabled: false
