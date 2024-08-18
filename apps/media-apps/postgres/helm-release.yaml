@@ -31,8 +31,8 @@ spec:
     - kustomize:
         patches:
           - patch: |-
-              apiVersion: batch/v1
-              kind: CronJob
+              apiVersion: apps/v1
+              kind: Deployment
               metadata:
                 name: servarr-postgres-operator-ext-postgres-operator
                 namespace: ${main_namespace}
