@@ -34,6 +34,9 @@ spec:
           moduleName: github.com/PascalMinder/geoblock
           # renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
           version: v0.2.8
+    ingressRoute:
+      dashboard:
+        enabled: true
     logs:
       access:
         enabled: true
