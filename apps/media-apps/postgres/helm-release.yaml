@@ -26,4 +26,36 @@ spec:
   values:
     # Using the operatur to get more dbs into cnpg
     watchNamespace: ${main_namespace}
-    existingSecret: postgres-connection
+    existingSecret: dummy
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: servarr-postgres-operator-ext-postgres-operator
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: ext-postgres-operator
+                        envFrom: null
+                        env:
+                          - name: POSTGRES_HOST
+                            value: servarr-cnpg-rw
+                          - name: POSTGRES_USER
+                            valueFrom:
+                              secretKeyRef:
+                                name: servarr-cnpg-superuser
+                                key: username
+                          - name: POSTGRES_PASS
+                            valueFrom:
+                              secretKeyRef:
+                                name: servarr-cnpg-superuser
+                                key: password
+                          - name: POSTGRES_URI_ARGS
+                            value:
+                          - name: POSTGRES_DEFAULT_DATABASE
+                            value: postgres

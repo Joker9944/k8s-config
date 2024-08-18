@@ -2,13 +2,11 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: servarr
+  name: servarr-cnpg
   namespace: ${main_namespace}
 spec:
   description: PostgreSQL Cluster for the Servarr family of apps
   instances: 3
-  superuserSecret:
-    name: postgres-connection
   enableSuperuserAccess: true
   storage:
     size: 1Gi
