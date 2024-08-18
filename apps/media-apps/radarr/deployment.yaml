@@ -125,7 +125,9 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: false
+            runAsGroup: 6000
             runAsNonRoot: true
+            runAsUser: 568
             seccompProfile:
               type: RuntimeDefault
           env:
