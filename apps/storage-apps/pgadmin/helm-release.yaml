@@ -34,7 +34,7 @@ spec:
           Group: Servers
           Host: blocky-cnpg-main-rw.network-system.svc.cluster.local
           Port: 5432
-          Username: blocky
+          Username: postgres
           SSLMode: prefer
           MaintenanceDB: postgres
         home-assistant:
@@ -42,7 +42,15 @@ spec:
           Group: Servers
           Host: home-assistant-cnpg-main-rw.home.svc.cluster.local
           Port: 5432
-          Username: home-assistant
+          Username: postgres
+          SSLMode: prefer
+          MaintenanceDB: postgres
+        servarr:
+          Name: servarr
+          Group: Servers
+          Host: servarr-cnpg-rw.home-apps.svc.cluster.local
+          Port: 5432
+          Username: postgres
           SSLMode: prefer
           MaintenanceDB: postgres
     ingress:
