@@ -61,22 +61,22 @@ spec:
             - name: Radarr__Postgres__Host
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: HOST
             - name: Radarr__Postgres__User
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: USER
             - name: Radarr__Postgres__Password
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: PASSWORD
             - name: Radarr__Postgres__MainDb
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: DATABASE_NAME
             - name: Radarr__Postgres__LogDb
               value: radarr-log
@@ -132,22 +132,22 @@ spec:
             - name: HOST
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: HOST
             - name: MAIN_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: DATABASE_NAME
             - name: MAIN_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: USER
             - name: MAIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: radarr-cnpg-user
+                  name: cnpg-user-radarr
                   key: PASSWORD
             - name: MAINTANACE_DATABASE
               valueFrom:

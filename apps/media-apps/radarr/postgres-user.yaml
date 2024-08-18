@@ -11,5 +11,5 @@ metadata:
 spec:
   role: username
   database: radarr-main
-  secretName: radarr-cnpg-user
+  secretName: cnpg-user
   privileges: OWNER
