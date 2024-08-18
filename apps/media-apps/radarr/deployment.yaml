@@ -39,7 +39,7 @@ spec:
               cpu: 40m
               memory: 400Mi
             limits:
-              cpu: 60m
+              cpu: 100m
               memory: 600Mi
           securityContext:
             allowPrivilegeEscalation: false
@@ -180,6 +180,7 @@ spec:
               echo "Database $MAIN_DATABASE avilable on $HOST"
               echo "Changing owner of the $LOG_DATABASE database on $HOST"
               PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_USERNAME\";"
+              PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "GRANT CREATE ON DATABASE \"$LOG_DATABASE\" TO \"$MAIN_USERNAME\";"
       serviceAccountName: default
       strategy: Recreate
       topologySpreadConstraints:
