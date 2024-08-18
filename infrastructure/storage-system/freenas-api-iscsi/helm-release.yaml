@@ -105,7 +105,7 @@ spec:
         httpConnection:
           protocol: https
           host: 192.168.178.14
-          port: 8443
+          port: 443
           # use only 1 of apiKey or username/password
           # if both are present, apiKey is preferred
           # apiKey is only available starting in TrueNAS-12
