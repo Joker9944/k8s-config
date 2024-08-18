@@ -1,0 +1,26 @@
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: radarr-main
+  namespace: ${main_namespace}
+spec:
+  role: username
+  database: radarr-main
+  secretName: cnpg-radarr-main-user
+  privileges: OWNER
+  secretTemplate:
+    PQ_URL: "HOST_MAIN={{.Host}} USER_MAIN={{.Role}} PASSWORD_MAIN={{.Password}} DB_MAIN={{.Database}}"
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: radarr-log
+  namespace: ${main_namespace}
+spec:
+  role: username
+  database: radarr-log
+  secretName: cnpg-radarr-log-user
+  privileges: OWNER
+  secretTemplate:
+    PQ_URL: "HOST_LOG={{.Host}} USER_LOG={{.Role}} PASSWORD_LOG={{.Password}} DB_LOG={{.Database}}"

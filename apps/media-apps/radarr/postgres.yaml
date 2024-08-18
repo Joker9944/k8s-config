@@ -1,0 +1,18 @@
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: radarr-main
+  namespace: ${main_namespace}
+spec:
+  database: radarr-main
+  dropOnDelete: false
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: radarr-log
+  namespace: ${main_namespace}
+spec:
+  database: radarr-log
+  dropOnDelete: false
