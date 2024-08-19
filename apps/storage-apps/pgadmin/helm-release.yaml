@@ -71,3 +71,5 @@ spec:
             - pgadmin.vonarx.online
     persistentVolume:
       enabled: false
+    networkPolicy:
+      enabled: false
