@@ -74,7 +74,7 @@ spec:
     persistence:
       config:
         type: persistentVolumeClaim
-        accessMode: ReadWriteMany
+        accessMode: ReadWriteOnce
         size: 1Gi
       config-overlay:
         type: configMap
