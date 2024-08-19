@@ -27,6 +27,8 @@ spec:
       - "--global.sendanonymoususage"
     deployment:
       replicas: 1
+    ingressClass:
+      enabled: false
     experimental:
       # TODO Implement bouncer
       plugins:
