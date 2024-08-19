@@ -5,7 +5,6 @@ resources:
   - audiobookshelf/helm-release.yaml
   - jellyfin/helm-release.yaml
   - jellyseerr/helm-release.yaml
-  - flaresolverr/helm-release.yaml
   - openaudible/helm-release.yaml
   - qbittorrent/helm-release.yaml
   - recyclarr
