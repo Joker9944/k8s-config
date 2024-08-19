@@ -134,57 +134,39 @@ spec:
             - name: HOST
               valueFrom:
                 secretKeyRef:
-                  name: cnpg-user-radarr
-                  key: HOST
-            - name: MAIN_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: cnpg-user-radarr
-                  key: DATABASE_NAME
-            - name: MAIN_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: cnpg-user-radarr
-                  key: LOGIN
-            - name: MAIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: cnpg-user-radarr
-                  key: PASSWORD
-            - name: MAINTANACE_DATABASE
-              valueFrom:
-                secretKeyRef:
                   name: servarr-cnpg-superuser
-                  key: user
-            - name: SUPERUSER_USERNAME
+                  key: host
+            - name: USERNAME
               valueFrom:
                 secretKeyRef:
                   name: servarr-cnpg-superuser
                   key: username
-            - name: SUPERUSER_PASSWORD
+            - name: PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: servarr-cnpg-superuser
                   key: password
+            - name: MAIN_DATABASE
+              value: radarr-main
             - name: LOG_DATABASE
               value: radarr-log
-            - name: LOG_DATABASE_ROLE
-              value: radarr-log-group
+            - name: DATABASE_ROLE
+              value: radarr-main-group
           command:
             - /bin/sh
             - -c
             - |
-              echo "Testing connection for database $MAIN_DATABASE on $HOST"
-              export PGPASSWORD="$MAIN_PASSWORD"
+              echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+              export PGPASSWORD="$PASSWORD"
               until
-                pg_isready --username="$MAIN_USERNAME" --dbname="$MAIN_DATABASE" --host="$HOST"
+                pg_isready --username="$USERNAME" --dbname="$MAIN_DATABASE" --host="$HOST"
+                pg_isready --username="$USERNAME" --dbname="$LOG_DATABASE" --host="$HOST"
                 do sleep 5
               done
-              echo "Database $MAIN_DATABASE avilable on $HOST"
+              echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
               echo "Changing owner of the $LOG_DATABASE database on $HOST"
-              export PGPASSWORD="$SUPERUSER_PASSWORD"
-              psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_USERNAME\";"
-              psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "GRANT \"$LOG_DATABASE_ROLE\" TO \"$MAIN_USERNAME\" WITH INHERIT TRUE;"
+              psql --username="$USERNAME" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_DATABASE_ROLE\";"
+              psql --username="$USERNAME" --host="$HOST" -c "GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$MAIN_DATABASE_ROLE\" WITH INHERIT TRUE;"
       serviceAccountName: default
       strategy: Recreate
       topologySpreadConstraints:
