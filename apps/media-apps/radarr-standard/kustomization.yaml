@@ -6,6 +6,3 @@ resources:
   - postgres-user.yaml
   - secret.yaml
   - helm-release.yaml
-  #- service.yaml
-  #- ingress.yaml
-  #- deployment.yaml
