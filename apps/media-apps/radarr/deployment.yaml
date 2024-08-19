@@ -166,7 +166,7 @@ spec:
               echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
               echo "Changing owner of the $LOG_DATABASE database on $HOST"
               psql --username="$USERNAME" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
-              psql --username="$USERNAME" --host="$HOST" -c "GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\" WITH INHERIT TRUE;"
+              psql --username="$USERNAME" --host="$HOST" -c "GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
       serviceAccountName: default
       strategy: Recreate
       topologySpreadConstraints:
