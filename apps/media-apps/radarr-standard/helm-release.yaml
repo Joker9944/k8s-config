@@ -5,6 +5,7 @@ kind: HelmRelease
 metadata:
   labels:
     app.kubernetes.io/name: radarr-standard
+    app.kubernetes.io/instance: radarr
     app.kubernetes.io/part-of: servarr
   name: radarr-standard
   namespace: ${main_namespace}
@@ -20,8 +21,24 @@ spec:
         name: bjw-s
         namespace: flux-system
   values:
+
+    global:
+      labels:
+        app.kubernetes.io/part-of: servarr
+
+    defaultPodOptions:
+      labels:
+        app.kubernetes.io/part-of: servarr
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: servarr
+
     controllers:
-      radarr-standard:
+      radarr:
 
         pod:
           securityContext:
@@ -29,7 +46,7 @@ spec:
             runAsGroup: 6000
             runAsNonRoot: true
             fsGroup: 6000
-            fsGroupChangePolicy: "OnRootMismatch"
+            fsGroupChangePolicy: OnRootMismatch
             supplementalGroups:
               - 568
 
@@ -42,7 +59,7 @@ spec:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
               UMASK: "0002"
-              RADARR__APP__INSTANCENAME: radarr-standard
+              RADARR__APP__INSTANCENAME: Radarr Standard
               RADARR__AUTH__APIKEY:
                 valueFrom:
                   secretKeyRef:
@@ -138,14 +155,14 @@ spec:
                   - ALL
 
     service:
-      radarr-standard:
-        controller: radarr-standard
+      radarr:
+        controller: radarr
         ports:
           http:
             port: *port
 
     ingress:
-      radarr-standard:
+      radarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
@@ -155,7 +172,7 @@ spec:
             paths:
               - path: /
                 service:
-                  identifier: radarr-standard
+                  identifier: radarr
                   port: http
         tls:
           - hosts:
