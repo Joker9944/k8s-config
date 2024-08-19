@@ -5,6 +5,7 @@ resources:
   - postgres.yaml
   - postgres-user.yaml
   - persistent-volume-claim.yaml
+  - secret.yaml
   - service.yaml
   - ingress.yaml
   - deployment.yaml
