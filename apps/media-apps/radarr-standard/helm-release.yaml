@@ -48,8 +48,8 @@ spec:
                   secretKeyRef:
                     name: radarr-standard-api-key
                     key: key
-              RADARR__AUTHENTICATION__METHOD: Forms
-              RADARR__AUTHENTICATION__REQUIRED: Enabled
+              RADARR__AUTH__METHOD: Forms
+              RADARR__AUTH__REQUIRED: Enabled
               RADARR__SERVER__PORT: &port 7878
               RADARR__LOG__LEVEL: info
               RADARR__POSTGRES__HOST:
@@ -93,7 +93,7 @@ spec:
                   - ALL
 
         initContainers:
-          init-postgresql:
+          postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
               tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
