@@ -42,7 +42,7 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 6005
+            runAsUser: 6006
             runAsGroup: 6000
             runAsNonRoot: true
             fsGroup: 6000
