@@ -4,5 +4,6 @@ resources:
   - namespace.yaml
   - postgres
   - radarr-standard
+  - sonarr-standard
 configurations:
   - ../../shared/kustomizeconfig.yaml
