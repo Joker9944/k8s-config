@@ -13,3 +13,5 @@ configMapGenerator:
     files:
       - recyclarr.yml=recyclarr.yml
       - settings.yml=settings.yml
+configurations:
+  - ../../../shared/kustomizeconfig.yaml
