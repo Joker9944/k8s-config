@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/part-of: servarr
 spec:
   rules:
-    - host: radarr2.vonarx.online
+    - host: radarr.vonarx.online
       http:
         paths:
           - backend:
@@ -25,5 +25,5 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
-        - radarr2.vonarx.online
+        - radarr.vonarx.online
       secretName: wildcard-vonarx-online

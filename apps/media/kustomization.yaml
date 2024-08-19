@@ -9,7 +9,6 @@ resources:
   - openaudible/helm-release.yaml
   - prowlarr/helm-release.yaml
   - qbittorrent/helm-release.yaml
-  - radarr/helm-release.yaml
   - sonarr/helm-release.yaml
   - recyclarr
 secretGenerator:
