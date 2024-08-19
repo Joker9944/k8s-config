@@ -39,6 +39,10 @@ spec:
     ingressRoute:
       dashboard:
         enabled: true
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true
     logs:
       access:
         enabled: true
