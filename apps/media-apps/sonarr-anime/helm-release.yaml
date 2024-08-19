@@ -1,0 +1,192 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/name: sonarr-anime
+    app.kubernetes.io/instance: sonarr
+    app.kubernetes.io/part-of: servarr
+  name: sonarr-anime
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    global:
+      labels:
+        app.kubernetes.io/part-of: servarr
+
+    defaultPodOptions:
+      labels:
+        app.kubernetes.io/part-of: servarr
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: servarr
+
+    controllers:
+      sonarr:
+
+        pod:
+          securityContext:
+            runAsUser: 6006
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 568
+
+        containers:
+          sonarr:
+            image:
+              repository: ghcr.io/onedr0p/sonarr
+              tag: 4.0.8.1874@sha256:3c8d3d5648f9d292d834252e98c34f459ea81a906ab88782bd53f405bb2c4b26
+            env:
+              # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
+              COMPlus_EnableDiagnostics: "0"
+              UMASK: "0002"
+              SONARR__APP__INSTANCENAME: Sonarr anime
+              SONARR__AUTH__APIKEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: sonarr-anime-api-key
+                    key: key
+              SONARR__AUTH__METHOD: Forms
+              SONARR__AUTH__REQUIRED: Enabled
+              SONARR__SERVER__PORT: &port 7878
+              SONARR__LOG__LEVEL: info
+              SONARR__POSTGRES__HOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-anime
+                    key: HOST
+              SONARR__POSTGRES__USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-anime
+                    key: LOGIN
+              SONARR__POSTGRES__PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-anime
+                    key: PASSWORD
+              SONARR__POSTGRES__MAINDB: sonarr-anime-main
+              SONARR__POSTGRES__LOGDB: sonarr-anime-log
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 20m
+                memory: 384Mi
+              limits:
+                memory: 1536Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+          postgresql:
+            image:
+              repository: ghcr.io/joker9944/postgresql-client
+              tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
+            env:
+              PGHOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: host
+              PGUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: user
+              PGPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: password
+              MAIN_DATABASE: sonarr-anime-main
+              LOG_DATABASE: sonarr-anime-log
+              DATABASE_ROLE: sonarr-anime-main-group
+            command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+                until
+                  pg_isready --dbname="$MAIN_DATABASE"
+                  pg_isready --dbname="$LOG_DATABASE"
+                  do sleep 5
+                done
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
+                echo "Changing owner of the $LOG_DATABASE database on $HOST"
+                psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
+                psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      sonarr:
+        controller: sonarr
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      sonarr:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host sonarr2-anime.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: sonarr
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: emptyDir
+      tmp:
+        type: emptyDir
+      media:
+        type: nfs
+        server: 192.168.178.14
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data
