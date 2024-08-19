@@ -48,7 +48,7 @@ spec:
         servarr:
           Name: servarr
           Group: Servers
-          Host: servarr-cnpg-rw.home-apps.svc.cluster.local
+          Host: servarr-cnpg-rw.media-apps.svc.cluster.local
           Port: 5432
           Username: postgres
           SSLMode: prefer
@@ -59,7 +59,6 @@ spec:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
         traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-      ingressClassName: traefik
       hosts:
         - host: pgadmin.vonarx.online
           paths:
