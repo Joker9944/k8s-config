@@ -168,19 +168,23 @@ spec:
                   key: password
             - name: LOG_DATABASE
               value: radarr-log
+            - name: LOG_DATABASE_ROLE
+              value: radarr-log-group
           command:
             - /bin/sh
             - -c
             - |
               echo "Testing connection for database $MAIN_DATABASE on $HOST"
+              export PGPASSWORD="$MAIN_PASSWORD"
               until
-                PGPASSWORD="$MAIN_PASSWORD" pg_isready --username="$MAIN_USERNAME" --dbname="$MAIN_DATABASE" --host="$HOST"
+                pg_isready --username="$MAIN_USERNAME" --dbname="$MAIN_DATABASE" --host="$HOST"
                 do sleep 5
               done
               echo "Database $MAIN_DATABASE avilable on $HOST"
               echo "Changing owner of the $LOG_DATABASE database on $HOST"
-              PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_USERNAME\";"
-              PGPASSWORD="$SUPERUSER_PASSWORD" psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "GRANT CREATE ON DATABASE \"$LOG_DATABASE\" TO \"$MAIN_USERNAME\";"
+              export PGPASSWORD="$SUPERUSER_PASSWORD"
+              psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$MAIN_USERNAME\";"
+              psql --username="$SUPERUSER_USERNAME" --dbname="$MAINTANACE_DATABASE" --host="$HOST" -c "GRANT \"$LOG_DATABASE_ROLE\" TO \"$MAIN_USERNAME\" WITH INHERIT TRUE;"
       serviceAccountName: default
       strategy: Recreate
       topologySpreadConstraints:
