@@ -15,3 +15,6 @@ configMapGenerator:
       - settings.yml=settings.yml
 configurations:
   - ../../../shared/kustomizeconfig.yaml
+# TODO find a way to use generated resources with hash in patches
+generatorOptions:
+  disableNameSuffixHash: true
