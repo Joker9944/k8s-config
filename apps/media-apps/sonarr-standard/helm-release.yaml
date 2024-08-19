@@ -168,7 +168,7 @@ spec:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
         hosts:
-          - host: &host sonarr2-standard.vonarx.online
+          - host: &host sonarr-standard.vonarx.online
             paths:
               - path: /
                 service:
