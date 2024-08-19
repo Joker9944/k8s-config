@@ -6,6 +6,7 @@ resources:
   - radarr-standard
   - sonarr-anime
   - sonarr-standard
+  - flaresolverr/helm-release.yaml
   - prowlarr
 configurations:
   - ../../shared/kustomizeconfig.yaml
