@@ -6,5 +6,6 @@ resources:
   - radarr-standard
   - sonarr-anime
   - sonarr-standard
+  - prowlarr
 configurations:
   - ../../shared/kustomizeconfig.yaml

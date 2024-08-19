@@ -4,10 +4,10 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   labels:
-    app.kubernetes.io/name: sonarr-anime
-    app.kubernetes.io/instance: sonarr
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/instance: prowlarr
     app.kubernetes.io/part-of: servarr
-  name: sonarr-anime
+  name: prowlarr
   namespace: ${main_namespace}
 spec:
   interval: 30m
@@ -38,54 +38,51 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
-      sonarr:
+      prowlarr:
 
         pod:
           securityContext:
-            runAsUser: 6006
-            runAsGroup: 6000
+            runAsUser: 568
+            runAsGroup: 568
             runAsNonRoot: true
-            fsGroup: 6000
+            fsGroup: 568
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 568
 
         containers:
-          sonarr:
+          prowlarr:
             image:
-              repository: ghcr.io/onedr0p/sonarr
-              tag: 4.0.8.1874@sha256:3c8d3d5648f9d292d834252e98c34f459ea81a906ab88782bd53f405bb2c4b26
+              repository: ghcr.io/onedr0p/prowlarr
+              tag: 1.21.2.4649@ sha256:1434332f68d87c7394030d8bc80963b2353d0f5705055c6ab447a43cf6b76eab
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
-              UMASK: "0002"
-              SONARR__APP__INSTANCENAME: Sonarr Anime
-              SONARR__AUTH__APIKEY:
+              PROWLARR__APP__INSTANCENAME: Prowlarr
+              PROWLARR__AUTH__APIKEY:
                 valueFrom:
                   secretKeyRef:
-                    name: sonarr-anime-api-key
+                    name: prowlarr-api-key
                     key: key
-              SONARR__AUTH__METHOD: Forms
-              SONARR__AUTH__REQUIRED: Enabled
-              SONARR__SERVER__PORT: &port 7878
-              SONARR__LOG__LEVEL: info
-              SONARR__POSTGRES__HOST:
+              PROWLARR__AUTH__METHOD: Forms
+              PROWLARR__AUTH__REQUIRED: Enabled
+              PROWLARR__SERVER__PORT: &port 7878
+              PROWLARR__LOG__LEVEL: info
+              PROWLARR__POSTGRES__HOST:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-sonarr-anime
+                    name: cnpg-user-prowlarr
                     key: HOST
-              SONARR__POSTGRES__USER:
+              PROWLARR__POSTGRES__USER:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-sonarr-anime
+                    name: cnpg-user-prowlarr
                     key: LOGIN
-              SONARR__POSTGRES__PASSWORD:
+              PROWLARR__POSTGRES__PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-sonarr-anime
+                    name: cnpg-user-prowlarr
                     key: PASSWORD
-              SONARR__POSTGRES__MAINDB: sonarr-anime-main
-              SONARR__POSTGRES__LOGDB: sonarr-anime-log
+              PROWLARR__POSTGRES__MAINDB: prowlarr-main
+              PROWLARR__POSTGRES__LOGDB: prowlarr-log
             probes:
               liveness:
                 enabled: true
@@ -130,9 +127,9 @@ spec:
                   secretKeyRef:
                     name: servarr-cnpg-superuser
                     key: password
-              MAIN_DATABASE: sonarr-anime-main
-              LOG_DATABASE: sonarr-anime-log
-              DATABASE_ROLE: sonarr-anime-main-group
+              MAIN_DATABASE: prowlarr-main
+              LOG_DATABASE: prowlarr-log
+              DATABASE_ROLE: prowlarr-main-group
             command:
               - /bin/sh
               - -c
@@ -155,24 +152,24 @@ spec:
                   - ALL
 
     service:
-      sonarr:
-        controller: sonarr
+      prowlarr:
+        controller: prowlarr
         ports:
           http:
             port: *port
 
     ingress:
-      sonarr:
+      prowlarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
         hosts:
-          - host: &host sonarr-anime.vonarx.online
+          - host: &host prowlarr2.vonarx.online
             paths:
               - path: /
                 service:
-                  identifier: sonarr
+                  identifier: prowlarr
                   port: http
         tls:
           - hosts:
@@ -184,9 +181,3 @@ spec:
         type: emptyDir
       tmp:
         type: emptyDir
-      media:
-        type: nfs
-        server: 192.168.178.14
-        path: /mnt/chronos/media-data
-        globalMounts:
-          - path: /mnt/media-data
