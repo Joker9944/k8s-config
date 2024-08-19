@@ -117,7 +117,7 @@ spec:
             timeoutSeconds: 5
           volumeMounts:
             - mountPath: /config
-              name: config
+              name: config-cache
             - mountPath: /mnt/media-data
               name: media
       initContainers:
@@ -184,9 +184,9 @@ spec:
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: ScheduleAnyway
       volumes:
-        - name: config
-          persistentVolumeClaim:
-            claimName: radarr-config
+        - name: config-cache
+          emptyDir:
+            sizeLimit: 1Gi
         - name: media
           nfs:
             path: /mnt/chronos/media-data
