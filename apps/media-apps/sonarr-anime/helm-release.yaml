@@ -67,7 +67,7 @@ spec:
                     key: key
               SONARR__AUTH__METHOD: Forms
               SONARR__AUTH__REQUIRED: Enabled
-              SONARR__SERVER__PORT: &port 7878
+              SONARR__SERVER__PORT: &port 8989
               SONARR__LOG__LEVEL: info
               SONARR__POSTGRES__HOST:
                 valueFrom:
