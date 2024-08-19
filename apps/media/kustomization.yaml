@@ -7,9 +7,7 @@ resources:
   - jellyseerr/helm-release.yaml
   - flaresolverr/helm-release.yaml
   - openaudible/helm-release.yaml
-  - prowlarr/helm-release.yaml
   - qbittorrent/helm-release.yaml
-  - sonarr/helm-release.yaml
   - recyclarr
 secretGenerator:
   - name: s3-credentials-secret-values
@@ -25,9 +23,5 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=../../shared/truecharts-custom.values.yaml
-  - name: sonarr-common-values
-    namespace: ${main_namespace}
-    files:
-      - values.yaml=sonarr/common.values.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
