@@ -7,7 +7,6 @@ resources:
   - jellyseerr/helm-release.yaml
   - openaudible/helm-release.yaml
   - qbittorrent/helm-release.yaml
-  - recyclarr
 secretGenerator:
   - name: s3-credentials-secret-values
     namespace: ${main_namespace}
