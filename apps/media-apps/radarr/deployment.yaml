@@ -63,6 +63,10 @@ spec:
                 secretKeyRef:
                   name: radarr-api-key
                   key: key
+            - name: RADARR__AUTH__METHOD
+              value: Forms
+            - name: RADARR__AUTH__REQUIRED
+              value: Enabled
             - name: RADARR__POSTGRES__HOST
               valueFrom:
                 secretKeyRef:
