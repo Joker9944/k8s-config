@@ -58,32 +58,32 @@ spec:
               value: "0002"
             - name: UMASK_SET
               value: "0002"
-            - name: ApiKey
+            - name: RADARR__AUTH__APIKEY
               valueFrom:
                 secretKeyRef:
                   name: radarr-api-key
                   key: key
-            - name: Radarr__Postgres__Host
+            - name: RADARR__POSTGRES__HOST
               valueFrom:
                 secretKeyRef:
                   name: cnpg-user-radarr
                   key: HOST
-            - name: Radarr__Postgres__User
+            - name: RADARR__POSTGRES__USER
               valueFrom:
                 secretKeyRef:
                   name: cnpg-user-radarr
                   key: LOGIN
-            - name: Radarr__Postgres__Password
+            - name: RADARR__POSTGRES__PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: cnpg-user-radarr
                   key: PASSWORD
-            - name: Radarr__Postgres__MainDb
+            - name: RADARR__POSTGRES__MAINDB
               valueFrom:
                 secretKeyRef:
                   name: cnpg-user-radarr
                   key: DATABASE_NAME
-            - name: Radarr__Postgres__LogDb
+            - name: RADARR__POSTGRES__LOGDB
               value: radarr-log
           startupProbe:
             failureThreshold: 60
