@@ -3,22 +3,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/name: radarr
+    app.kubernetes.io/name: radarr-standard
     app.kubernetes.io/part-of: servarr
-  name: radarr
+  name: radarr-standard
   namespace: ${main_namespace}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/name: radarr
+      app.kubernetes.io/name: radarr-standard
       app.kubernetes.io/instance: radarr
       app.kubernetes.io/part-of: servarr
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: radarr
+        app.kubernetes.io/name: radarr-standard
         app.kubernetes.io/instance: radarr
         app.kubernetes.io/part-of: servarr
     spec:

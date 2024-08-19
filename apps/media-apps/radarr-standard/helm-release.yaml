@@ -1,0 +1,170 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: radarr-standard
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+    controllers:
+      radarr-standard:
+
+        pod:
+          securityContext:
+            runAsUser: 6005
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: "OnRootMismatch"
+            supplementalGroups:
+              - 568
+
+        containers:
+          radarr:
+            image:
+              repository: ghcr.io/onedr0p/radarr
+              tag: 5.9.0.9058@sha256:56b4ca44b4115ea6071df4323c7e1bec836f28d131d8705c53130c5ba8eb1094
+            env:
+              # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
+              COMPlus_EnableDiagnostics: "0"
+              UMASK: "0002"
+              RADARR__APP__INSTANCENAME: radarr-standard
+              RADARR__AUTH__APIKEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: radarr-standard-api-key
+                    key: key
+              RADARR__AUTHENTICATION_METHOD: Forms
+              RADARR__AUTHENTICATION_REQUIRED: Enabled
+              RADARR__SERVER__PORT: &port 7878
+              RADARR__LOG__LEVEL: info
+              RADARR__POSTGRES__HOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-radarr-standard
+                    key: HOST
+              RADARR__POSTGRES__USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-radarr-standard
+                    key: LOGIN
+              RADARR__POSTGRES__PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-radarr-standard
+                    key: PASSWORD
+              RADARR__POSTGRES__MAINDB: radarr-standard-main
+              RADARR__POSTGRES__LOGDB: radarr-standard-log
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 20m
+                memory: 384Mi
+              limits:
+                memory: 1536Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+          init-postgresql:
+            image:
+              repository: ghcr.io/joker9944/postgresql-client
+              tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
+            env:
+              PGHOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: host
+              PGUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: user
+              PGPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: password
+              MAIN_DATABASE: radarr-standard-main
+              LOG_DATABASE: radarr-standard-log
+              DATABASE_ROLE: radarr-standard-main-group
+            command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+                until
+                  pg_isready --dbname="$MAIN_DATABASE"
+                  pg_isready --dbname="$LOG_DATABASE"
+                  do sleep 5
+                done
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
+                echo "Changing owner of the $LOG_DATABASE database on $HOST"
+                psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
+                psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      radarr-standard:
+        controller: radarr-standard
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      radarr:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host radarr-standard.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: radarr-standard
+                  port: http
+        tls:
+          - hosts:
+              - *host
+
+    persistence:
+      config:
+        type: emptyDir
+      tmp:
+        type: emptyDir
+      media:
+        type: nfs
+        server: 192.168.178.14
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data

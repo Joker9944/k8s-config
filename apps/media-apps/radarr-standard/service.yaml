@@ -2,10 +2,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: radarr
+  name: radarr-standard
   namespace: ${main_namespace}
   labels:
-    app.kubernetes.io/name: radarr
+    app.kubernetes.io/name: radarr-standard
+    app.kubernetes.io/instance: http
     app.kubernetes.io/part-of: servarr
 spec:
   type: ClusterIP
@@ -14,6 +15,6 @@ spec:
     port: 7878
     targetPort: 7878
   selector:
-    app.kubernetes.io/name: radarr
+    app.kubernetes.io/name: radarr-standard
     app.kubernetes.io/instance: radarr
     app.kubernetes.io/part-of: servarr

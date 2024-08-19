@@ -2,25 +2,25 @@
 apiVersion: db.movetokube.com/v1alpha1
 kind: Postgres
 metadata:
-  name: radarr-main
+  name: radarr-standard-main
   namespace: ${main_namespace}
   labels:
-    app.kubernetes.io/name: radarr
+    app.kubernetes.io/name: radarr-standard
     app.kubernetes.io/instance: main
     app.kubernetes.io/part-of: servarr
 spec:
-  database: radarr-main
+  database: radarr-standard-main
   dropOnDelete: false
 ---
 apiVersion: db.movetokube.com/v1alpha1
 kind: Postgres
 metadata:
-  name: radarr-log
+  name: radarr-standard-log
   namespace: ${main_namespace}
   labels:
-    app.kubernetes.io/name: radarr
+    app.kubernetes.io/name: radarr-standard
     app.kubernetes.io/instance: log
     app.kubernetes.io/part-of: servarr
 spec:
-  database: radarr-log
+  database: radarr-standard-log
   dropOnDelete: false

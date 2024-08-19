@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - postgres
-  - radarr
+  - radarr-standard
 configurations:
   - ../../shared/kustomizeconfig.yaml
