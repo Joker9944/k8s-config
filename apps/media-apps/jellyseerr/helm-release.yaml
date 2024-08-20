@@ -81,7 +81,7 @@ spec:
                   - ALL
 
     service:
-      prowlarr:
+      jellyseerr:
         controller: jellyseerr
         ports:
           http:
