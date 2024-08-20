@@ -101,10 +101,15 @@ spec:
               - secretRef:
                   name: gluetun-vpn-config
             securityContext:
+              runAsUser: 0
+              runAsNonRoot: false
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
               capabilities:
                 add:
                   - NET_ADMIN
-              allowPrivilegeEscalation: false
+                drop:
+                  - ALL
 
     service:
       qbittorrent:
