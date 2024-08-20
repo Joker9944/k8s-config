@@ -117,5 +117,9 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /.cache
+      yarn:
+        type: emptyDir
+        globalMounts:
+          - path: /.yarn
       tmp:
         type: emptyDir
