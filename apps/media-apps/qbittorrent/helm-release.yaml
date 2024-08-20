@@ -111,7 +111,7 @@ spec:
         controller: qbittorrent
         ports:
           http:
-            port: *port
+            port: *qbittorrent_port
 
     ingress:
       qbittorrent:
