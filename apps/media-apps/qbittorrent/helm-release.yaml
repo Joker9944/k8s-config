@@ -1,0 +1,145 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/name: qbittorrent
+    app.kubernetes.io/instance: qbittorrent
+    app.kubernetes.io/part-of: servarr
+  name: qbittorrent
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    global:
+      labels:
+        app.kubernetes.io/part-of: servarr
+
+    defaultPodOptions:
+      labels:
+        app.kubernetes.io/part-of: servarr
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: servarr
+
+    controllers:
+      qbittorrent:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: 6002
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 568
+
+        containers:
+          qbittorrent:
+            image:
+              repository: ghcr.io/onedr0p/qbittorrent
+              tag: 4.6.6@sha256:e21c95568c9175f40390bacd7f778d8d2af5331d1e663e1a6860140891c65742
+            env:
+              UMASK: "0002"
+              QBITTORRENT__PORT: &qbittorrent_port 8080
+              QBITTORRENT__BT_PORT:
+                valueFrom:
+                  secretKeyRef:
+                    name: gluetun-vpn-config
+                    key: FIREWALL_VPN_INPUT_PORTS
+              QBT_BitTorrent__Session_Interface: &vpn_interface wg0
+              QBT_BitTorrent__Session_InterfaceName: *vpn_interface
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 50m
+                memory: 1Gi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+          gluetun:
+            image:
+              repository: ghcr.io/qdm12/gluetun
+              tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
+            env:
+              FIREWALL_INPUT_PORTS: *qbittorrent_port
+              VPN_INTERFACE: *vpn_interface
+              FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12
+            envFrom:
+              - secretRef:
+                  name: gluetun-vpn-config
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+              allowPrivilegeEscalation: false
+
+    service:
+      qbittorrent:
+        controller: qbittorrent
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      qbittorrent:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host downloader2.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: qbittorrent
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 1Gi
+        advancedMounts:
+          qbittorrent:
+            qbittorrent:
+              - path: /config
+      tmp:
+        type: emptyDir
