@@ -52,10 +52,13 @@ spec:
               JELLYFIN_PublishedServerUrl: https://jellyfin.vonarx.online
             probes:
               liveness:
+                port: &jellyfin_port 8096
                 enabled: true
               readiness:
+                port: *jellyfin_port
                 enabled: true
               startup:
+                port: *jellyfin_port
                 enabled: true
                 spec:
                   failureThreshold: 30
@@ -133,12 +136,13 @@ spec:
         controller: jellyfin
         ports:
           http:
-            port: 8096
-      autodiscovery-client:
+            port: *jellyfin_port
+      autodiscovery:
         controller: jellyfin
         ports:
           udp:
             port: 7359
+            protocol: UDP
 
     ingress:
       jellyfin:
