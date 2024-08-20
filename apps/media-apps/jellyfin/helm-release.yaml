@@ -1,0 +1,192 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/instance: jellyfin
+  name: jellyfin
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    controllers:
+      jellyfin:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: 6003
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 44
+              - 107
+              - 568
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+
+        containers:
+          jellyfin:
+            image:
+              repository: ghcr.io/jellyfin/jellyfin
+              tag: 10.9.9@sha256:d6f3d4aa59438ce951d85669f3c22426d20edb7a6b97604c509b5f4825bc8294
+            env:
+              UMASK: "0002"
+              NVIDIA_DRIVER_CAPABILITIES: all
+              JELLYFIN_PublishedServerUrl: https://jellyfin.vonarx.online
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 10m
+                memory: 1Gi
+              limits:
+                memory: 3Gi
+                nvidia.com/gpu: 1
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+      autodiscovery-proxy:
+        type: daemonset
+
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+          hostNetwork: true
+
+        containers:
+          socat:
+            image:
+              repository: docker.io/alpine/socat
+              tag: 1.8.0.0@sha256:6715b1ef8f66008d8bbbdf97942418b8e5b54fa69566740581d96c7528b1896b
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [cat, /tmp/healthy]
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [cat, /tmp/healthy]
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [cat, /tmp/healthy]
+                  failureThreshold: 30
+                  periodSeconds: 5
+            command: [/bin/sh, -c]
+            args:
+              # Script taken from TrueCharts jellyfin chart
+              - |
+                export TARGET_IP=$(getent hosts 'jellyfin-autodiscovery' | awk '{ print $1 }')
+                [[ ! -z $TARGET_IP ]]
+                touch /tmp/healthy
+                socat UDP4-LISTEN:7359,fork,reuseaddr,rcvbuf=8096 UDP4-SENDTO:${TARGET_IP}:7359,rcvbuf=8096
+                rm -rf /tmp/healthy
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      jellyfin:
+        controller: jellyfin
+        ports:
+          http:
+            port: 8096
+      autodiscovery-client:
+        controller: jellyfin
+        ports:
+          udp:
+            port: 7359
+
+    ingress:
+      jellyfin:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
+        hosts:
+          - host: &host jellyfin.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: jellyfin
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 2Gi
+        advancedMounts:
+          jellyfin:
+            jellyfin:
+              - path: /config
+      transcodes:
+        type: emptyDir
+        advancedMounts:
+          jellyfin:
+            jellyfin:
+              - path: /config/transcodes
+      cache:
+        type: emptyDir
+        advancedMounts:
+          jellyfin:
+            jellyfin:
+              - path: /cache
+      media:
+        type: nfs
+        server: 192.168.178.14
+        path: /mnt/chronos/media-data
+        advancedMounts:
+          jellyfin:
+            jellyfin:
+              - path: /mnt/media-data
+      tmp:
+        type: emptyDir

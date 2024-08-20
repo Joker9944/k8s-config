@@ -10,5 +10,6 @@ resources:
   - prowlarr
   - recyclarr
   - jellyseerr/helm-release.yaml
+  - jellyfin/helm-release.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
