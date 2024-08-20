@@ -153,5 +153,12 @@ spec:
           qbittorrent:
             qbittorrent:
               - path: /config
+      gluetun:
+        type: emptyDir
+        advancedMounts:
+          qbittorrent:
+            gluetun:
+              - path: /gluetun
+
       tmp:
         type: emptyDir
