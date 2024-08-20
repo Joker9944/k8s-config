@@ -135,7 +135,7 @@ spec:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
         hosts:
-          - host: &host downloader2.vonarx.online
+          - host: &qbittorrent_host downloader.vonarx.online
             paths:
               - path: /
                 service:
@@ -143,7 +143,7 @@ spec:
                   port: http
         tls:
           - hosts:
-              - *host
+              - *qbittorrent_host
             secretName: wildcard-vonarx-online
 
     persistence:
