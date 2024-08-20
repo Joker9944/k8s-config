@@ -111,6 +111,13 @@ spec:
               capabilities:
                 add:
                   - NET_ADMIN
+                  - NET_RAW
+                  - MKNOD
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
