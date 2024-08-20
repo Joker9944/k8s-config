@@ -3,11 +3,11 @@ nameReference:
     fieldSpecs:
       - path: spec/valuesFrom/name
         kind: HelmRelease
-      - path: spec/values/persistence/*[type=secret]/name
+      - path: spec/values/persistence/*[.type=secret]/name
         kind: HelmRelease
   - kind: ConfigMap
     fieldSpecs:
       - path: spec/valuesFrom/name
         kind: HelmRelease
-      - path: spec/values/persistence/*[type=configMap]/name
+      - path: spec/values/persistence/*[.type=configMap]/name
         kind: HelmRelease
