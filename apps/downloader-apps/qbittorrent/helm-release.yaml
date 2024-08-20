@@ -104,7 +104,7 @@ spec:
               runAsUser: 0
               runAsNonRoot: false
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities:
                 add:
                   - NET_ADMIN
@@ -153,12 +153,5 @@ spec:
           qbittorrent:
             qbittorrent:
               - path: /config
-      gluetun:
-        type: emptyDir
-        advancedMounts:
-          qbittorrent:
-            gluetun:
-              - path: /gluetun
-
       tmp:
         type: emptyDir
