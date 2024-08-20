@@ -9,5 +9,6 @@ resources:
   - flaresolverr/helm-release.yaml
   - prowlarr
   - recyclarr
+  - jellyseerr/helm-release.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

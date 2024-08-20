@@ -1,0 +1,117 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    app.kubernetes.io/name: jellyseerr
+    app.kubernetes.io/instance: jellyseerr
+    app.kubernetes.io/part-of: servarr
+  name: jellyseerr
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    global:
+      labels:
+        app.kubernetes.io/part-of: servarr
+
+    defaultPodOptions:
+      labels:
+        app.kubernetes.io/part-of: servarr
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: servarr
+
+    controllers:
+      jellyseerr:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+
+        containers:
+          prowlarr:
+            image:
+              repository: fallenbagel/jellyseerr
+              tag: 1.9.2@sha256:8f708df0ce3f202056bde5d7bff625eb59efe38f4ee47bdddc7560b6e4a5a214
+            env:
+              PORT: &port 5055
+              LOG_LEVEL: INFO
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 30m
+                memory: 1Gi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      prowlarr:
+        controller: jellyseerr
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      jellyseerr:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host jellyseerr2.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: jellyseerr
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 1Gi
+        globalMounts:
+          - path: /app/config
+      tmp:
+        type: emptyDir
