@@ -7,7 +7,6 @@ resources:
   - sonarr-anime
   - sonarr-standard
   - flaresolverr/helm-release.yaml
-  - qbittorrent
   - prowlarr
   - recyclarr
 configurations:
