@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - audiobookshelf/helm-release.yaml
   - openaudible/helm-release.yaml
 secretGenerator:
   - name: s3-credentials-secret-values
