@@ -40,7 +40,6 @@ spec:
               UMASK: 0002
               PUID: 6012
               PGID: 6000
-              S6_READ_ONLY_ROOT: 1
             probes:
               liveness:
                 enabled: true
@@ -59,8 +58,10 @@ spec:
                 memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities:
+                add:
+                  - CHOWN
                 drop:
                   - ALL
 
