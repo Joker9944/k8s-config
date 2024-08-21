@@ -1,0 +1,115 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: audiobookshelf
+  namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: audiobookshelf
+    app.kubernetes.io/part-of: audiobookshelf
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    controllers:
+      audiobookshelf:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: 6011
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 568
+
+        containers:
+          audiobookshelf:
+            image:
+              repository: advplyr/audiobookshelf
+              tag: 2.12.3@sha256:913b19730da3045568508d6e12ddbe0f79b1fbbe71097ec2e9588c1cfc14d5f4
+            env:
+              UMASK: 0002
+              PORT: &port 8080
+              CONFIG_PATH: &config_path /config
+              METADATA_PATH: &metadata_path /metadata
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 30m
+                memory: 200Mi
+              limits:
+                memory: 500Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      audiobookshelf:
+        controller: audiobookshelf
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      audiobookshelf:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host audiobookshelf2.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: audiobookshelf
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 1Gi
+        globalMounts:
+          - path: *config_path
+      metadata:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: *metadata_path
+      media:
+        type: nfs
+        server: 192.168.178.14
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data
