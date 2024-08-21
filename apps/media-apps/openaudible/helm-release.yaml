@@ -61,11 +61,11 @@ spec:
               readOnlyRootFilesystem: false
               capabilities:
                 add:
-                - CHOWN
-                - SETUID
-                - SETGID
-                - FOWNER
-                - DAC_OVERRIDE
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
@@ -108,7 +108,9 @@ spec:
         path: /mnt/chronos/media-data
         globalMounts:
           - path: /mnt/media-data
-      tmp:
+      cache:
         type: emptyDir
-      run:
+        globalMounts:
+          - path: /config/.cache
+      tmp:
         type: emptyDir
