@@ -26,13 +26,9 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 6012
-            runAsGroup: 6000
-            runAsNonRoot: true
+            runAsNonRoot: false
             fsGroup: 6000
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 568
 
         containers:
           openaudible:
@@ -40,8 +36,10 @@ spec:
               repository: ghcr.io/lanjelin/openaudible-docker
               tag: 4.4.3@sha256:f6aa52d849c46008fd3d4125c66a6c8d832a2af95089decc185dd3e69765b5c7
             env:
-              UMASK: 0002
               CUSTOM_PORT: &port 3000
+              UMASK: 0002
+              PUID: 6012
+              PGID: 6000
               S6_READ_ONLY_ROOT: 1
             probes:
               liveness:
