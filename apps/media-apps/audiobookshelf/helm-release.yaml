@@ -113,3 +113,5 @@ spec:
         path: /mnt/chronos/media-data
         globalMounts:
           - path: /audiobooks
+      tmp:
+        type: emptyDir
