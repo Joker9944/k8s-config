@@ -112,4 +112,4 @@ spec:
         server: 192.168.178.14
         path: /mnt/chronos/media-data
         globalMounts:
-          - path: /mnt/media-data
+          - path: /audiobooks
