@@ -107,3 +107,5 @@ spec:
           - path: /mnt/media-data
       tmp:
         type: emptyDir
+      run:
+        type: emptyDir
