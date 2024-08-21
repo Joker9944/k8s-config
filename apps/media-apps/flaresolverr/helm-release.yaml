@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   labels:
     app.kubernetes.io/name: flaresolverr
-    app.kubernetes.io/instance: flaresolverr
     app.kubernetes.io/part-of: servarr
   name: flaresolverr
   namespace: ${main_namespace}
@@ -42,11 +41,7 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 0
-            runAsGroup: 0
             runAsNonRoot: false
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
 
         containers:
           flaresolverr:
@@ -76,12 +71,6 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
               capabilities:
-                add:
-                  - CHOWN
-                  - SETUID
-                  - SETGID
-                  - FOWNER
-                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
@@ -91,7 +80,3 @@ spec:
         ports:
           http:
             port: *port
-
-    persistence:
-      tmp:
-        type: emptyDir
