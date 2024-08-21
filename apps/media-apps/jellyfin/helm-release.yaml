@@ -116,13 +116,14 @@ spec:
                   failureThreshold: 30
                   periodSeconds: 5
             command: [/bin/sh, -c]
-            args:
-              # Script taken from TrueCharts jellyfin chart
+            args: # Script taken from TrueCharts jellyfin chart
               - |
+                set -e
                 export TARGET_IP=$(getent hosts 'jellyfin-autodiscovery' | awk '{ print $1 }')
-                [[ ! -z $TARGET_IP ]]
+                [[ -n $TARGET_IP ]]
                 touch /tmp/healthy
-                socat UDP4-LISTEN:7359,fork,reuseaddr,rcvbuf=8096 UDP4-SENDTO:${TARGET_IP}:7359,rcvbuf=8096
+                echo "Proxing to ip $TARGET_IP"
+                socat UDP4-LISTEN:7359,fork,reuseaddr,rcvbuf=8096 "UDP4-SENDTO:$TARGET_IP:7359,rcvbuf=8096"
                 rm -rf /tmp/healthy
             securityContext:
               allowPrivilegeEscalation: false
