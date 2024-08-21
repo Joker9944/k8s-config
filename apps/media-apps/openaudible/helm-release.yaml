@@ -1,0 +1,108 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openaudible
+  namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: openaudible
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  values:
+
+    controllers:
+      openaudible:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: 6012
+            runAsGroup: 6000
+            runAsNonRoot: true
+            fsGroup: 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups:
+              - 568
+
+        containers:
+          openaudible:
+            image:
+              repository: ghcr.io/lanjelin/openaudible-docker
+              tag: 4.4.3@sha256:f6aa52d849c46008fd3d4125c66a6c8d832a2af95089decc185dd3e69765b5c7
+            env:
+              UMASK: 0002
+              CUSTOM_PORT: &port 3000
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 70m
+                memory: 700Mi
+              limits:
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      openaudible:
+        controller: openaudible
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      openaudible:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host openaudible.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: openaudible
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 1Gi
+        globalMounts:
+          - path: /config/OpenAudible
+      media:
+        type: nfs
+        server: 192.168.178.14
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data
+      tmp:
+        type: emptyDir

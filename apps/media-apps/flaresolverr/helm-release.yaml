@@ -3,11 +3,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: flaresolverr
-    app.kubernetes.io/part-of: servarr
   name: flaresolverr
   namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: flaresolverr
 spec:
   interval: 30m
   chart:
