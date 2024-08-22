@@ -34,8 +34,6 @@ spec:
     # tccr image only supports amd64 at the moment. Make this comptaible with diffrent arches.
     # Workaround: sourced own images.
     # https://github.com/truecharts/containers/issues/35736
-    podOptions:
-      nodeSelector: null
     homeassistant:
       trusted_proxies:
         - 10.244.0.0/16
