@@ -9,6 +9,8 @@ additionalMachineCertSans:
 additionalApiServerCertSans:
   - ${VIP}
   - nyx.internal
+patches:
+  - '@patches/openebs.yaml'
 nodes:
   - hostname: nyx-control-plane-1
     ipAddress: ${CONTROL_PLANE_1_IP}
@@ -44,11 +46,6 @@ nodes:
         routes:
           - network: 0.0.0.0/0
             gateway: ${GATEWAY}
-    kernelModules:
-      - name: nvidia
-      - name: nvidia_uvm
-      - name: nvidia_drm
-      - name: nvidia_modeset
     schematic:
       customization:
         systemExtensions:
@@ -57,19 +54,10 @@ nodes:
             - siderolabs/qemu-guest-agent
             - siderolabs/nonfree-kmod-nvidia
             - siderolabs/nvidia-container-toolkit
-    machineFiles:
-      - content: |
-          [plugins]
-            [plugins."io.containerd.grpc.v1.cri"]
-              [plugins."io.containerd.grpc.v1.cri".containerd]
-                default_runtime_name = "nvidia"
-        path: /etc/cri/conf.d/20-customization.part
-        op: create
     patches:
-      - |-
-        machine:
-          sysctls:
-            net.core.bpf_jit_harden: 1
+      - '@patches/nvidia.yaml'
+    nodeLabels:
+      nfs-host: 'true'
   - hostname: nyx-worker-2
     ipAddress: ${WORKER_2_IP}
     controlPlane: false
@@ -93,7 +81,9 @@ nodes:
             - siderolabs/iscsi-tools
 controlPlane:
   nameservers:
-      - ${GATEWAY}
+    - 1.1.1.1
+    - 1.0.0.1
+    - ${GATEWAY}
 worker:
   nameservers:
-      - ${GATEWAY}
+    - ${GATEWAY}
