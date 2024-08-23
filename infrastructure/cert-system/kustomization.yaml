@@ -7,4 +7,3 @@ resources:
   - cert-manager/helm-release.yaml
   - cert-manager/issuer.yaml
   - cert-manager/secret.yaml
-  - reflector/helm-release.yaml

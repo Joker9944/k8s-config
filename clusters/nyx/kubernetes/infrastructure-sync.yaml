@@ -123,3 +123,19 @@ spec:
   postBuild:
     substitute:
       main_namespace: ingress-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: reflector-system
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/reflector-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      main_namespace: reflector-system

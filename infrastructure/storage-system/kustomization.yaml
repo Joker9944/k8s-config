@@ -6,7 +6,6 @@ resources:
   - cnpg/helm-release.yaml
   - freenas-api-iscsi/helm-release.yaml
 # - openebs/helm-release.yaml
-  - reflector/helm-release.yaml
   - volsync/helm-release.yaml
 secretGenerator:
   - name: freenas-api-iscsi-secret-values
