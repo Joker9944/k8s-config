@@ -2,9 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
+  - secret.yaml
   - cnpg/helm-release.yaml
   - freenas-api-iscsi/helm-release.yaml
 # - openebs/helm-release.yaml
+  - reflector/helm-release.yaml
   - volsync/helm-release.yaml
 secretGenerator:
   - name: freenas-api-iscsi-secret-values

@@ -10,3 +10,15 @@ spec:
   enableSuperuserAccess: true
   storage:
     size: 1Gi
+  backup:
+    retentionPolicy: 30d
+    barmanObjectStore:
+      destinationPath: s3://k8s-cnpg-backup
+      endpointURL: https://gateway.storjshare.io
+      s3Credentials:
+        accessKeyId:
+          name: backup-s3-credentials
+          key: accessKey
+        secretAccessKey:
+          name: backup-s3-credentials
+          key: secretKey
