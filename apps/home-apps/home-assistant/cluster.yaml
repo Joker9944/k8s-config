@@ -15,5 +15,3 @@ spec:
       dataChecksums: true
       database: home-assistant-recorder
       owner: home-assistant
-      secret:
-        name: home-assistant-cnpg-user
