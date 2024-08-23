@@ -1,0 +1,19 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: home-assistant-cnpg
+  namespace: ${main_namespace}
+spec:
+  description: PostgreSQL Cluster for home-assistant
+  instances: 3
+  enableSuperuserAccess: true
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      dataChecksums: true
+      database: home-assistant-recorder
+      owner: home-assistant
+      secret:
+        name: home-assistant-cnpg-user
