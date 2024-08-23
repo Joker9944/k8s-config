@@ -71,6 +71,7 @@ spec:
                   - SETGID
                   - FOWNER
                   - DAC_OVERRIDE
+                  - SETFCAP
                 drop:
                   - ALL
 
