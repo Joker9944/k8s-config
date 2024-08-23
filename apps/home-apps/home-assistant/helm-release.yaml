@@ -130,7 +130,7 @@ spec:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
         hosts:
-          - host: &host home-assistant.vonarx.online
+          - host: &host home.vonarx.online
             paths:
               - path: /
                 service:
