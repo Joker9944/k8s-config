@@ -36,7 +36,7 @@ spec:
               repository: ghcr.io/linuxserver/homeassistant
               tag: 2024.8.2@sha256:c60c6c1be40f97795448d123258269ba6cbe6cba43d2a44c2ee0283e68ae6bb3
             env:
-              PG_URI:
+              PGURI:
                 valueFrom:
                   secretKeyRef:
                     name: home-assistant-cnpg-app
