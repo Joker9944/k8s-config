@@ -33,8 +33,8 @@ spec:
         containers:
           home-assistant:
             image:
-              repository: ghcr.io/linuxserver/homeassistant
-              tag: 2024.8.2@sha256:c60c6c1be40f97795448d123258269ba6cbe6cba43d2a44c2ee0283e68ae6bb3
+              repository: homeassistant/home-assistant
+              tag: 2024.8.2@sha256:b5c4bef2494f84806423c0116bab2a8758c5be386e11af0d3bd7359a18ba77a7
             env:
               PGURI:
                 valueFrom:
@@ -71,7 +71,6 @@ spec:
                   - SETGID
                   - FOWNER
                   - DAC_OVERRIDE
-                  - SETFCAP
                 drop:
                   - ALL
 
