@@ -39,7 +39,7 @@ spec:
               PG_URI:
                 valueFrom:
                   secretKeyRef:
-                    name: home-assistant-cnpg-user
+                    name: home-assistant-cnpg-app
                     key: uri
               PUID: 568
               GUID: 568
@@ -82,22 +82,22 @@ spec:
               PGHOST:
                 valueFrom:
                   secretKeyRef:
-                    name: home-assistant-cnpg-user
+                    name: home-assistant-cnpg-app
                     key: host
               PGUSER:
                 valueFrom:
                   secretKeyRef:
-                    name: home-assistant-cnpg-user
+                    name: home-assistant-cnpg-app
                     key: user
               PGPASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: home-assistant-cnpg-user
+                    name: home-assistant-cnpg-app
                     key: password
               PGDATABASE:
                 valueFrom:
                   secretKeyRef:
-                    name: home-assistant-cnpg-user
+                    name: home-assistant-cnpg-app
                     key: dbname
             command: [/bin/sh, -c]
             args:
