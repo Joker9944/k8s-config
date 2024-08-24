@@ -18,6 +18,11 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+
+  valuesFrom:
+    - kind: Secret
+      name: openaudible-restic-values
+
   values:
 
     controllers:
@@ -27,7 +32,7 @@ spec:
         pod:
           securityContext:
             runAsNonRoot: false
-            fsGroup: 6000
+            fsGroup: &GUID 6000
             fsGroupChangePolicy: OnRootMismatch
           nodeSelector:
             kubernetes.io/arch: amd64
@@ -40,8 +45,8 @@ spec:
             env:
               CUSTOM_PORT: &port 3000
               UMASK: 0002
-              PUID: 6012
-              PGID: 6000
+              PUID: &PUID 6012
+              PGID: *GUID
             probes:
               liveness:
                 enabled: true
@@ -102,6 +107,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: 1Gi
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: openaudible-restic-destination-config
         globalMounts:
           - path: /config/OpenAudible
       media:
@@ -116,3 +125,41 @@ spec:
           - path: /config/.cache
       tmp:
         type: emptyDir
+
+    rawResources:
+      restic-destination-config:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: openaudible-restic-config
+              accessModes: [ReadWriteOnce]
+              capacity: 1Gi
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+      restic-source-config:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: openaudible-config
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: openaudible-restic-config
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              accessModes: [ReadWriteOnce]
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID

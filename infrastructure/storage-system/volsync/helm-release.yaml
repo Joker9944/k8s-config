@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: volsync
-      version: 2.2.0
+      version: 0.10.0
       sourceRef:
         kind: HelmRepository
-        name: truecharts
+        name: backube
         namespace: flux-system
       interval: 5m
   install:

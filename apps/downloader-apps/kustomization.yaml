@@ -4,5 +4,10 @@ resources:
   - namespace.yaml
   - openaudible/helm-release.yaml
   - qbittorrent
+secretGenerator:
+  - name: openaudible-restic-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=openaudible/restic.values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

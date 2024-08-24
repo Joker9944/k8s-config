@@ -205,7 +205,7 @@ spec:
       interval: 30m
       sourceRef:
         kind: HelmRepository
-        name: bitnamicharts
+        name: bitnami
         namespace: flux-system
   values:
 
