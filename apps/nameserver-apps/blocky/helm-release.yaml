@@ -75,7 +75,8 @@ spec:
                   secretKeyRef:
                     name: blocky-redis
                     key: redis-password
-            args: [/templates/config.yml, '>', /config/config.yml]
+            command: [/bin/sh, -c]
+            args: [jinja2 /templates/config.yml > /config/config.yml]
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -207,6 +208,7 @@ spec:
         name: bitnamicharts
         namespace: flux-system
   values:
+
     architecture: standalone
     master:
       persistence:
