@@ -149,3 +149,19 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: 1Gi
+
+    rawResources:
+      cnpg:
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        spec:
+          description: PostgreSQL Cluster for blocky
+          instances: 3
+          storage:
+            size: 1Gi
+          walStorage:
+            size: 1Gi
+          bootstrap:
+            initdb:
+              database: recorder
+              owner: home-assistant
