@@ -27,10 +27,10 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 6011
-            runAsGroup: 6000
+            runAsUser: &PUID 6011
+            runAsGroup: &GUID 6000
             runAsNonRoot: true
-            fsGroup: 6000
+            fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
             supplementalGroups:
               - 568
@@ -98,9 +98,13 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: 1Gi
+        size: &pvc_config_size 1Gi
         globalMounts:
           - path: *config_path
+      #  dataSourceRef:
+      #    apiGroup: volsync.backube
+      #    kind: ReplicationDestination
+      #    name: audiobookshelf-dest-config
       metadata:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -115,3 +119,42 @@ spec:
           - path: /audiobooks
       tmp:
         type: emptyDir
+
+    rawResources:
+      dest-config:
+        enabled: false
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: audiobookshelf-restic-config
+              accessModes: [ReadWriteOnce]
+              capacity: *pvc_config_size
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+      source-config:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: audiobookshelf-config
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: audiobookshelf-restic-config
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              accessModes: [ReadWriteOnce]
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
