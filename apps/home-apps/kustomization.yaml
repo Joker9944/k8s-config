@@ -3,5 +3,10 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - home-assistant/helm-release.yaml
+secretGenerator:
+  - name: home-assistant-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=home-assistant/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

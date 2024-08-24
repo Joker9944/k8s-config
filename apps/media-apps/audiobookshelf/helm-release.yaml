@@ -19,6 +19,11 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+
+  valuesFrom:
+    - kind: Secret
+      name: audiobookshelf-secret-values
+
   values:
 
     controllers:
