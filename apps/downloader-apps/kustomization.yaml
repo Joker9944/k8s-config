@@ -3,11 +3,15 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - openaudible/helm-release.yaml
-  - qbittorrent
+  - qbittorrent/helm-release.yaml
 secretGenerator:
-  - name: openaudible-restic-values
+  - name: openaudible-secret-values
     namespace: ${main_namespace}
     files:
-      - values.yaml=openaudible/restic.values.sops.yaml
+      - values.yaml=openaudible/secret-values.sops.yaml
+  - name: qbittorrent-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=qbittorrent/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

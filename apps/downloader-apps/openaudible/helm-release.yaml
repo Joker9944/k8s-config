@@ -21,7 +21,7 @@ spec:
 
   valuesFrom:
     - kind: Secret
-      name: openaudible-restic-values
+      name: openaudible-secret-values
 
   values:
 
