@@ -1,0 +1,106 @@
+ports:
+  dns: 53
+  tls: 853
+  http: 4000
+  https: 4443
+
+log:
+  level: info
+  timestamp: true
+
+upstreams:
+  groups:
+    default:
+      - https://1.1.1.1/dns-query
+      - https://1.0.0.1/dns-query
+      - https://[2606:4700:4700::1111]/dns-query
+      - https://[2606:4700:4700::1001]/dns-query
+
+conditional:
+  rewrite:
+    internal: fritz.box
+  mapping:
+    fritz.box: 192.168.178.1
+    vonarx.online: 127.0.0.1:5353 # Gateway
+
+blocking:
+  denylists:
+    StevenBlack:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    blocklistproject:
+      - https://blocklistproject.github.io/Lists/abuse.txt
+      - https://blocklistproject.github.io/Lists/ads.txt
+      - https://blocklistproject.github.io/Lists/crypto.txt
+      - https://blocklistproject.github.io/Lists/facebook.txt
+      - https://blocklistproject.github.io/Lists/fraud.txt
+      - https://blocklistproject.github.io/Lists/gambling.txt
+      - https://blocklistproject.github.io/Lists/malware.txt
+      - https://blocklistproject.github.io/Lists/phishing.txt
+      - https://blocklistproject.github.io/Lists/ransomware.txt
+      - https://blocklistproject.github.io/Lists/scam.txt
+      - https://blocklistproject.github.io/Lists/tiktok.txt
+      - https://blocklistproject.github.io/Lists/tracking.txt
+  allowlists:
+    default:
+    - | # Google Maps
+      clients2.google.com
+      clients4.google.com
+    - | # YouTube History
+      s.youtube.com
+      video-stats.l.google.com
+    - | # Google Play
+      android.clients.google.com
+    - | # Android TV
+      redirector.gvt1.com
+    - | # Reddit
+      www.reddit.com
+      www.redditstatic.com
+      styles.redditmedia.com
+      *.redd.it
+    - | # MS Teams
+      *.giphy.com
+    - | # LinkedIn
+      www.linkedin.com
+      static.licdn.com
+      media.licnd.com
+    - | # Instagram
+      www.instagram.com
+      static.cndinstagram.com
+      instagram.fzrh3-1.fna.fbcdn.net
+      graphql.instagram.com
+      scontent.cndinstagram.com
+    - | # TikTok
+      www.tiktok.com
+      vm.tiktok.com
+    - | # V Rising DS
+      cdp.cloud.unity3d.com
+
+  clientGroupsBlock:
+    default:
+      - default
+      - StevenBlack
+      - blocklistproject
+
+  blockType: nxDomain
+
+caching:
+  minTime: 15m
+  prefetching: true
+  prefetchExpires: 12h
+
+redis:
+  address: "{{ environ('REDIS_URI') }}"
+  password: "{{ environ('REDIS_PASSWORD') }}"
+  required: true
+  connectionAttempts: 10
+  connectionCooldown: 3s
+
+prometheus:
+  enable: true
+
+queryLog:
+  type: postgresql
+  target: "{{ environ('PGURI') }}"
+  logRetentionDays: 30

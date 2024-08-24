@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helm-release.yaml
+configMapGenerator:
+  - name: blocky-config-templates
+    namespace: ${main_namespace}
+    files:
+      - config.yml=config.yml
+# TODO find a way to use generated resources with hash in patches
+generatorOptions:
+  disableNameSuffixHash: true

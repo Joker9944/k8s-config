@@ -4,6 +4,7 @@ metadata:
   name: helm-repositories
   namespace: flux-system
 resources:
+  - bitnamicharts/helm-repository.yaml
   - bjw-s/helm-repository.yaml
   - cnpg/helm-repository.yaml
   - democratic-csi/helm-repository.yaml

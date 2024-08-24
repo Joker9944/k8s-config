@@ -55,3 +55,10 @@ spec:
         metallb.universe.tf/loadBalancerIPs: 192.168.178.210
       spec:
         externalTrafficPolicy: Local
+    ports:
+      dot:
+        port: &dot_port 843
+        expose:
+          default: true
+        exposedPort: *dot_port
+        protocol: TCP

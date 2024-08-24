@@ -94,3 +94,19 @@ spec:
   postBuild:
     substitute:
       main_namespace: home-apps
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: nameserver-apps
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./apps/nameserver-apps
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      main_namespace: nameserver-apps
