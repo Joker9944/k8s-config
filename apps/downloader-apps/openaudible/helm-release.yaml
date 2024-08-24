@@ -36,7 +36,7 @@ spec:
           openaudible:
             image:
               repository: ghcr.io/lanjelin/openaudible-docker
-              tag: 4.4.3@sha256:f6aa52d849c46008fd3d4125c66a6c8d832a2af95089decc185dd3e69765b5c7
+              tag: 4.4.4@sha256:88ebf9c18d590e27377a7f76e27eb24db8fc21a604e7d90b5feda7d642012873
             env:
               CUSTOM_PORT: &port 3000
               UMASK: 0002
