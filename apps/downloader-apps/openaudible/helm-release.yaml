@@ -107,10 +107,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: 1Gi
-        dataSourceRef:
-          apiGroup: volsync.backube
-          kind: ReplicationDestination
-          name: openaudible-restic-destination-config
+      #  dataSourceRef:
+      #    apiGroup: volsync.backube
+      #    kind: ReplicationDestination
+      #    name: openaudible-restic-destination-config
         globalMounts:
           - path: /config/OpenAudible
       media:
