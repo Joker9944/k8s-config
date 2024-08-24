@@ -70,16 +70,11 @@ spec:
                   secretKeyRef:
                     name: blocky-cnpg-app
                     key: uri
-              REDIS_URI:
-                valueFrom:
-                  secretKeyRef:
-                    name: TBD # TODO
-                    key: TBD # TODO
               REDIS_PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: TBD # TODO
-                    key: TBD # TODO
+                    name: blocky-redis
+                    key: redis-password
             args: [/templates/config.yml, '>', /config/config.yml]
             securityContext:
               allowPrivilegeEscalation: false
@@ -211,3 +206,8 @@ spec:
         kind: HelmRepository
         name: bitnamicharts
         namespace: flux-system
+  values:
+    architecture: standalone
+    master:
+      persistence:
+        enabled: false

@@ -91,7 +91,7 @@ caching:
   prefetchExpires: 12h
 
 redis:
-  address: "{{ environ('REDIS_URI') }}"
+  address: blocky-redis-master:6379
   password: "{{ environ('REDIS_PASSWORD') }}"
   required: true
   connectionAttempts: 10
