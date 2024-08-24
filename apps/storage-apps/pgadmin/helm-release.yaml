@@ -40,9 +40,9 @@ spec:
         home-assistant:
           Name: home-assistant
           Group: Servers
-          Host: home-assistant-cnpg-main-rw.home.svc.cluster.local
+          Host: home-assistant-cnpg-rw.home-apps.svc.cluster.local
           Port: 5432
-          Username: postgres
+          Username: home-assistant
           SSLMode: prefer
           MaintenanceDB: postgres
         servarr:
