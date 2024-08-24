@@ -106,7 +106,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: 1Gi
+        size: &pvc_config_size 1Gi
       #  dataSourceRef:
       #    apiGroup: volsync.backube
       #    kind: ReplicationDestination
@@ -128,6 +128,7 @@ spec:
 
     rawResources:
       restic-destination-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -137,7 +138,7 @@ spec:
             restic:
               repository: openaudible-restic-config
               accessModes: [ReadWriteOnce]
-              capacity: 1Gi
+              capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
