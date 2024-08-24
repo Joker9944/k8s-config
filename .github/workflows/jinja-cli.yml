@@ -1,0 +1,22 @@
+name: jinja-cli
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - images/jinja-cli/Dockerfile
+    branches:
+      - main
+
+jobs:
+  call-workflow-passing-data:
+    uses: Joker9944/k8s-config/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: joker9944/jinja-cli
+      upstream_image_name: python
+      context: images/jinja-cli
+    secrets: inherit
+    permissions:
+      packages: write
+      id-token: write
+      contents: read
