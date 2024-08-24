@@ -21,5 +21,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=jellyfin/secret-values.sops.yaml
+  - name: jellyseerr-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=jellyseerr/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
