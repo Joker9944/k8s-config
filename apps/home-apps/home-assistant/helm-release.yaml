@@ -154,10 +154,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-      #  dataSourceRef:
-      #    apiGroup: volsync.backube
-      #    kind: ReplicationDestination
-      #    name: home-assistant-dest-config
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: home-assistant-dest-config
 
     rawResources:
       cnpg:
@@ -176,7 +176,6 @@ spec:
                 database: recorder
                 owner: home-assistant
       dest-config:
-        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
