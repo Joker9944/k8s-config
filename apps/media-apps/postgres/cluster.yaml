@@ -19,6 +19,7 @@ spec:
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
+      serverName: servarr-cnpg-restored
       destinationPath: s3://k8s-cnpg-backup
       endpointURL: https://gateway.storjshare.io
       s3Credentials:
