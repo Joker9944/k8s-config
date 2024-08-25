@@ -10,6 +10,12 @@ spec:
   enableSuperuserAccess: true
   storage:
     size: 1Gi
+
+  bootstrap:
+    recovery:
+      backup:
+        name: servarr-cnpg-manual
+
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
