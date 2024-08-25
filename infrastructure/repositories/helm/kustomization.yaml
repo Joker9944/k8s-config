@@ -10,6 +10,7 @@ resources:
   - cnpg/helm-repository.yaml
   - democratic-csi/helm-repository.yaml
   - emberstack/helm-repository.yaml
+  - gateway/helm-repository.yaml
   - jetstack/helm-repository.yaml
   - metallb/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml

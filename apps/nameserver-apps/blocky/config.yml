@@ -21,7 +21,7 @@ conditional:
     internal: fritz.box
   mapping:
     fritz.box: 192.168.178.1
-    vonarx.online: 127.0.0.1:5353 # Gateway
+    vonarx.online: "blocky-gateway.{{ environ('K8S_NAMESPACE') }}"
 
 blocking:
   denylists:
@@ -91,7 +91,7 @@ caching:
   prefetchExpires: 12h
 
 redis:
-  address: blocky-redis-master:6379
+  address: "blocky-redis-master.{{ environ('K8S_NAMESPACE') }}:6379"
   password: "{{ environ('REDIS_PASSWORD') }}"
   required: true
   connectionAttempts: 10
