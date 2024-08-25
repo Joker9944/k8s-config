@@ -25,7 +25,3 @@ spec:
           enabled: false
         zfs:
           enabled: false
-    crds:
-      csi:
-        volumeSnapshots:
-          enabled: false
