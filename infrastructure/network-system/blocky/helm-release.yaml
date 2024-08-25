@@ -4,7 +4,8 @@ metadata:
   name: blocky
   namespace: ${main_namespace}
 spec:
-  interval: 5m
+  interval: 30m
+  timeout: 20m
   chart:
     spec:
       chart: blocky
@@ -13,7 +14,7 @@ spec:
         kind: HelmRepository
         name: truecharts
         namespace: flux-system
-      interval: 5m
+      interval: 30m
   install:
     crds: CreateReplace
     remediation:
