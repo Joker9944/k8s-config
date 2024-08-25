@@ -152,13 +152,18 @@ spec:
         annotations:
           metallb.universe.tf/loadBalancerIPs: 192.168.178.211
         ports:
-          dns:
-            port: 53
+          dns-tcp:
+            port: &dns_port 53
+            targetPort: *dns_port
+            protocol: TCP
           dns-udp:
-            port: 53
+            port: *dns_port
+            targetPort: *dns_port
             protocol: UDP
           dot:
-            port: 853
+            port: &dot_port 853
+            targetPort: *dot_port
+            protocol: TCP
       metrics:
         controller: blocky
         ports:

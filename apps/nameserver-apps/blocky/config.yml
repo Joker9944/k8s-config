@@ -13,15 +13,13 @@ upstreams:
     default:
       - https://1.1.1.1/dns-query
       - https://1.0.0.1/dns-query
-      - https://[2606:4700:4700::1111]/dns-query
-      - https://[2606:4700:4700::1001]/dns-query
 
 conditional:
   rewrite:
     internal: fritz.box
   mapping:
     fritz.box: 192.168.178.1
-    vonarx.online: "blocky-gateway.{{ environ('K8S_NAMESPACE') }}"
+    vonarx.online: "blocky-gateway-k8s-gateway.{{ environ('K8S_NAMESPACE') }}"
 
 blocking:
   denylists:
