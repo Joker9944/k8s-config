@@ -235,6 +235,9 @@ spec:
     # TODO figure this out
     dnsChallenge:
       enabled: false
+    service:
+      type: ClusterIP
+      useTcp: true
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
