@@ -154,15 +154,12 @@ spec:
         ports:
           dns-tcp:
             port: &dns_port 53
-            targetPort: *dns_port
             protocol: TCP
           dns-udp:
             port: *dns_port
-            targetPort: *dns_port
             protocol: UDP
           dot:
-            port: &dot_port 853
-            targetPort: *dot_port
+            port: 853
             protocol: TCP
       metrics:
         controller: blocky
@@ -215,6 +212,31 @@ spec:
               initdb:
                 database: query-log
                 owner: blocky
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: blocky
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: blocky
+                        ports:
+                          - name: dns-tcp
+                            containerPort: 53
+                            protocol: TCP
+                          - name: dns-udp
+                            containerPort: 53
+                            protocol: UDP
+                          - name: metrics
+                            containerPort: 4000
+                            protocol: TCP
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
