@@ -231,7 +231,6 @@ spec:
   values:
 
     domain: vonarx.online
-    watchedResources: [Ingress]
     apex: blocky.${main_namespace}
     # TODO figure this out
     dnsChallenge:
@@ -239,6 +238,44 @@ spec:
     service:
       type: ClusterIP
       useTcp: true
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: blocky-gateway-k8s-gateway
+                labels:
+                  app.kubernetes.io/name: k8s-gateway
+                  app.kubernetes.io/instance: blocky-gateway
+              rules: []
+          - patch: |-
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: blocky-gateway-k8s-gateway
+                labels:
+                  app.kubernetes.io/name: k8s-gateway
+                  app.kubernetes.io/instance: blocky-gateway
+              rules:
+                - apiGroups:
+                  - ""
+                  resources:
+                  - services
+                  - namespaces
+                  verbs:
+                  - list
+                  - watch
+                - apiGroups:
+                  - extensions
+                  - networking.k8s.io
+                  resources:
+                  - ingresses
+                  verbs:
+                  - list
+                  - watch
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
