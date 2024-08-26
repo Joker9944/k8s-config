@@ -211,34 +211,6 @@ spec:
                 database: query-log
                 owner: blocky
 
-  postRenderers:
-    - kustomize:
-        patches:
-          - patch: |-
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: blocky
-                labels:
-                  app.kubernetes.io/name: blocky
-                  app.kubernetes.io/component: blocky
-                  app.kubernetes.io/instance: blocky
-              spec:
-                template:
-                  spec:
-                    containers:
-                      - name: blocky
-                        ports:
-                          - name: dns-tcp
-                            containerPort: 53
-                            protocol: TCP
-                          - name: dns-udp
-                            containerPort: 53
-                            protocol: UDP
-                          - name: metrics
-                            containerPort: 4000
-                            protocol: TCP
-
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -259,6 +231,7 @@ spec:
   values:
 
     domain: vonarx.online
+    watchedResources: [Ingress]
     apex: blocky.${main_namespace}
     # TODO figure this out
     dnsChallenge:
