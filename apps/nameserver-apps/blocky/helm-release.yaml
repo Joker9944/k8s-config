@@ -240,6 +240,8 @@ spec:
       useTcp: true
 
   postRenderers:
+    # TODO this is a hack because the gateway wants acces to old crds
+    # https://github.com/ori-edge/k8s_gateway/issues/279
     - kustomize:
         patches:
           - patch: |-

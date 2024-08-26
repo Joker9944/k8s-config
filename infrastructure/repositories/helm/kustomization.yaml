@@ -18,4 +18,3 @@ resources:
   - prometheus-community/helm-repository.yaml
   - runix/helm-repository.yaml
   - traefik/helm-repository.yaml
-  - truecharts/helm-repository.yaml
