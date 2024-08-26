@@ -60,17 +60,22 @@ spec:
             probes:
               liveness:
                 enabled: true
-                port: &jellyfin_port 8096
-                path: /health
+                custom: true
+                spec:
+                  path: /health
+                  port: &jellyfin_port 8096
               readiness:
                 enabled: true
-                port: *jellyfin_port
-                path: /health
+                custom: true
+                spec:
+                  path: /health
+                  port: *jellyfin_port
               startup:
                 enabled: true
-                port: *jellyfin_port
-                path: /health
+                custom: true
                 spec:
+                  path: /health
+                  port: *jellyfin_port
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
