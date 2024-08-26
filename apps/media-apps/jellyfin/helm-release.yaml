@@ -40,6 +40,9 @@ spec:
               - 44
               - 107
               - 568
+            seccompProfile:
+              type: RuntimeDefault
+
           tolerations:
             - key: nvidia.com/gpu
               operator: Exists
@@ -56,14 +59,14 @@ spec:
               JELLYFIN_PublishedServerUrl: https://jellyfin.vonarx.online
             probes:
               liveness:
-                port: &jellyfin_port 8096
                 enabled: true
+                path: /health
               readiness:
-                port: *jellyfin_port
                 enabled: true
+                path: /health
               startup:
-                port: *jellyfin_port
                 enabled: true
+                path: /health
                 spec:
                   failureThreshold: 30
                   periodSeconds: 5
@@ -141,7 +144,8 @@ spec:
         controller: jellyfin
         ports:
           http:
-            port: *jellyfin_port
+            primary: true
+            port: 8096
       autodiscovery:
         controller: jellyfin
         ports:
