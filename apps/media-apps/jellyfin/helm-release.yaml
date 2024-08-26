@@ -65,6 +65,7 @@ spec:
                   httpGet:
                     path: /health
                     port: &jellyfin_port 8096
+                  failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true
@@ -119,6 +120,7 @@ spec:
                 spec:
                   exec:
                     command: [cat, /tmp/healthy]
+                  failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true

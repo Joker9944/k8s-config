@@ -42,20 +42,26 @@ spec:
                 enabled: true
                 custom: true
                 spec:
-                  timeoutSeconds: 3
                   exec:
                     command: [/app/blocky, healthcheck]
+                  timeoutSeconds: 3
+                  failureThreshold: 6
               readiness:
-                enabled: false
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/app/blocky, healthcheck]
+                  timeoutSeconds: 3
               startup:
                 enabled: true
                 custom: true
                 spec:
+                  exec:
+                    command: [/app/blocky, healthcheck]
                   timeoutSeconds: 3
                   failureThreshold: 30
                   periodSeconds: 5
-                  exec:
-                    command: [/app/blocky, healthcheck]
             resources:
               requests:
                 cpu: 30m

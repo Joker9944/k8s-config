@@ -53,6 +53,8 @@ spec:
             probes:
               liveness:
                 enabled: true
+                spec:
+                  failureThreshold: 6
               readiness:
                 enabled: true
               startup:
