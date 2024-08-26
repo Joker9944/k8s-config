@@ -221,7 +221,10 @@ spec:
               kind: Deployment
               metadata:
                 name: blocky
-                namespace: ${main_namespace}
+                labels:
+                  app.kubernetes.io/name: blocky
+                  app.kubernetes.io/component: blocky
+                  app.kubernetes.io/instance: blocky
               spec:
                 template:
                   spec:
