@@ -3,7 +3,7 @@ ports:
   http: 4000
 
 log:
-  level: debug
+  level: info
   timestamp: true
 
 upstreams:
@@ -21,11 +21,10 @@ conditional:
 
 blocking:
   denylists:
-    StevenBlack:
+    default:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-    blocklistproject:
       - https://blocklistproject.github.io/Lists/abuse.txt
       - https://blocklistproject.github.io/Lists/ads.txt
       - https://blocklistproject.github.io/Lists/crypto.txt
@@ -76,8 +75,6 @@ blocking:
   clientGroupsBlock:
     default:
       - default
-      - StevenBlack
-      - blocklistproject
 
   blockType: nxDomain
 
