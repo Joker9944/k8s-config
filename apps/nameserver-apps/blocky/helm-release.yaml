@@ -150,6 +150,7 @@ spec:
         controller: blocky
         type: LoadBalancer
         allocateLoadBalancerNodePorts: false
+        externalTrafficPolicy: Local
         annotations:
           metallb.universe.tf/loadBalancerIPs: 192.168.178.211
         ports:
