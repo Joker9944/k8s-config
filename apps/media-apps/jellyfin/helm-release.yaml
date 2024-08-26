@@ -142,6 +142,7 @@ spec:
     service:
       jellyfin:
         controller: jellyfin
+        primary: true
         ports:
           http:
             primary: true
