@@ -34,6 +34,9 @@ spec:
             runAsNonRoot: false
             fsGroup: &GUID 6000
             fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+
           nodeSelector:
             kubernetes.io/arch: amd64
 
