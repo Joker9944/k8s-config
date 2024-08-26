@@ -3,7 +3,7 @@ ports:
   http: 4000
 
 log:
-  level: info
+  level: debug
   timestamp: true
 
 upstreams:
