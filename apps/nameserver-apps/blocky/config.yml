@@ -1,8 +1,6 @@
 ports:
-  dns: 53
   tls: 853
   http: 4000
-  https: 4443
 
 log:
   level: info
