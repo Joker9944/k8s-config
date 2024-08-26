@@ -153,7 +153,7 @@ spec:
           dns-udp:
             port: *dns_port
             protocol: UDP
-      dot:
+      dot: # TODO Implement DoT with IngressRouteTCP, issue with conditional mapping when accessing from WAN
         controller: blocky
         ports:
           dot:
@@ -164,24 +164,6 @@ spec:
         ports:
           http:
             port: 4000
-
-    ingress:
-      blocky:
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: dot
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-country-whitelist@kubernetescrd
-        hosts:
-          - host: &host dot.vonarx.online
-            paths:
-              - path: /
-                service:
-                  identifier: dot
-                  port: dot
-        tls:
-          - hosts:
-              - *host
-            secretName: wildcard-vonarx-online
 
     persistence:
       config:
