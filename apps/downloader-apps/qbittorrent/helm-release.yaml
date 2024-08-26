@@ -55,8 +55,11 @@ spec:
             fsGroupChangePolicy: OnRootMismatch
             supplementalGroups:
               - 568
+            seccompProfile:
+              type: RuntimeDefault
 
         containers:
+
           qbittorrent:
             image:
               repository: ghcr.io/onedr0p/qbittorrent
@@ -69,19 +72,34 @@ spec:
                   secretKeyRef:
                     name: qbittorrent-vpn-config
                     key: FIREWALL_VPN_INPUT_PORTS
-              QBT_BitTorrent__Session_Interface: &vpn_interface wg0
-              QBT_BitTorrent__Session_InterfaceName: *vpn_interface
-              QBT_BitTorrent__Session_DefaultSavePath: /mnt/media-data/.staging/qbittorrent/complete
-              QBT_BitTorrent__Session_TempPathEnabled: true
-              QBT_BitTorrent__Session_TempPath: /mnt/media-data/.staging/qbittorrent/incomplete
+              QBT_BitTorrent__Session__Interface: &vpn_interface wg0
+              QBT_BitTorrent__Session__InterfaceName: *vpn_interface
+              QBT_BitTorrent__Session__DefaultSavePath: /mnt/media-data/.staging/qbittorrent/complete
+              QBT_BitTorrent__Session__TempPathEnabled: true
+              QBT_BitTorrent__Session__TempPath: /mnt/media-data/.staging/qbittorrent/incomplete
+              QBT_Preferences__WebUI__LocalHostAuth: false
             probes:
               liveness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v2/app/version
+                    port: *qbittorrent_port
               readiness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v2/app/version
+                    port: *qbittorrent_port
               startup:
                 enabled: true
+                custom: true
                 spec:
+                  httpGet:
+                    path: /api/v2/app/version
+                    port: *qbittorrent_port
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
@@ -105,6 +123,24 @@ spec:
               FIREWALL_INPUT_PORTS: *qbittorrent_port
               VPN_INTERFACE: *vpn_interface
               FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  command: [/gluetun-entrypoint, healthcheck]
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  command: [/gluetun-entrypoint, healthcheck]
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  command: [/gluetun-entrypoint, healthcheck]
+                  failureThreshold: 30
+                  periodSeconds: 5
             envFrom:
               - secretRef:
                   name: qbittorrent-vpn-config
@@ -127,6 +163,7 @@ spec:
                   - ALL
 
     service:
+
       qbittorrent:
         controller: qbittorrent
         ports:
@@ -134,6 +171,7 @@ spec:
             port: *qbittorrent_port
 
     ingress:
+
       qbittorrent:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -152,6 +190,7 @@ spec:
             secretName: wildcard-vonarx-online
 
     persistence:
+
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -165,6 +204,7 @@ spec:
           qbittorrent:
             qbittorrent:
               - path: /config
+
       media:
         type: nfs
         server: 192.168.178.14
@@ -175,6 +215,7 @@ spec:
               - path: /mnt/media-data
 
     rawResources:
+
       dest-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
@@ -191,6 +232,7 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+
       source-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
