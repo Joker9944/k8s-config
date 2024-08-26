@@ -57,8 +57,8 @@ spec:
         externalTrafficPolicy: Local
     ports:
       dot:
-        port: &dot_port 843
+        port: 8853
         expose:
           default: true
-        exposedPort: *dot_port
+        exposedPort: 853
         protocol: TCP
