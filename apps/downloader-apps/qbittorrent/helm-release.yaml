@@ -81,13 +81,23 @@ spec:
             probes:
               liveness:
                 enabled: true
+                custom: true
                 spec:
+                  exec:
+                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
                   failureThreshold: 6
               readiness:
                 enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
               startup:
                 enabled: true
+                custom: true
                 spec:
+                  exec:
+                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
