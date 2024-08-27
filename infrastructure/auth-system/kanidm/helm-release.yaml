@@ -49,6 +49,7 @@ spec:
               KANIDM_BINDADDRESS: '[::]:8443'
               KANIDM_LDAPBINDADDRESS: '[::]:3636'
               KANIDM_TRUST_X_FORWARD_FOR: true
+              KANIDM_DB_PATH: /data/kanidm.db
               KANIDM_TLS_CHAIN: &path_tls_crt /data/tls.crt
               KANIDM_TLS_KEY: &path_tls_key /data/tls.key
               KANIDM_DOMAIN: idm.vonarx.online
