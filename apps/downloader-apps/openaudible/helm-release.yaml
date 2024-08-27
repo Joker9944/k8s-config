@@ -34,6 +34,7 @@ spec:
             runAsNonRoot: false
             fsGroup: &GUID 6000
             fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups: [568]
             seccompProfile:
               type: RuntimeDefault
 
