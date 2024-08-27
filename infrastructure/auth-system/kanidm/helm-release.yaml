@@ -137,10 +137,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-        dataSourceRef:
-          apiGroup: volsync.backube
-          kind: ReplicationDestination
-          name: kanidm-dest-data
+      # dataSourceRef:
+      #   apiGroup: volsync.backube
+      #   kind: ReplicationDestination
+      #   name: kanidm-dest-data
 
       data-overlay-tls:
         type: secret
@@ -154,6 +154,7 @@ spec:
     rawResources:
 
       dest-data:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
