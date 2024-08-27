@@ -95,7 +95,7 @@ spec:
         controller: kanidm
         primary: true
         annotations:
-          traefik.ingress.kubernetes.io/service.serverstransport: cluster-ca@kubernetescrd
+          traefik.ingress.kubernetes.io/service.serverstransport: ${main_namespace}-cluster-ca@kubernetescrd
         ports:
           https:
             primary: true
