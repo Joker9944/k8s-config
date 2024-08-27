@@ -145,7 +145,7 @@ spec:
 
       data-overlay-tls:
         type: secret
-        name: selfsigned-wildcard-${main_namespace}-cert
+        name: wildcard-${main_namespace}-cert
         globalMounts:
           - path: *path_tls_crt
             subPath: tls.crt
