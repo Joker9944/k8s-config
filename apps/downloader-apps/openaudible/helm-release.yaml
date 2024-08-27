@@ -61,11 +61,13 @@ spec:
                   failureThreshold: 6
               readiness:
                 enabled: true
+                custom: true
                 spec:
                   exec:
                     command: [/bin/sh, -c, '/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true']
               startup:
                 enabled: true
+                custom: true
                 spec:
                   exec:
                     command: [/bin/sh, -c, '/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true']
