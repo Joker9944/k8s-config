@@ -36,10 +36,7 @@ spec:
             runAsNonRoot: true
             fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 44
-              - 107
-              - 568
+            supplementalGroups: [44, 107, 568]
             seccompProfile:
               type: RuntimeDefault
 
@@ -64,7 +61,7 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: &jellyfin_port 8096
+                    port: &port_http 8096
                   failureThreshold: 6
               readiness:
                 enabled: true
@@ -72,14 +69,14 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: *jellyfin_port
+                    port: *port_http
               startup:
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
                     path: /health
-                    port: *jellyfin_port
+                    port: *port_http
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
@@ -159,7 +156,7 @@ spec:
         ports:
           http:
             primary: true
-            port: *jellyfin_port
+            port: *port_http
       autodiscovery:
         controller: jellyfin
         ports:
