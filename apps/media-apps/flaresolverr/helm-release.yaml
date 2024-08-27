@@ -41,6 +41,8 @@ spec:
         pod:
           securityContext:
             runAsNonRoot: false
+            seccompProfile:
+              type: RuntimeDefault
 
         containers:
           flaresolverr:
@@ -49,15 +51,30 @@ spec:
               tag: v3.3.21@sha256:f104ee51e5124d83cf3be9b37480649355d223f7d8f9e453d0d5ef06c6e3b31b
             env:
               LOG_LEVEL: info
-              PORT: &port 8191
+              PORT: &port_http 8191
             probes:
               liveness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
+                  failureThreshold: 6
               readiness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
               startup:
                 enabled: true
+                custom: true
                 spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
@@ -78,4 +95,4 @@ spec:
         controller: flaresolverr
         ports:
           http:
-            port: *port
+            port: *port_http

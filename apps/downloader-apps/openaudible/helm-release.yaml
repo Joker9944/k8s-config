@@ -47,7 +47,7 @@ spec:
               repository: ghcr.io/lanjelin/openaudible-docker
               tag: 4.4.4@sha256:88ebf9c18d590e27377a7f76e27eb24db8fc21a604e7d90b5feda7d642012873
             env:
-              CUSTOM_PORT: &port 3000
+              CUSTOM_PORT: &port_http 3000
               UMASK: 0002
               PUID: &PUID 6012
               PGID: *GUID
@@ -97,7 +97,7 @@ spec:
         controller: openaudible
         ports:
           http:
-            port: *port
+            port: *port_http
 
     ingress:
       openaudible:
