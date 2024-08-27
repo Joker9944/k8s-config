@@ -119,7 +119,6 @@ spec:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-          traefik.ingress.kubernetes.io/service.serverstransport: ${main_namespace}-cluster-ca@kubernetescrd
         hosts:
           - host: &host idm.vonarx.online
             paths:

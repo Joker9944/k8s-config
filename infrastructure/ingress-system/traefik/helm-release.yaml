@@ -24,7 +24,10 @@ spec:
       retries: 3
   values:
     globalArguments:
-      - "--global.sendanonymoususage"
+      - '--global.sendanonymoususage'
+        # TODO This is a workaround since ServersTransport CRD can only be referenced from IngressRoute and not from Ingress
+        # https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
+      - '--serversTransport.rootCAs=/certs/cluster-root-ca/ca.crt'
     deployment:
       replicas: 1
     ingressClass:
@@ -43,6 +46,10 @@ spec:
       kubernetesIngress:
         publishedService:
           enabled: true
+    volumes:
+      - name: cluster-root-ca-cert
+        mountPath: /certs/cluster-root-ca
+        type: secret
     logs:
       access:
         enabled: true

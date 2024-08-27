@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - certificate.yaml
-  - servers-transport.yaml
   - kanidm/helm-release.yaml
 secretGenerator:
   - name: kanidm-secret-values
