@@ -1,0 +1,192 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kanidm
+  namespace: ${main_namespace}
+  labels:
+    app.kubernetes.io/name: kanidm
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.3.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+
+  valuesFrom:
+    - kind: Secret
+      name: kanidm-secret-values
+
+  values:
+
+    controllers:
+
+      kanidm:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: &PUID 568
+            runAsGroup: &GUID 568
+            runAsNonRoot: true
+            fsGroup: *GUID
+            seccompProfile:
+              type: RuntimeDefault
+
+        containers:
+
+          kanidm:
+            image:
+              repository: kanidm/server
+              tag: 1.3.3@sha256:2942a59b6aab310627a6f2545ddb9ea191a933fdb20a614657f8a9338d60825c
+            env:
+              KANIDM_BINDADDRESS: '[::]:8443'
+              KANIDM_LDAPBINDADDRESS: '[::]:3636'
+              KANIDM_TRUST_X_FORWARD_FOR: true
+              KANIDM_TLS_CHAIN: &path_tls_crt /data/tls.crt
+              KANIDM_TLS_KEY: &path_tls_key /data/tls.key
+              KANIDM_DOMAIN: idm.vonarx.online
+              KANIDM_ORIGIN: https://idm.vonarx.online:443
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 50m
+                memory: 1Gi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+
+      kanidm:
+        controller: kanidm
+        primary: true
+        ports:
+          https:
+            primary: true
+            port: 443
+            targetPort: 8443
+
+      ldaps:
+        controller: kanidm
+        ports:
+          ldaps-tcp:
+            port: 636
+            targetPort: 3636
+            protocol: TCP
+          ldaps-udp:
+            port: 636
+            targetPort: 3636
+            protocol: UDP
+
+    ingress:
+
+      kanidm:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-internal-whitelist@kubernetescrd
+        hosts:
+          - host: &host idm.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: kanidm
+                  port: https
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: &pvc_config_size 1Gi
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: kanidm-dest-data
+
+      data-overlay-tls:
+        type: secret
+        name: selfsigned-wildcard-${main_namespace}-cert
+        globalMounts:
+          - path: *path_tls_crt
+            subPath: tls.crt
+          - path: *path_tls_key
+            subPath: tls.key
+
+    rawResources:
+
+      dest-data:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: kanidm-restic-data
+              accessModes: [ReadWriteOnce]
+              capacity: *pvc_config_size
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+
+      source-data:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: kanidm-data
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: kanidm-restic-data
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              accessModes: [ReadWriteOnce]
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
