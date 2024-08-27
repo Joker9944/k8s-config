@@ -117,7 +117,7 @@ spec:
               repository: ghcr.io/qdm12/gluetun
               tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
             env:
-              FIREWALL_INPUT_PORTS: *qbittorrent_port
+              FIREWALL_INPUT_PORTS: *port_http
               VPN_INTERFACE: *vpn_interface
               FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12
             probes:
