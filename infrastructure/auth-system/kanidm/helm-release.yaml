@@ -94,6 +94,8 @@ spec:
       kanidm:
         controller: kanidm
         primary: true
+        annotations:
+          traefik.ingress.kubernetes.io/service.serverstransport: ${main_namespace}-kanidm-transport@kubernetescrd
         ports:
           https:
             primary: true
@@ -115,8 +117,6 @@ spec:
     ingress:
 
       kanidm:
-        # TODO Disabled to test IngressRoute
-        enabled: false
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
@@ -157,6 +157,7 @@ spec:
     rawResources:
 
       ingress:
+        enabled: false
         apiVersion: traefik.io/v1alpha1
         kind: IngressRoute
         spec:
@@ -177,6 +178,14 @@ spec:
                     serversTransport: root-ca
             tls:
               secretName: wildcard-vonarx-online
+
+      transport:
+        apiVersion: traefik.io/v1alpha1
+        kind: ServersTransport
+        spec:
+          spec:
+            serverName: kanidm.${main_namespace}
+            rootCAsSecrets: [ "wildcard-${main_namespace}-cert" ]
 
       dest-data:
         enabled: false
