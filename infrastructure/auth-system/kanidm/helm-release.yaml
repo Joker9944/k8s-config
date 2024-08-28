@@ -115,6 +115,8 @@ spec:
     ingress:
 
       kanidm:
+        # TODO Disabled to test IngressRoute
+        enabled: false
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
@@ -153,6 +155,26 @@ spec:
             subPath: tls.key
 
     rawResources:
+
+      ingress:
+        apiVersion: traefik.io/v1alpha1
+        kind: IngressRoute
+        spec:
+          spec:
+            entryPoints: [ websecure ]
+            routes:
+              - kind: Rule
+                match: Host(`idm.vonarx.online`)
+                middlewares:
+                  - name: chain-basic
+                    namespace: ingress-system
+                  - name: country-whitelist
+                    namespace: ingress-system
+                services:
+                  - name: kanidm
+                    serversTransport: root-ca
+            tls:
+              secretName: wildcard-vonarx-online
 
       dest-data:
         enabled: false
