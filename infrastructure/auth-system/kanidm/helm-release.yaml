@@ -164,7 +164,7 @@ spec:
             entryPoints: [ websecure ]
             routes:
               - kind: Rule
-                match: Host(`idm.vonarx.online`)
+                match: Host(`idm.vonarx.online`) && PathPrefix(`/`)
                 middlewares:
                   - name: chain-basic
                     namespace: ingress-system
