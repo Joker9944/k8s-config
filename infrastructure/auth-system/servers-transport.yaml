@@ -4,4 +4,5 @@ metadata:
   name: root-ca
   namespace: ${main_namespace}
 spec:
+  serverName: kanidm.${main_namespace}
   rootCAsSecrets: [ "wildcard-${main_namespace}-cert" ]
