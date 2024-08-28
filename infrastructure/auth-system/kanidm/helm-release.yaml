@@ -169,7 +169,8 @@ spec:
                   - name: chain-basic
                   - name: country-whitelist
                 services:
-                  - name: kanidm
+                  - kind: Service
+                    name: kanidm
                     serversTransport: root-ca
             tls:
               secretName: wildcard-vonarx-online
