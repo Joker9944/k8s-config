@@ -167,7 +167,9 @@ spec:
                 match: Host(`idm.vonarx.online`)
                 middlewares:
                   - name: chain-basic
+                    namespace: ingress-system
                   - name: country-whitelist
+                    namespace: ingress-system
                 services:
                   - kind: Service
                     name: kanidm
