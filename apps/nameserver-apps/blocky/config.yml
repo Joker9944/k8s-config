@@ -79,8 +79,7 @@ blocking:
   blockType: nxDomain
 
 caching:
-  minTime: 15m
-  prefetching: true
+  prefetching: false
   prefetchExpires: 12h
 
 redis:
