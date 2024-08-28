@@ -171,6 +171,7 @@ spec:
                 services:
                   - kind: Service
                     name: kanidm
+                    port: 443
                     serversTransport: root-ca
             tls:
               secretName: wildcard-vonarx-online
