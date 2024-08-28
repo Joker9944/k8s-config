@@ -6,6 +6,11 @@ kind: Middleware
 metadata:
   name: chain-basic
   namespace: ${main_namespace}
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},auth-system
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: auth-system
 spec:
   chain:
     middlewares:
@@ -20,6 +25,11 @@ kind: Middleware
 metadata:
   name: basic-ratelimit
   namespace: ${main_namespace}
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},auth-system
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: auth-system
 spec:
   rateLimit:
     average: 600
@@ -32,6 +42,11 @@ kind: Middleware
 metadata:
   name: basic-secure-headers
   namespace: ${main_namespace}
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},auth-system
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: auth-system
 spec:
   headers:
     accessControlAllowMethods:
@@ -57,6 +72,11 @@ kind: Middleware
 metadata:
   name: compress
   namespace: ${main_namespace}
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},auth-system
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: auth-system
 spec:
   compress: {}
 ---
@@ -65,6 +85,11 @@ kind: Middleware
 metadata:
   name: local-link-whitelist
   namespace: ${main_namespace}
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},auth-system
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: auth-system
 spec:
   ipAllowList:
     ipStrategy:
