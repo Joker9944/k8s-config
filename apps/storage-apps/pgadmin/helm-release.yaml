@@ -32,9 +32,9 @@ spec:
         blocky:
           Name: blocky
           Group: Servers
-          Host: blocky-cnpg-main-rw.network-system.svc.cluster.local
+          Host: blocky-cnpg-rw.nameserver-apps.svc.cluster.local
           Port: 5432
-          Username: postgres
+          Username: blocky
           SSLMode: prefer
           MaintenanceDB: postgres
         home-assistant:
