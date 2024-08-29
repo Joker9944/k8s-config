@@ -1,0 +1,15 @@
+kanidm system oauth2 create jellyfin "Jellyfin" https://jellyfin.vonarx.online/
+
+kanidm system oauth2 add-redirect-url jellyfin https://jellyfin.vonarx.online/sso/OID/redirect/kanidm
+kanidm system oauth2 add-redirect-url jellyfin https://jellyfin.vonarx.online/sso/OID/r/kanidm
+
+kanidm group create jellyfin_admins
+kanidm group add-members jellyfin_admins media_admins
+kanidm group create jellyfin_users
+kanidm group add-members jellyfin_users media_users
+
+kanidm system oauth2 update-claim-map jellyfin role jellyfin_admins user admin
+kanidm system oauth2 update-claim-map jellyfin role jellyfin_users user
+
+kanidm system oauth2 update-scope-map jellyfin jellyfin_admins openid profile role
+kanidm system oauth2 update-scope-map jellyfin jellyfin_users openid profile role

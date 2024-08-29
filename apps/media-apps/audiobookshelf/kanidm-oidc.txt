@@ -1,0 +1,15 @@
+kanidm system oauth2 create audiobookshelf "Audiobookshelf" https://audiobookshelf.vonarx.online/
+
+kanidm system oauth2 add-redirect-url audiobookshelf https://audiobookshelf.vonarx.online/auth/openid/callback
+kanidm system oauth2 add-redirect-url audiobookshelf https://audiobookshelf.vonarx.online/auth/openid/mobile-redirect
+
+kanidm group create audiobookshelf_admins
+kanidm group add-members audiobookshelf_admins media_admins
+kanidm group create audiobookshelf_users
+kanidm group add-members audiobookshelf_users media_users
+
+kanidm system oauth2 update-claim-map audiobookshelf role audiobookshelf_admins admin
+kanidm system oauth2 update-claim-map audiobookshelf role audiobookshelf_users user
+
+kanidm system oauth2 update-scope-map audiobookshelf audiobookshelf_admins openid profile email role
+kanidm system oauth2 update-scope-map audiobookshelf audiobookshelf_users openid profile email role
