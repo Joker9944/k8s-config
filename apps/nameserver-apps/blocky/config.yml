@@ -20,25 +20,38 @@ conditional:
     vonarx.online: "blocky-gateway-k8s-gateway.{{ environ('K8S_NAMESPACE') }}"
 
 blocking:
+
   denylists:
-    default:
-      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
-      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
+    advertisement:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-      - https://blocklistproject.github.io/Lists/abuse.txt
       - https://blocklistproject.github.io/Lists/ads.txt
-      - https://blocklistproject.github.io/Lists/crypto.txt
+
+    tracking:
+      - https://blocklistproject.github.io/Lists/tracking.txt
+
+    social:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
       - https://blocklistproject.github.io/Lists/facebook.txt
-      - https://blocklistproject.github.io/Lists/fraud.txt
+      - https://blocklistproject.github.io/Lists/tiktok.txt
+
+    fakenews:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
+
+    gambling:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-only/hosts
       - https://blocklistproject.github.io/Lists/gambling.txt
+
+    abuse:
+      - https://blocklistproject.github.io/Lists/abuse.txt
+      - https://blocklistproject.github.io/Lists/crypto.txt
+      - https://blocklistproject.github.io/Lists/fraud.txt
       - https://blocklistproject.github.io/Lists/malware.txt
       - https://blocklistproject.github.io/Lists/phishing.txt
       - https://blocklistproject.github.io/Lists/ransomware.txt
       - https://blocklistproject.github.io/Lists/scam.txt
-      - https://blocklistproject.github.io/Lists/tiktok.txt
-      - https://blocklistproject.github.io/Lists/tracking.txt
+
   allowlists:
-    default:
+    advertisement:
     - | # Google Maps
       clients2.google.com
       clients4.google.com
@@ -74,7 +87,12 @@ blocking:
 
   clientGroupsBlock:
     default:
-      - default
+      - advertisement
+      - tracking
+      - social
+      - fakenews
+      - gambling
+      - abuse
 
   blockType: nxDomain
 
