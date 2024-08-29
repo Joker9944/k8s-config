@@ -52,38 +52,45 @@ blocking:
 
   allowlists:
     advertisement:
-    - | # Google Maps
-      clients2.google.com
-      clients4.google.com
-    - | # YouTube History
-      s.youtube.com
-      video-stats.l.google.com
-    - | # Google Play
-      android.clients.google.com
-    - | # Android TV
-      redirector.gvt1.com
-    - | # Reddit
-      www.reddit.com
-      www.redditstatic.com
-      styles.redditmedia.com
-      *.redd.it
-    - | # MS Teams
-      *.giphy.com
-    - | # LinkedIn
-      www.linkedin.com
-      static.licdn.com
-      media.licnd.com
-    - | # Instagram
-      www.instagram.com
-      static.cndinstagram.com
-      instagram.fzrh3-1.fna.fbcdn.net
-      graphql.instagram.com
-      scontent.cndinstagram.com
-    - | # TikTok
-      www.tiktok.com
-      vm.tiktok.com
-    - | # V Rising DS
-      cdp.cloud.unity3d.com
+      - | # Google Maps
+        clients2.google.com
+        clients4.google.com
+
+      - | # YouTube History
+        s.youtube.com
+        video-stats.l.google.com
+
+      - | # Google Play
+        android.clients.google.com
+
+      - | # Android TV
+        redirector.gvt1.com
+
+      - | # MS Teams
+        *.giphy.com
+
+    social:
+      - | # Instagram
+        www.instagram.com
+        static.cdninstagram.com
+        instagram.fzrh3-1.fna.fbcdn.net
+        graphql.instagram.com
+        scontent.cdninstagram.com
+
+      - | # Reddit
+        www.reddit.com
+        www.redditstatic.com
+        styles.redditmedia.com
+        *.redd.it
+
+      - | # LinkedIn
+        www.linkedin.com
+        static.licdn.com
+        media.licnd.com
+
+      - | # TikTok
+        www.tiktok.com
+        vm.tiktok.com
 
   clientGroupsBlock:
     default:

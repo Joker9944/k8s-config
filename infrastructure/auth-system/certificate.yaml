@@ -6,8 +6,8 @@ metadata:
   namespace: ${main_namespace}
 spec:
   dnsNames:
-  - "*.${main_namespace}.svc.cluster.local"
-  - "*.${main_namespace}"
+    - "*.${main_namespace}.svc.cluster.local"
+    - "*.${main_namespace}"
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer

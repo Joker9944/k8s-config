@@ -52,6 +52,7 @@ spec:
               KANIDM_DB_PATH: /data/kanidm.db
               KANIDM_TLS_CHAIN: &path_tls_crt /data/tls.crt
               KANIDM_TLS_KEY: &path_tls_key /data/tls.key
+              KANIDM_LOG_LEVEL: info
               KANIDM_DOMAIN: idm.vonarx.online
               KANIDM_ORIGIN: https://idm.vonarx.online:443
             probes:
@@ -105,14 +106,10 @@ spec:
       ldaps:
         controller: kanidm
         ports:
-          ldaps-tcp:
+          ldaps:
             port: 636
             targetPort: 3636
             protocol: TCP
-          ldaps-udp:
-            port: 636
-            targetPort: 3636
-            protocol: UDP
 
     ingress:
 
@@ -155,29 +152,6 @@ spec:
             subPath: tls.key
 
     rawResources:
-
-      ingress:
-        enabled: false
-        apiVersion: traefik.io/v1alpha1
-        kind: IngressRoute
-        spec:
-          spec:
-            entryPoints: [ websecure ]
-            routes:
-              - kind: Rule
-                match: Host(`idm.vonarx.online`) && PathPrefix(`/`)
-                middlewares:
-                  - name: chain-basic
-                    namespace: ingress-system
-                  - name: country-whitelist
-                    namespace: ingress-system
-                services:
-                  - kind: Service
-                    name: kanidm
-                    port: 443
-                    serversTransport: root-ca
-            tls:
-              secretName: wildcard-vonarx-online
 
       transport:
         apiVersion: traefik.io/v1alpha1
