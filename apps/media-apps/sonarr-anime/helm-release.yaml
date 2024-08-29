@@ -205,6 +205,9 @@ spec:
       config:
         type: emptyDir
 
+      tmp:
+        type: emptyDir
+
       media:
         type: nfs
         server: 192.168.178.14
