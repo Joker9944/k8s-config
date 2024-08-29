@@ -20,6 +20,11 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+
+  valuesFrom:
+    - kind: Secret
+      name: radarr-standard-secret-values
+
   values:
 
     global:
@@ -38,19 +43,22 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
+
       radarr:
 
         pod:
           securityContext:
-            runAsUser: 6005
-            runAsGroup: 6000
+            runAsUser: &PUID 6005
+            runAsGroup: &GUID 6000
             runAsNonRoot: true
-            fsGroup: 6000
+            fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups:
-              - 568
+            supplementalGroups: [ 568 ]
+            seccompProfile:
+              type: RuntimeDefault
 
         containers:
+
           radarr:
             image:
               repository: ghcr.io/onedr0p/radarr
@@ -67,41 +75,56 @@ spec:
                     key: key
               RADARR__AUTH__METHOD: Forms
               RADARR__AUTH__REQUIRED: Enabled
-              RADARR__SERVER__PORT: &port 7878
+              RADARR__SERVER__PORT: &port_http 7878
               RADARR__LOG__LEVEL: info
               RADARR__POSTGRES__HOST:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-radarr-standard
+                    name: cnpg-user-radarr-standard-user
                     key: HOST
               RADARR__POSTGRES__USER:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-radarr-standard
-                    key: LOGIN
+                    name: cnpg-user-radarr-standard-user
+                    key: ROLE
               RADARR__POSTGRES__PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-radarr-standard
+                    name: cnpg-user-radarr-standard-user
                     key: PASSWORD
               RADARR__POSTGRES__MAINDB: radarr-standard-main
               RADARR__POSTGRES__LOGDB: radarr-standard-log
             probes:
               liveness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
+                  failureThreshold: 6
               readiness:
                 enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
               startup:
                 enabled: true
+                custom: true
                 spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
               requests:
                 cpu: 20m
-                memory: 384Mi
+                memory: 500Mi
               limits:
-                memory: 1536Mi
+                memory: 700Mi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -110,6 +133,7 @@ spec:
                   - ALL
 
         initContainers:
+
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
@@ -133,9 +157,8 @@ spec:
               MAIN_DATABASE: radarr-standard-main
               LOG_DATABASE: radarr-standard-log
               DATABASE_ROLE: radarr-standard-main-group
-            command:
-              - /bin/sh
-              - -c
+            command: [/bin/sh, -c]
+            args:
               - |
                 echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
                 until
@@ -155,13 +178,15 @@ spec:
                   - ALL
 
     service:
+
       radarr:
         controller: radarr
         ports:
           http:
-            port: *port
+            port: *port_http
 
     ingress:
+
       radarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -180,13 +205,41 @@ spec:
             secretName: wildcard-vonarx-online
 
     persistence:
+
       config:
         type: emptyDir
-      tmp:
-        type: emptyDir
+
       media:
         type: nfs
         server: 192.168.178.14
         path: /mnt/chronos/media-data
         globalMounts:
           - path: /mnt/media-data
+
+    rawResources:
+
+      main:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: Postgres
+        spec:
+          spec:
+            database: radarr-standard-main
+            dropOnDelete: false
+
+      log:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: Postgres
+        spec:
+          spec:
+            database: radarr-standard-log
+            dropOnDelete: false
+
+      user:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: PostgresUser
+        spec:
+          spec:
+            role: radarr-standard
+            database: radarr-standard-main
+            secretName: cnpg-user
+            privileges: OWNER

@@ -96,21 +96,24 @@ spec:
                 enabled: true
                 custom: true
                 spec:
-                  exec:
-                    command: [/bin/sh, -c, 'curl --fail --header "X-Api-Key: $PROWLARR__AUTH__APIKEY" "http://localhost:$PROWLARR__SERVER__PORT/api/v1/health" || exit 1']
+                  httpGet:
+                    port: *port_http
+                    path: /ping
                   failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true
                 spec:
-                  exec:
-                    command: [/bin/sh, -c, 'curl --fail --header "X-Api-Key: $PROWLARR__AUTH__APIKEY" "http://localhost:$PROWLARR__SERVER__PORT/api/v1/health" || exit 1']
+                  httpGet:
+                    port: *port_http
+                    path: /ping
               startup:
                 enabled: true
                 custom: true
                 spec:
-                  exec:
-                    command: [/bin/sh, -c, 'curl --fail --header "X-Api-Key: $PROWLARR__AUTH__APIKEY" "http://localhost:$PROWLARR__SERVER__PORT/api/v1/health" || exit 1']
+                  httpGet:
+                    port: *port_http
+                    path: /ping
                   failureThreshold: 30
                   periodSeconds: 5
             resources:

@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - postgres
-  - radarr-standard
+  - radarr-standard/helm-release.yaml
   - sonarr-anime
   - sonarr-standard
   - flaresolverr/helm-release.yaml
@@ -29,5 +29,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=prowlarr/secret-values.sops.yaml
+  - name: radarr-standard-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=radarr-standard/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
