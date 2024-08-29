@@ -5,8 +5,6 @@ kind: HelmRelease
 metadata:
   name: jellyfin
   namespace: ${main_namespace}
-  labels:
-    app.kubernetes.io/name: jellyfin
 spec:
   interval: 30m
   chart:

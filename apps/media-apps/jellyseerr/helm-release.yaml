@@ -3,10 +3,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: jellyseerr
-    app.kubernetes.io/instance: jellyseerr
-    app.kubernetes.io/part-of: servarr
   name: jellyseerr
   namespace: ${main_namespace}
 spec:

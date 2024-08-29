@@ -5,7 +5,7 @@ resources:
   - postgres
   - radarr-standard/helm-release.yaml
   - sonarr-anime/helm-release.yaml
-  - sonarr-standard
+  - sonarr-standard/helm-release.yaml
   - flaresolverr/helm-release.yaml
   - prowlarr/helm-release.yaml
   - recyclarr
@@ -37,5 +37,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=sonarr-anime/secret-values.sops.yaml
+  - name: sonarr-standard-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=sonarr-standard/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

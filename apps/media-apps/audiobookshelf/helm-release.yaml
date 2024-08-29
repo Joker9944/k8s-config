@@ -5,9 +5,6 @@ kind: HelmRelease
 metadata:
   name: audiobookshelf
   namespace: ${main_namespace}
-  labels:
-    app.kubernetes.io/name: audiobookshelf
-    app.kubernetes.io/part-of: audiobookshelf
 spec:
   interval: 30m
   chart:

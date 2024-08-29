@@ -3,10 +3,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: radarr-standard
-    app.kubernetes.io/instance: radarr
-    app.kubernetes.io/part-of: servarr
   name: radarr-standard
   namespace: ${main_namespace}
 spec:

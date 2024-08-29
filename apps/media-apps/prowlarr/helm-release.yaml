@@ -3,10 +3,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: prowlarr
-    app.kubernetes.io/instance: prowlarr
-    app.kubernetes.io/part-of: servarr
   name: prowlarr
   namespace: ${main_namespace}
 spec:
