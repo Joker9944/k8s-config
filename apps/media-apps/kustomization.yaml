@@ -7,7 +7,7 @@ resources:
   - sonarr-anime
   - sonarr-standard
   - flaresolverr/helm-release.yaml
-  - prowlarr
+  - prowlarr/helm-release.yaml
   - recyclarr
   - jellyseerr/helm-release.yaml
   - jellyfin/helm-release.yaml
@@ -25,5 +25,9 @@ secretGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=jellyseerr/secret-values.sops.yaml
+  - name: prowlarr-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=prowlarr/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml

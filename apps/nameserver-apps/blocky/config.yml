@@ -34,14 +34,12 @@ blocking:
       - https://blocklistproject.github.io/Lists/facebook.txt
       - https://blocklistproject.github.io/Lists/tiktok.txt
 
-    fakenews:
-      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
-
     gambling:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-only/hosts
       - https://blocklistproject.github.io/Lists/gambling.txt
 
     abuse:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
       - https://blocklistproject.github.io/Lists/abuse.txt
       - https://blocklistproject.github.io/Lists/crypto.txt
       - https://blocklistproject.github.io/Lists/fraud.txt
@@ -97,7 +95,6 @@ blocking:
       - advertisement
       - tracking
       - social
-      - fakenews
       - gambling
       - abuse
 
