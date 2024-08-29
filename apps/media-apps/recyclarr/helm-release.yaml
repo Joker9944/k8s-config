@@ -20,6 +20,7 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+
   values:
 
     global:
@@ -38,6 +39,7 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
+
       recyclarr:
         type: cronjob
 
@@ -52,13 +54,16 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 568
-            runAsGroup: 568
+            runAsUser: &PUID 568
+            runAsGroup: &GUID 568
             runAsNonRoot: true
-            fsGroup: 568
+            fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
 
         containers:
+
           recyclarr:
             image:
               repository: ghcr.io/recyclarr/recyclarr
