@@ -77,17 +77,17 @@ spec:
               PROWLARR__POSTGRES__HOST:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-prowlarr
+                    name: cnpg-user-prowlarr-user
                     key: HOST
               PROWLARR__POSTGRES__USER:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-prowlarr
+                    name: cnpg-user-prowlarr-user
                     key: ROLE
               PROWLARR__POSTGRES__PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-prowlarr
+                    name: cnpg-user-prowlarr-user
                     key: PASSWORD
               PROWLARR__POSTGRES__MAINDB: prowlarr-main
               PROWLARR__POSTGRES__LOGDB: prowlarr-log
