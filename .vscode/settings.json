@@ -1,0 +1,17 @@
+{
+    "cSpell.words": [
+        "dbname",
+        "initdb",
+        "isready",
+        "PGDATABASE",
+        "PGHOST",
+        "PGPASSWORD",
+        "PGURI",
+        "PGUSER",
+        "PUID"
+    ],
+    "cSpell.ignoreWords": [
+        "onedr",
+        "xerr"
+    ]
+}
