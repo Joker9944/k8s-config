@@ -117,6 +117,20 @@ sonarr:
           - name: HD-1080p / Ultra-HD
             score: -10000
 
+      - trash_ids: # HQ Source Groups
+          - 9965a052eb87b0d10313b1cea89eb451 # Remux Tier 01
+          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 02
+          - d6819cba26b1a6508138d25fb5e32293 # HD Bluray Tier 01
+          - c2216b7b8aa545dc1ce8388c618f8d57 # HD Bluray Tier 02
+          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
+          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
+          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
+          - d0c516558625b04b363fa6c5c2c7cfd4 # WEB Scene
+        assign_scores_to:
+          - name: HD-1080p
+          - name: Ultra-HD
+          - name: HD-1080p / Ultra-HD
+
       - trash_ids: # General Streaming Services
           - d660701077794679fd59e8bdf4ce3a29 # AMZN
           - f67c9ca88f463a48346062e8ad07713f # ATVP
@@ -134,16 +148,6 @@ sonarr:
           - ae58039e1319178e6be73caab5c42166 # SHO
           - 1efe8da11bfd74fbbcd4d8117ddb9213 # STAN
           - 9623c5c9cac8e939c1b9aedd32f640bf # SYFY
-        assign_scores_to:
-          - name: HD-1080p
-          - name: Ultra-HD
-          - name: HD-1080p / Ultra-HD
-
-      - trash_ids: # HQ Source Groups
-          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
-          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
-          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
-          - d0c516558625b04b363fa6c5c2c7cfd4 # WEB Scene
         assign_scores_to:
           - name: HD-1080p
           - name: Ultra-HD
@@ -218,6 +222,15 @@ sonarr:
         assign_scores_to:
           - name: HD-1080p
 
+      - trash_ids: # HQ Source Groups
+          - 9965a052eb87b0d10313b1cea89eb451 # Remux Tier 01
+          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 02
+          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
+          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
+          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
+        assign_scores_to:
+          - name: HD-1080p
+
       - trash_ids: # Anime Streaming Services
           - a370d974bc7b80374de1d9ba7519760b # ABEMA
           - d54cd2bf1326287275b56bccedb72ee2 # ADN
@@ -241,43 +254,7 @@ sonarr:
         assign_scores_to:
           - name: HD-1080p
 
-      - trash_ids: # Overrides
-          - 9965a052eb87b0d10313b1cea89eb451 # Remux Tier 01
-        assign_scores_to:
-          - name: HD-1080p
-            score: 1050
-
-      - trash_ids: # Overrides
-          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 02
-        assign_scores_to:
-          - name: HD-1080p
-            score: 1000
-
-      - trash_ids: # Anime Overrides
-          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 03
-        assign_scores_to:
-          - name: HD-1080p
-            score: 950
-
-      - trash_ids: # Overrides
-          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
-        assign_scores_to:
-          - name: HD-1080p
-            score: 350
-
-      - trash_ids: # Overrides
-          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
-        assign_scores_to:
-          - name: HD-1080p
-            score: 250
-
-      - trash_ids: # Overrides
-          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
-        assign_scores_to:
-          - name: HD-1080p
-            score: 150
-
-      - trash_ids: # Language
+      - trash_ids: # Overrides Language
           - 418f50b10f1907201b6cfdf881f467b7 # Dual Audio
         assign_scores_to:
           - name: HD-1080p
@@ -609,39 +586,39 @@ radarr:
           - name: HD-1080p (Anime)
 
       - trash_ids: # Anime Overrides
-          - 9965a052eb87b0d10313b1cea89eb451 # Remux Tier 01
+          - 3a3ff47579026e76d6504ebea39390de # Remux Tier 01
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 1050
 
       - trash_ids: # Anime Overrides
-          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 02
+          - 9f98181fe5a3fbeb0cc29340da2a468a # Remux Tier 02
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 1000
 
       - trash_ids: # Anime Overrides
-          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 03
+          - 8baaf0b3142bf4d94c42a724f034e27a # Remux Tier 03
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 950
 
       - trash_ids: # Anime Overrides
-          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
+          - c20f169ef63c5f40c2def54abaf4438e # WEB Tier 01
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 350
 
       - trash_ids: # Anime Overrides
-          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
+          - 403816d65392c79236dcb6dd591aeda4 # WEB Tier 02
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 250
 
       - trash_ids: # Anime Overrides
-          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
+          - af94e0fe497124d1f9ce732069ec8c3b # WEB Tier 03
         assign_scores_to:
-          - name: HD-1080p
+          - name: HD-1080p (Anime)
             score: 150
 
       - trash_ids: # Anime Languages
