@@ -77,6 +77,8 @@ spec:
               QBT_BitTorrent__Session__TempPathEnabled: true
               QBT_BitTorrent__Session__TempPath: /mnt/media-data/.staging/qbittorrent/incomplete
               QBT_Preferences__WebUI__LocalHostAuth: false
+              QBT_Preferences__WebUI__ReverseProxySupportEnabled: true
+              QBT_Preferences__WebUI__TrustedReverseProxiesList: 10.244.0.0/16
             probes:
               liveness:
                 enabled: true
