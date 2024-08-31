@@ -80,6 +80,7 @@ blocking:
         www.redditstatic.com
         styles.redditmedia.com
         *.redd.it
+        reddit.map.fastly.net
 
       - | # LinkedIn
         www.linkedin.com
