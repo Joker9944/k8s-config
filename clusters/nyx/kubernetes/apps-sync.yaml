@@ -2,11 +2,11 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cloud
+  name: cloud-apps
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./apps/cloud
+  path: ./apps/cloud-apps
   prune: true
   sourceRef:
     kind: GitRepository
@@ -17,7 +17,7 @@ spec:
       name: sops-age
   postBuild:
     substitute:
-      main_namespace: cloud
+      main_namespace: cloud-apps
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

@@ -26,7 +26,7 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: &PUID 568
+            runAsUser: &PUID 6010
             runAsGroup: &GUID 6001
             runAsNonRoot: true
             fsGroup: *GUID
@@ -104,11 +104,5 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-      # dataSourceRef:
-      #   apiGroup: volsync.backube
-      #   kind: ReplicationDestination
-      #   name: jellyfin-dest-config
-        advancedMounts:
-          jellyfin:
-            jellyfin:
-              - path: /config
+        globalMounts:
+          - path: /app/data/state
