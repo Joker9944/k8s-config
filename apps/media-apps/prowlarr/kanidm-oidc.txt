@@ -1,0 +1,8 @@
+kanidm system oauth2 create prowlarr "Prowlarr" https://prowlarr.vonarx.online/
+
+kanidm system oauth2 add-redirect-url prowlarr https://prowlarr.vonarx.online/
+
+kanidm group create prowlarr_admins
+kanidm group add-members prowlarr_admins media_admins
+
+kanidm system oauth2 update-scope-map prowlarr prowlarr_admins openid

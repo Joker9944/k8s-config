@@ -66,7 +66,7 @@ spec:
                   secretKeyRef:
                     name: prowlarr-api-key
                     key: key
-              PROWLARR__AUTH__METHOD: Forms
+              PROWLARR__AUTH__METHOD: External
               PROWLARR__AUTH__REQUIRED: Enabled
               PROWLARR__SERVER__PORT: &port_http 9696
               PROWLARR__LOG__LEVEL: info
@@ -159,7 +159,7 @@ spec:
                   pg_isready --dbname="$LOG_DATABASE"
                   do sleep 5
                 done
-                echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE available on $HOST"
                 echo "Changing owner of the $LOG_DATABASE database on $HOST"
                 psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
                 psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
@@ -184,7 +184,12 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,kube-system-oidc-forward-auth-middleware@kubernetescrd
+          oidc.ingress.kubernetes.io/forward-auth-enabled: "true"
+          oidc.ingress.kubernetes.io/issuer-url: https://idm.vonarx.online/oauth2/openid/prowlarr/
+          oidc.ingress.kubernetes.io/audience: prowlarr
+          oidc.ingress.kubernetes.io/scopes: openid
+          oidc.ingress.kubernetes.io/existing-secret: prowlarr-oidc
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
