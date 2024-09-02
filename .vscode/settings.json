@@ -12,6 +12,7 @@
         "PGDATABASE",
         "PGHOST",
         "PGPASSWORD",
+        "pgsql",
         "PGURI",
         "PGUSER",
         "psql",

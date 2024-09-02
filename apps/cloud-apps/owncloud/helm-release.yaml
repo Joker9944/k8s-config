@@ -30,10 +30,7 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: &PUID 6010
-            runAsGroup: &GUID 6001
             runAsNonRoot: true
-            fsGroup: *GUID
             supplementalGroups: [ 568 ]
             seccompProfile:
               type: RuntimeDefault
@@ -89,10 +86,8 @@ spec:
                     command: [ /usr/bin/healthcheck ]
               startup:
                 enabled: true
-                custom: true
+                port: &port_http 8080
                 spec:
-                  exec:
-                    command: [ /usr/bin/healthcheck ]
                   failureThreshold: 30
                   periodSeconds: 5
             # TODO monitor and set
@@ -103,7 +98,6 @@ spec:
               limits:
                 memory: 1Gi
             securityContext:
-              runAsUser: 0
               runAsNonRoot: false
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
@@ -117,75 +111,7 @@ spec:
                 drop:
                   - ALL
 
-        initContainers:
-
-          postgresql:
-            image:
-              repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
-            env:
-              PGHOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: host
-              PGUSER:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: user
-              PGPASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: password
-              PGDATABASE:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: dbname
-            command: [ /bin/sh, -c ]
-            args:
-              - |
-                echo "Testing connection for DB $PGDATABASE on $PGHOST"
-                until
-                  pg_isready
-                  do sleep 5
-                done
-                echo "DB $PGDATABASE available on $PGHOST"
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-
-          redis:
-            image:
-              repository: bitnami/redis
-              tag: 7.4.0@sha256:5c2cbdcdd7b7418a5f15a47ec8adc99389d1d9c4e8ec1cc639723b602524180b
-            env:
-              REDIS_HOST: owncloud-redis-master.${main_namespace}
-              REDISCLI_AUTH:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-redis
-                    key: redis-password
-            command: [ /bin/sh, -c ]
-            args:
-              - |
-                echo "Testing connection for host $REDIS_HOST"
-                until
-                  redis-cli -h "$REDIS_HOST" PING | grep PONG
-                  do sleep 5
-                done
-                echo "Host $REDIS_HOST available"
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+        # Init waits for cnpg and redis not needed since ownCloud preforms those checks itself
 
     service:
 
@@ -193,7 +119,7 @@ spec:
         controller: owncloud
         ports:
           http:
-            port: 8080
+            port: *port_http
 
     ingress:
 
