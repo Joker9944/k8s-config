@@ -47,7 +47,7 @@ spec:
             env:
               OWNCLOUD_DOMAIN: cloud.vonarx.online
               OWNCLOUD_TRUSTED_DOMAINS: cloud.vonarx.online
-              OWNCLOUD_DB_TYPE: postgres
+              OWNCLOUD_DB_TYPE: pgsql
               OWNCLOUD_DB_NAME:
                 valueFrom:
                   secretKeyRef:
@@ -103,9 +103,17 @@ spec:
               limits:
                 memory: 1Gi
             securityContext:
+              runAsUser: 0
+              runAsNonRoot: false
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities:
+                add:
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
@@ -212,6 +220,9 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /mnt/data
+
+      var:
+        type: emptyDir
 
     rawResources:
       cnpg:
