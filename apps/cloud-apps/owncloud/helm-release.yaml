@@ -1,0 +1,251 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: owncloud
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.4.0
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+
+  values:
+
+    controllers:
+
+      owncloud:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: &PUID 6010
+            runAsGroup: &GUID 6001
+            runAsNonRoot: true
+            fsGroup: *GUID
+            supplementalGroups: [ 568 ]
+            seccompProfile:
+              type: RuntimeDefault
+
+        containers:
+
+          owncloud:
+            image:
+              repository: owncloud/server
+              tag: 10.15.0@sha256:51d9b74fc2a81875c0ecc643d49f83e0453c83b0d039fb564b8ca40ec5d711c2
+            env:
+              OWNCLOUD_DOMAIN: cloud.vonarx.online
+              OWNCLOUD_TRUSTED_DOMAINS: cloud.vonarx.online
+              OWNCLOUD_DB_TYPE: postgres
+              OWNCLOUD_DB_NAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-cnpg-app
+                    key: dbname
+              OWNCLOUD_DB_USERNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-cnpg-app
+                    key: user
+              OWNCLOUD_DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-cnpg-app
+                    key: password
+              OWNCLOUD_DB_HOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-cnpg-app
+                    key: host
+              OWNCLOUD_REDIS_ENABLED: true
+              OWNCLOUD_REDIS_HOST: owncloud-redis-master.${main_namespace}
+            envFrom:
+              - secretRef:
+                  name: owncloud-admin-user
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /usr/bin/healthcheck ]
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /usr/bin/healthcheck ]
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /usr/bin/healthcheck ]
+                  failureThreshold: 30
+                  periodSeconds: 5
+            # TODO monitor and set
+            resources:
+              requests:
+                cpu: 50m
+                memory: 500Mi
+              limits:
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+
+          postgresql:
+            image:
+              repository: ghcr.io/joker9944/postgresql-client
+              tag: 3.20.2@sha256:49a4e6bedc87186bf6501de5ca7eb74fc137a83bed65adda89cdd7486910c127
+            env:
+              PGHOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: blocky-cnpg-app
+                    key: host
+              PGUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: blocky-cnpg-app
+                    key: user
+              PGPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: blocky-cnpg-app
+                    key: password
+              PGDATABASE:
+                valueFrom:
+                  secretKeyRef:
+                    name: blocky-cnpg-app
+                    key: dbname
+            command: [ /bin/sh, -c ]
+            args:
+              - |
+                echo "Testing connection for DB $PGDATABASE on $PGHOST"
+                until
+                  pg_isready
+                  do sleep 5
+                done
+                echo "DB $PGDATABASE available on $PGHOST"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+          redis:
+            image:
+              repository: bitnami/redis
+              tag: 7.4.0@sha256:5c2cbdcdd7b7418a5f15a47ec8adc99389d1d9c4e8ec1cc639723b602524180b
+            env:
+              REDIS_HOST: owncloud-redis-master.${main_namespace}
+              REDISCLI_AUTH:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-redis
+                    key: redis-password
+            command: [ /bin/sh, -c ]
+            args:
+              - |
+                echo "Testing connection for host $REDIS_HOST"
+                until
+                  redis-cli -h "$REDIS_HOST" PING | grep PONG
+                  do sleep 5
+                done
+                echo "Host $REDIS_HOST available"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+
+      owncloud:
+        controller: owncloud
+        ports:
+          http:
+            port: *port_http
+
+    ingress:
+
+      owncloud:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: &host file.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: owncloud
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+
+      data:
+        type: emptyDir
+        globalMounts:
+          - /mnt/data
+
+    rawResources:
+      cnpg:
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        spec:
+          spec:
+            description: PostgreSQL Cluster for owncloud
+            instances: 3
+            storage:
+              size: 1Gi
+            walStorage:
+              size: 1Gi
+            bootstrap:
+              initdb:
+                database: owncloud
+                owner: owncloud
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: owncloud-redis
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: redis
+      version: 20.0.3
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  values:
+
+    architecture: standalone
+    master:
+      persistence:
+        enabled: false
