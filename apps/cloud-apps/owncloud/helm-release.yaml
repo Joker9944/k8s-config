@@ -20,6 +20,7 @@ spec:
   valuesFrom:
     - kind: Secret
       name: owncloud-secret-values
+
   values:
 
     controllers:
@@ -118,22 +119,22 @@ spec:
               PGHOST:
                 valueFrom:
                   secretKeyRef:
-                    name: blocky-cnpg-app
+                    name: owncloud-cnpg-app
                     key: host
               PGUSER:
                 valueFrom:
                   secretKeyRef:
-                    name: blocky-cnpg-app
+                    name: owncloud-cnpg-app
                     key: user
               PGPASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: blocky-cnpg-app
+                    name: owncloud-cnpg-app
                     key: password
               PGDATABASE:
                 valueFrom:
                   secretKeyRef:
-                    name: blocky-cnpg-app
+                    name: owncloud-cnpg-app
                     key: dbname
             command: [ /bin/sh, -c ]
             args:
