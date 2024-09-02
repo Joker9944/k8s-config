@@ -207,7 +207,7 @@ spec:
       data:
         type: emptyDir
         globalMounts:
-          - /mnt/data
+          - path: /mnt/data
 
     rawResources:
       cnpg:
