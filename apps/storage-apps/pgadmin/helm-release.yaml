@@ -53,6 +53,14 @@ spec:
           Username: postgres
           SSLMode: prefer
           MaintenanceDB: postgres
+        owncloud:
+          Name: owncloud
+          Group: Servers
+          Host: owncloud-cnpg-rw.cloud-apps.svc.cluster.local
+          Port: 5432
+          Username: owncloud
+          SSLMode: prefer
+          MaintenanceDB: postgres
     ingress:
       enabled: true
       annotations:
