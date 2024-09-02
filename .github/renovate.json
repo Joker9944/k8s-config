@@ -67,8 +67,7 @@
       ],
       "automerge": true,
       "ignoreTests": true,
-      "schedule": [],
-      "automergeSchedule": []
+      "schedule": ["at any time"]
     }
   ]
 }
