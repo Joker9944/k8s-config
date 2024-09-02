@@ -147,9 +147,6 @@ spec:
         globalMounts:
           - path: /mnt/data
 
-      var:
-        type: emptyDir
-
     rawResources:
       cnpg:
         apiVersion: postgresql.cnpg.io/v1
