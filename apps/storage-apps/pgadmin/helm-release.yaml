@@ -30,7 +30,7 @@ spec:
       enabled: true
       servers:
         blocky:
-          Name: blocky
+          Name: Blocky
           Group: Servers
           Host: blocky-cnpg-rw.nameserver-apps.svc.cluster.local
           Port: 5432
@@ -38,7 +38,7 @@ spec:
           SSLMode: prefer
           MaintenanceDB: postgres
         home-assistant:
-          Name: home-assistant
+          Name: Home Assistant
           Group: Servers
           Host: home-assistant-cnpg-rw.home-apps.svc.cluster.local
           Port: 5432
@@ -46,7 +46,7 @@ spec:
           SSLMode: prefer
           MaintenanceDB: postgres
         servarr:
-          Name: servarr
+          Name: Servarr
           Group: Servers
           Host: servarr-cnpg-rw.media-apps.svc.cluster.local
           Port: 5432
@@ -54,7 +54,7 @@ spec:
           SSLMode: prefer
           MaintenanceDB: postgres
         owncloud:
-          Name: owncloud
+          Name: ownCloud
           Group: Servers
           Host: owncloud-cnpg-rw.cloud-apps.svc.cluster.local
           Port: 5432

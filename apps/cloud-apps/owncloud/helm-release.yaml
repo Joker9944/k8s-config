@@ -67,6 +67,11 @@ spec:
                     key: host
               OWNCLOUD_REDIS_ENABLED: true
               OWNCLOUD_REDIS_HOST: owncloud-redis-master.${main_namespace}
+              OWNCLOUD_REDIS_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: owncloud-redis
+                    key: redis-password
             envFrom:
               - secretRef:
                   name: owncloud-admin-user
