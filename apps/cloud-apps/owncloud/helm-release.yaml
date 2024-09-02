@@ -75,8 +75,6 @@ spec:
             envFrom:
               - secretRef:
                   name: owncloud-admin-user
-              - secretRef:
-                  name: owncloud-oidc-config
             probes:
               liveness:
                 enabled: true
@@ -119,6 +117,24 @@ spec:
                   - ALL
 
         # Init waits for cnpg and redis not needed since ownCloud preforms those checks itself
+        initContainers:
+
+          # WORKAROUND ownCloud does not like it when files are read-only so instead of mounting em directly we just overwritten em with every restart.
+          jinja:
+            image:
+              repository: ghcr.io/joker9944/jinja-cli
+              tag: 3.12.5@sha256:53082c3ccbf84ae9238ba68cddb44a6490f8452ba9125999b60fc8d006c5b4b6
+            envFrom:
+              - secretRef:
+                  name: owncloud-oidc-config
+            command: [/bin/sh, -c]
+            args: [jinja2 /templates/oidc.config.php > /mnt/data/config/oidc.config.php]
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
 
     service:
 
@@ -157,12 +173,13 @@ spec:
         globalMounts:
           - path: /mnt/data
 
-      config-overlay:
+      config-templates:
         type: configMap
-        name: owncloud-config-overlay
-        globalMounts:
-          - path: /mnt/data/config
-            subPath: oidc.config.php
+        name: owncloud-config-templates
+        advancedMounts:
+          owncloud:
+            jinja:
+              - path: /templates
 
     rawResources:
       cnpg:

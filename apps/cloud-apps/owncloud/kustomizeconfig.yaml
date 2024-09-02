@@ -1,5 +1,5 @@
 nameReference:
   - kind: ConfigMap
     fieldSpecs:
-      - path: spec/values/persistence/config-overlay/name
+      - path: spec/values/persistence/config-templates/name
         kind: HelmRelease

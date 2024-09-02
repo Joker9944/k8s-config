@@ -8,7 +8,7 @@ secretGenerator:
     files:
       - values.yaml=secret-values.sops.yaml
 configMapGenerator:
-  - name: owncloud-config-overlay
+  - name: owncloud-config-templates
     namespace: ${main_namespace}
     files:
       - oidc.config.php=oidc.config.php
