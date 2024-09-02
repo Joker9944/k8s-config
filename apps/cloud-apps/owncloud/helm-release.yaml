@@ -130,9 +130,17 @@ spec:
             command: [/bin/sh, -c]
             args: [jinja2 /templates/oidc.config.php > /mnt/data/config/oidc.config.php]
             securityContext:
+              runAsUser: 0
+              runAsNonRoot: false
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities:
+                add:
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
