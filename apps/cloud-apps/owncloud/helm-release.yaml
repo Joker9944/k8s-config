@@ -75,6 +75,8 @@ spec:
             envFrom:
               - secretRef:
                   name: owncloud-admin-user
+              - secretRef:
+                  name: owncloud-oidc-config
             probes:
               liveness:
                 enabled: true
@@ -154,6 +156,13 @@ spec:
         size: &pvc_config_size 1Gi
         globalMounts:
           - path: /mnt/data
+
+      config-overlay:
+        type: configMap
+        name: owncloud-config-overlay
+        globalMounts:
+          - path: /mnt/data/config
+            subPath: oidc.config.php
 
     rawResources:
       cnpg:

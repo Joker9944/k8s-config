@@ -11,5 +11,5 @@ charset = utf-8
 indent_style = space
 indent_size = 2
 
-[{*.py,Dockerfile}]
+[{*.py,Dockerfile,*.php}]
 indent_style = tab

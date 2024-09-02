@@ -1,0 +1,11 @@
+kanidm system oauth2 create owncloud "ownCloud" https://cloud.vonarx.online/
+
+kanidm system oauth2 add-redirect-url owncloud https://cloud.vonarx.online/index.php/apps/openidconnect/redirect
+
+kanidm group create owncloud_admins
+kanidm group add-members owncloud_admins cloud_admins
+kanidm group create owncloud_users
+kanidm group add-members owncloud_users cloud_users
+
+kanidm system oauth2 update-scope-map owncloud owncloud_admins openid profile email
+kanidm system oauth2 update-scope-map owncloud owncloud_users openid profile email

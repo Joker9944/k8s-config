@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helm-release.yaml
+secretGenerator:
+  - name: owncloud-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=secret-values.sops.yaml
+configMapGenerator:
+  - name: owncloud-config-overlay
+    namespace: ${main_namespace}
+    files:
+      - oidc.config.php=oidc.config.php
+configurations:
+  - kustomizeconfig.yaml
