@@ -4,20 +4,6 @@ LABEL org.opencontainers.image.description="Alpine image with postgresql-client 
 
 RUN apk add --no-cache postgresql-client
 
-ARG PUID=568
-ARG PGID=568
-
-RUN \
-	addgroup -g "${PGID}" postgresql-client && \
-	adduser \
-		-u "${PUID}" \
-		-G postgresql-client \
-		-h /postgresql-client \
-		-D \
-		postgresql-client
-
-WORKDIR /postgresql-client
-
-USER postgresql-client
+USER nobody:nogroup
 
 ENTRYPOINT ["psql"]
