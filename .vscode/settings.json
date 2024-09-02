@@ -20,6 +20,7 @@
         "PUID",
         "REDISCLI",
         "statefulset",
+        "talconfig",
         "userid",
         "websecure"
     ],
