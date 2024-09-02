@@ -17,6 +17,9 @@ spec:
         name: bjw-s
         namespace: flux-system
 
+  valuesFrom:
+    - kind: Secret
+      name: owncloud-secret-values
   values:
 
     controllers:

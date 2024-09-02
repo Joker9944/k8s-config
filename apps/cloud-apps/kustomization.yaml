@@ -3,5 +3,10 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - owncloud/helm-release.yaml
+secretGenerator:
+  - name: owncloud-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=owncloud/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
