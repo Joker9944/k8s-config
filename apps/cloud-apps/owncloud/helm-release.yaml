@@ -181,7 +181,7 @@ spec:
         controller: owncloud
         ports:
           http:
-            port: *port_http
+            port: 8080
 
     ingress:
 
