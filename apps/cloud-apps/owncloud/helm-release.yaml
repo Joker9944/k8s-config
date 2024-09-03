@@ -72,6 +72,7 @@ spec:
                   secretKeyRef:
                     name: owncloud-redis
                     key: redis-password
+              OWNCLOUD_TRUSTED_PROXIES: 10.244.0.0/16
             envFrom:
               - secretRef:
                   name: owncloud-admin-user
