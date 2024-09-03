@@ -13,7 +13,6 @@ $CONFIG = [
 			'update' => [ 'enabled' => true, ],
 			'display-name-claim' => 'name',
 			'email-claim' => 'email',
-			'groups' => [ 'admin' ],
 		],
 	],
 ];
