@@ -9,17 +9,19 @@ spec:
   instances: 3
   enableSuperuserAccess: true
   storage:
-    size: 3Gi
+    size: 2Gi
+  walStorage:
+    size: 2Gi
 
   bootstrap:
     recovery:
       backup:
-        name: servarr-cnpg-manual
+        name: servarr-cnpg-daily-20240906000000
 
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
-      serverName: servarr-cnpg-restored
+      serverName: servarr-cnpg-restored-2
       destinationPath: s3://k8s-cnpg-backup
       endpointURL: https://gateway.storjshare.io
       s3Credentials:
