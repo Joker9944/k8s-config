@@ -10,6 +10,7 @@
         "kustomizeconfig",
         "LOGDB",
         "MAINDB",
+        "nonfree",
         "PGDATABASE",
         "PGHOST",
         "PGPASSWORD",
@@ -25,7 +26,11 @@
         "websecure"
     ],
     "cSpell.ignoreWords": [
+        "enxdca",
+        "mmcblk",
+        "nvme",
         "onedr",
-        "xerr"
+        "xerr",
+        "kmod"
     ]
 }
