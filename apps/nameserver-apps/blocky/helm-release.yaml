@@ -85,7 +85,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.12.5@sha256:46c67979a145f045bfa81267ce7d0c3f37c75a56cfbccf8214864834dfae7b35
+              tag: 3.12.6@sha256:f582cf16ae7ac5558623ce24ffba94ad2135a77ce33d99f3eb4abdeb6baa1679
             env:
               PGURI:
                 valueFrom:
@@ -110,7 +110,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.2@sha256:6d54de2e6bc8547902cf189582dc870a9d1d6fa9abf84a44a4ae6c215ccdc29f
+              tag: 3.20.3@sha256:26c28c58ab7d7e8c8e93c26802149f483a4df87cacb124f777b16f74e18c6ee5
             env:
               PGHOST:
                 valueFrom:
@@ -280,7 +280,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 20.0.3
+      version: 20.0.5
       interval: 30m
       sourceRef:
         kind: HelmRepository
