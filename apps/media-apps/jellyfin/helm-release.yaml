@@ -217,6 +217,7 @@ spec:
         type: emptyDir
 
     rawResources:
+
       dest-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
@@ -233,6 +234,7 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+
       source-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
@@ -249,6 +251,7 @@ spec:
                 weekly: 4
               accessModes: [ReadWriteOnce]
               copyMethod: Snapshot
+              cacheCapacity: 2Gi
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
