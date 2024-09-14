@@ -185,7 +185,7 @@ spec:
             storage:
               size: &cnpg_recorder_size 1Gi
             walStorage:
-              size: 3Gi
+              size: 6Gi
             bootstrap:
               initdb:
                 database: recorder
