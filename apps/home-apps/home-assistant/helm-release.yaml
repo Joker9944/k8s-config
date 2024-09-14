@@ -167,7 +167,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: &pvc_config_size 1Gi
+        size: &pvc_config_size 2Gi
         dataSourceRef:
           apiGroup: volsync.backube
           kind: ReplicationDestination
