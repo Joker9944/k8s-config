@@ -106,7 +106,7 @@ spec:
           socat:
             image:
               repository: docker.io/alpine/socat
-              tag: 1.8.0.0@sha256:ac29a224a10be0cb25be8da022fef401a5ed0d09dcf13fcb5555ff666e75cc4c
+              tag: 1.8.0.0@sha256:0f43daa5d06e15d1e655e5f9a129f29f0e2ed97f7b61a3ad28373045029725b0
             probes:
               liveness:
                 enabled: true
