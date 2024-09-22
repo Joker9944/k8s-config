@@ -221,7 +221,6 @@ spec:
       dest-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
-        enabled: false
         spec:
           spec:
             trigger:
@@ -239,7 +238,6 @@ spec:
       source-config:
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
-        enabled: false
         spec:
           spec:
             sourcePVC: jellyfin-config
