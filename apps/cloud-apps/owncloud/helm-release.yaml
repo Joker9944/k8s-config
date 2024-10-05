@@ -124,7 +124,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.12.6@sha256:3c35f2a7733803bb8436592a8a230f884671659df8ff7ddad07c05ae3b481401
+              tag: 3.12.7@sha256:aa1111ad994ac9b654f218e156230abd9dad12f771343988f442bd5edc180448
             envFrom:
               - secretRef:
                   name: owncloud-oidc-config
