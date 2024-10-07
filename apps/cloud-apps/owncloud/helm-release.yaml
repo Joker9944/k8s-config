@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.4.0
+      version: 3.5.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -124,7 +124,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.12.6@sha256:f582cf16ae7ac5558623ce24ffba94ad2135a77ce33d99f3eb4abdeb6baa1679
+              tag: 3.12.7@sha256:aa1111ad994ac9b654f218e156230abd9dad12f771343988f442bd5edc180448
             envFrom:
               - secretRef:
                   name: owncloud-oidc-config
@@ -218,7 +218,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 20.1.4
+      version: 20.1.7
       interval: 30m
       sourceRef:
         kind: HelmRepository

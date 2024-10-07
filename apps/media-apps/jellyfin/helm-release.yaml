@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.4.0
+      version: 3.5.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -106,7 +106,7 @@ spec:
           socat:
             image:
               repository: docker.io/alpine/socat
-              tag: 1.8.0.0@sha256:0f43daa5d06e15d1e655e5f9a129f29f0e2ed97f7b61a3ad28373045029725b0
+              tag: 1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8
             probes:
               liveness:
                 enabled: true

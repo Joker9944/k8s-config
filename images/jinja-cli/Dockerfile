@@ -1,4 +1,4 @@
-FROM python:3.12.6@sha256:7859853e7607927aa1d1b1a5a2f9e580ac90c2b66feeb1b77da97fed03b1ccbe
+FROM python:3.12.7@sha256:785fef11f44b7393c03d77032fd72e56af8b05442b051a151229145e5fbbcb29
 
 LABEL org.opencontainers.image.description="Python image with jinja2-cli installed"
 
