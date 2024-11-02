@@ -42,7 +42,7 @@ spec:
           audiobookshelf:
             image:
               repository: advplyr/audiobookshelf
-              tag: 2.16.0@sha256:aa68163c1c970d80cd471ef1bc2fd89294a25b88ce254fab8ed4f7ee7bc4d6f2
+              tag: 2.16.2@sha256:acfda2baa0dce0c7a31e1703b8cd694e59cd3f3de9cfabe5b7e9dd2029896169
             env:
               UMASK: 0002
               PORT: &port_http 8080
