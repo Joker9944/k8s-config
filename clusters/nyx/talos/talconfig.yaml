@@ -93,8 +93,8 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/qemu-guest-agent
-            - siderolabs/nonfree-kmod-nvidia
-            - siderolabs/nvidia-container-toolkit
+            - siderolabs/nonfree-kmod-nvidia-production
+            - siderolabs/nvidia-container-toolkit-production
     patches:
       - '@patches/nvidia.yaml'
     nodeLabels:
