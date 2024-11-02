@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: kubernetes-dashboard
-      version: 7.9.0
+      version: 7.10.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
