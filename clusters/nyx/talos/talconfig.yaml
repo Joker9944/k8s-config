@@ -61,7 +61,7 @@ nodes:
     controlPlane: true
     installDisk: /dev/nvme0n1
     networkInterfaces:
-      - interface: enx74563c006927
+      - interface: enp2s0
         addresses:
           - ${HYBRID_1_IP}/24
         routes:
