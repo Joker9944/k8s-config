@@ -1,6 +1,6 @@
 clusterName: nyx
 # renovate: datasource=docker depName=talos packageName=ghcr.io/siderolabs/installer
-talosVersion: v1.7.6
+talosVersion: v1.8.2
 # renovate: datasource=docker depName=kubelet packageName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.30.2
 endpoint: https://${VIP}:6443
@@ -93,8 +93,8 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/qemu-guest-agent
-            - siderolabs/nonfree-kmod-nvidia
-            - siderolabs/nvidia-container-toolkit
+            - siderolabs/nonfree-kmod-nvidia-production
+            - siderolabs/nvidia-container-toolkit-production
     patches:
       - '@patches/nvidia.yaml'
     nodeLabels:
