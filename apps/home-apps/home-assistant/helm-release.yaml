@@ -143,6 +143,14 @@ spec:
         ports:
           http:
             port: 8123
+      callback:
+        controller: home-assistant
+        type: LoadBalancer
+        annotations:
+          metallb.universe.tf/loadBalancerIPs: 192.168.178.212
+        ports:
+          sonos:
+            port: 1400
 
     ingress:
       home-assistant:
