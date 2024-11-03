@@ -149,8 +149,13 @@ spec:
         annotations:
           metallb.universe.tf/loadBalancerIPs: 192.168.178.212
         ports:
+          # https://www.home-assistant.io/integrations/sonos/#network-requirements
           sonos:
             port: 1400
+          # https://www.home-assistant.io/integrations/shelly/#shelly-device-configuration-generation-1
+          coiot:
+            port: 5683
+            protocol: UDP
 
     ingress:
       home-assistant:
