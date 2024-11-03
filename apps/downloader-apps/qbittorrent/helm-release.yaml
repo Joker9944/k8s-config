@@ -159,7 +159,6 @@ spec:
                 add:
                   - NET_ADMIN
                   - NET_RAW
-                  - MKNOD
                   - CHOWN
                   - SETUID
                   - SETGID
