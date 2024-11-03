@@ -4,4 +4,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - runtime-class.yaml
+  - generic-device-plugin/helm-release.yaml
   - nvidia-device-plugin/helm-release.yaml
