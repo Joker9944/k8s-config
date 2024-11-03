@@ -71,18 +71,18 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: gpu-system
+  name: device-system
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./infrastructure/gpu-system
+  path: ./infrastructure/device-system
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
   postBuild:
     substitute:
-      main_namespace: gpu-system
+      main_namespace: device-system
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
