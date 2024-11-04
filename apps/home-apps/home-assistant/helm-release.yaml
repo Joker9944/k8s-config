@@ -152,6 +152,9 @@ spec:
           # https://www.home-assistant.io/integrations/sonos/#network-requirements
           sonos:
             port: 1400
+          mdns:
+            port: 5353
+            protocol: UDP
           # https://www.home-assistant.io/integrations/shelly/#shelly-device-configuration-generation-1
           coiot:
             port: 5683
