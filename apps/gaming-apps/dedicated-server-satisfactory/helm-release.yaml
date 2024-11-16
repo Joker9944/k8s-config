@@ -68,9 +68,9 @@ spec:
             args: |
               mkdir -p /config/gamefiles/FactoryGame/Certificates
               rm /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
-              ln --symbolic /mnt/tls/tls.crt /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
+              ln -s /mnt/tls/tls.crt /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
               rm /config/gamefiles/FactoryGame/Certificates/private_key.pem
-              ln --symbolic /mnt/tls/tls.key /config/gamefiles/FactoryGame/Certificates/private_key.pem
+              ln -s /mnt/tls/tls.key /config/gamefiles/FactoryGame/Certificates/private_key.pem
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
