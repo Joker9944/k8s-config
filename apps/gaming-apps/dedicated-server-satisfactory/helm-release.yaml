@@ -82,6 +82,14 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: false
-        size: &pvc_config_size 20Gi
+        size: 20Gi
         globalMounts:
           - path: /config/gamefiles
+      data-overlay-tls:
+        type: secret
+        name: wildcard-vonarx-online
+        globalMounts:
+          - path: /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
+            subPath: tls.crt
+          - path: /config/gamefiles/FactoryGame/Certificates/private_key.pem
+            subPath: tls.key
