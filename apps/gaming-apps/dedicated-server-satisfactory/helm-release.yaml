@@ -20,7 +20,7 @@ spec:
   values:
 
     controllers:
-      dedicated-server-satisfactory:
+      satisfactory-dedicated-server:
         type: statefulset
 
         pod:
@@ -31,7 +31,7 @@ spec:
 
         containers:
 
-          factory-server:
+          satisfactory-dedicated-server:
             image:
               repository: ghcr.io/wolveix/satisfactory-server
               tag: v1.8.9@sha256:b9dab6a8c44a14e06c181c0b1f35fe0cda56ddb4b2c1e736498a9947201751b9
@@ -56,6 +56,34 @@ spec:
                   - DAC_OVERRIDE
                 drop:
                   - ALL
+
+    service:
+      satisfactory-dedicated-server:
+        controller: satisfactory-dedicated-server
+        ports:
+          http:
+            port: 7777
+          udp:
+            port: 7777
+            protocol: UDP
+
+    ingress:
+      satisfactory-dedicated-server:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: satisfactory-http
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
+        hosts:
+          - host: &host satisfactory.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: satisfactory-dedicated-server
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
 
     persistence:
       config:

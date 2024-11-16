@@ -43,9 +43,6 @@ spec:
     providers:
       kubernetesCRD:
         allowCrossNamespace: true
-      kubernetesIngress:
-        publishedService:
-          enabled: true
 
     volumes:
       - name: cluster-root-ca-cert
@@ -70,3 +67,15 @@ spec:
           default: true
         exposedPort: 853
         protocol: TCP
+      satisfactory-http:
+        port: 7777
+        expose:
+          default: true
+        exposedPort: 7777
+        protocol: TCP
+      satisfactory-udp:
+        port: 7777
+        expose:
+          default: true
+        exposedPort: 7777
+        protocol: UDP
