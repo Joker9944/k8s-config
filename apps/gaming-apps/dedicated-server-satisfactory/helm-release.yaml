@@ -1,0 +1,73 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dedicated-server-satisfactory
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.5.1
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+
+  values:
+
+    controllers:
+      dedicated-server-satisfactory:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsUser: &PUID 568
+            runAsGroup: &GUID 568
+            runAsNonRoot: true
+            fsGroup: *GUID
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+
+        containers:
+
+          factory-server:
+            image:
+              repository: ghcr.io/wolveix/satisfactory-server
+              tag: v1.8.9@sha256:b9dab6a8c44a14e06c181c0b1f35fe0cda56ddb4b2c1e736498a9947201751b9
+            env:
+              PUID: *PUID
+              GUID: *GUID
+              ROOTLESS: true
+            resources:
+              requests:
+                cpu: 100m
+                memory: 8Gi
+              limits:
+                memory: 16Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: &pvc_config_size 1Gi
+        globalMounts:
+          - path: /config
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: false
+        size: &pvc_config_size 20Gi
+        globalMounts:
+          - path: /config/gamefiles
