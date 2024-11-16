@@ -51,14 +51,12 @@ spec:
                 memory: 16Gi
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities:
                 drop:
                   - ALL
 
     persistence:
-      home:
-        type: emptyDir
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
