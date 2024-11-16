@@ -60,30 +60,15 @@ spec:
     service:
       satisfactory-dedicated-server:
         controller: satisfactory-dedicated-server
+        type: LoadBalancer
+        annotations:
+          metallb.universe.tf/loadBalancerIPs: 192.168.178.213
         ports:
-          http:
+          tcp:
             port: 7777
           udp:
             port: 7777
             protocol: UDP
-
-    ingress:
-      satisfactory-dedicated-server:
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: dssh
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
-        hosts:
-          - host: &host satisfactory.vonarx.online
-            paths:
-              - path: /
-                service:
-                  identifier: satisfactory-dedicated-server
-                  port: http
-        tls:
-          - hosts:
-              - *host
-            secretName: wildcard-vonarx-online
 
     persistence:
       config:
