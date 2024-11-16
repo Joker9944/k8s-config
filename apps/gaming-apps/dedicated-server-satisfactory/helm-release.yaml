@@ -71,7 +71,7 @@ spec:
       satisfactory-dedicated-server:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: satisfactory-http
+          traefik.ingress.kubernetes.io/router.entrypoints: dssh
           traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
         hosts:
           - host: &host satisfactory.vonarx.online

@@ -67,13 +67,15 @@ spec:
           default: true
         exposedPort: 853
         protocol: TCP
-      satisfactory-http:
+      # Satisfactory dedicated server
+      dssh:
         port: 7777
         expose:
           default: true
         exposedPort: 7777
         protocol: TCP
-      satisfactory-udp:
+      # Satisfactory dedicated server
+      dssu:
         port: 7777
         expose:
           default: true
