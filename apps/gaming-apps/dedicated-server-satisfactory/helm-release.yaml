@@ -57,6 +57,33 @@ spec:
                 drop:
                   - ALL
 
+        initContainers:
+
+          # WORKAROUND The container make a chown over the /config dir so direct overlaying does not work. As a workaround we just create a link which can be owned by whom ever.
+          link:
+            image:
+              repository: alpine
+              tag: 3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a
+            command: [ /bin/sh, -c ]
+            args: |
+              mkdir -p /config/gamefiles/FactoryGame/Certificates
+              rm /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
+              ln --symbolic /mnt/tls/tls.crt /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
+              rm /config/gamefiles/FactoryGame/Certificates/private_key.pem
+              ln --symbolic /mnt/tls/tls.key /config/gamefiles/FactoryGame/Certificates/private_key.pem
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                add:
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
+                drop:
+                  - ALL
+
     service:
       satisfactory-dedicated-server:
         controller: satisfactory-dedicated-server
@@ -85,11 +112,8 @@ spec:
         size: 20Gi
         globalMounts:
           - path: /config/gamefiles
-      data-overlay-tls:
+      tls:
         type: secret
         name: wildcard-vonarx-online
         globalMounts:
-          - path: /config/gamefiles/FactoryGame/Certificates/cert_chain.pem
-            subPath: tls.crt
-          - path: /config/gamefiles/FactoryGame/Certificates/private_key.pem
-            subPath: tls.key
+          - path: /mnt/tls
