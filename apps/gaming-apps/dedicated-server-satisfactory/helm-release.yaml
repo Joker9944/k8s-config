@@ -57,6 +57,10 @@ spec:
                   - ALL
 
     persistence:
+      home:
+        type: emptyDir
+        globalMounts:
+          - path: /home/steam
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
