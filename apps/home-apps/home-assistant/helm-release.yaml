@@ -199,7 +199,7 @@ spec:
             description: PostgreSQL Cluster for blocky
             instances: 3
             storage:
-              size: &cnpg_recorder_size 1Gi
+              size: 2Gi
             bootstrap:
               initdb:
                 database: recorder
