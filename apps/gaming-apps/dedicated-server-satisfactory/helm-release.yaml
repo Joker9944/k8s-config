@@ -20,6 +20,7 @@ spec:
   values:
 
     controllers:
+
       satisfactory-dedicated-server:
         type: statefulset
 
@@ -36,8 +37,8 @@ spec:
               repository: ghcr.io/wolveix/satisfactory-server
               tag: v1.8.9@sha256:b9dab6a8c44a14e06c181c0b1f35fe0cda56ddb4b2c1e736498a9947201751b9
             env:
-              PUID: 568
-              GUID: 568
+              PUID: &PUID 568
+              GUID: &GUID 568
             resources:
               requests:
                 cpu: 100m
@@ -58,6 +59,7 @@ spec:
                   - ALL
 
     service:
+
       satisfactory-dedicated-server:
         controller: satisfactory-dedicated-server
         type: LoadBalancer
@@ -71,13 +73,17 @@ spec:
             protocol: UDP
 
     persistence:
+
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-        globalMounts:
-          - path: /config
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: satisfactory-dedicated-server-dest-config
+
       data:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -85,3 +91,44 @@ spec:
         size: 20Gi
         globalMounts:
           - path: /config/gamefiles
+
+    rawResources:
+
+      dest-config:
+        enabled: false
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: satisfactory-dedicated-server-restic-config
+              accessModes: [ ReadWriteOnce ]
+              capacity: *pvc_config_size
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+
+      source-config:
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: satisfactory-dedicated-server-config
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: satisfactory-dedicated-server-restic-config
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              accessModes: [ ReadWriteOnce ]
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
