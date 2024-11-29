@@ -76,6 +76,26 @@ nodes:
             - siderolabs/iscsi-tools
     patches:
       - '@patches/hybrid.yaml'
+  - hostname: nyx-hybrid-2
+    ipAddress: ${HYBRID_2_IP}
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - interface: enp2s0
+        addresses:
+          - ${HYBRID_2_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+        vip:
+          ip: ${VIP}
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+    patches:
+      - '@patches/hybrid.yaml'
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
