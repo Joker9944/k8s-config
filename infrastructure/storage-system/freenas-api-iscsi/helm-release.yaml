@@ -58,7 +58,7 @@ spec:
     # add note here about volume expansion requirements
     storageClasses:
       - name: freenas-iscsi-csi
-        defaultClass: true
+        defaultClass: false
         reclaimPolicy: Delete
         volumeBindingMode: Immediate
         allowVolumeExpansion: true
