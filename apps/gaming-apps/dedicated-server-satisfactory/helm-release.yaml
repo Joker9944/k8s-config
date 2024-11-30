@@ -111,6 +111,8 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: &storage_class freenas-iscsi-csi
+              volumeSnapshotClassName: *storage_class
 
       source-config:
         apiVersion: volsync.backube/v1alpha1
@@ -132,3 +134,5 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: *storage_class
+              volumeSnapshotClassName: *storage_class
