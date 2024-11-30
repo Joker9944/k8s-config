@@ -115,6 +115,7 @@ spec:
               volumeSnapshotClassName: *storage_class
 
       source-config:
+        nameOverride: dssc # TODO remove once moved away from freenas-iscsi-csi
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
