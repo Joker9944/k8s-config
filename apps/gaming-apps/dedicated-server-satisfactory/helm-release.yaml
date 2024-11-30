@@ -83,10 +83,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-        # dataSourceRef:
-        #  apiGroup: volsync.backube
-        #  kind: ReplicationDestination
-        #  name: satisfactory-dedicated-server-dest-config
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: dedicated-server-satisfactory-dest-config
 
       data:
         type: persistentVolumeClaim
@@ -99,7 +99,6 @@ spec:
     rawResources:
 
       dest-config:
-        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -115,11 +114,10 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
-              storageClassName: &storage_class freenas-iscsi-csi
+              storageClassName: &storage_class longhorn
               volumeSnapshotClassName: *storage_class
 
       source-config:
-        nameOverride: dssc # TODO remove once moved away from freenas-iscsi-csi
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
