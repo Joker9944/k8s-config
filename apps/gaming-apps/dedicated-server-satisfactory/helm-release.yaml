@@ -119,7 +119,7 @@ spec:
         kind: ReplicationSource
         spec:
           spec:
-            sourcePVC: satisfactory-dedicated-server-config
+            sourcePVC: dedicated-server-satisfactory-config
             trigger:
               schedule: '@daily'
             restic:
