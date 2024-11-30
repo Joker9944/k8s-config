@@ -158,6 +158,7 @@ spec:
                 runAsGroup: *GUID
               storageClassName: &storage_class longhorn
               volumeSnapshotClassName: *storage_class
+              cleanupTempPVC: true
 
       source-config:
         apiVersion: volsync.backube/v1alpha1
