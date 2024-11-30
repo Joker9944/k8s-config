@@ -227,13 +227,16 @@ spec:
               manual: restore-once
             restic:
               repository: jellyfin-restic-config
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: &storage_class longhorn
+              volumeSnapshotClassName: *storage_class
+              cleanupTempPVC: true
 
       source-config:
         apiVersion: volsync.backube/v1alpha1
@@ -249,10 +252,12 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               copyMethod: Snapshot
               cacheCapacity: 2Gi
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: *storage_class
+              volumeSnapshotClassName: *storage_class
