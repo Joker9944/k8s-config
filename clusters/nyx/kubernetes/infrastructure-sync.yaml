@@ -159,3 +159,19 @@ spec:
   postBuild:
     substitute:
       main_namespace: auth-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn-system
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/longhorn-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      main_namespace: longhorn-system

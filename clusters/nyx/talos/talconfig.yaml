@@ -51,8 +51,10 @@ nodes:
         systemExtensions:
           officialExtensions:
             - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
     patches:
       - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
   - hostname: nyx-hybrid-2
     ipAddress: ${HYBRID_2_IP}
     controlPlane: true
@@ -71,8 +73,10 @@ nodes:
         systemExtensions:
           officialExtensions:
             - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
     patches:
       - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
@@ -88,12 +92,14 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
             - siderolabs/qemu-guest-agent
+            - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
             - siderolabs/nonfree-kmod-nvidia-production
             - siderolabs/nvidia-container-toolkit-production
     patches:
       - '@patches/nvidia.yaml'
+      - '@patches/longhorn.yaml'
     nodeLabels:
       nfs-host: 'true'
 controlPlane:

@@ -14,6 +14,7 @@ resources:
   - espresso-lab/helm-repository.yaml
   - gateway/helm-repository.yaml
   - jetstack/helm-repository.yaml
+  - longhorn/helm-repository.yaml
   - metallb/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - postgres-operator/helm-repository.yaml
