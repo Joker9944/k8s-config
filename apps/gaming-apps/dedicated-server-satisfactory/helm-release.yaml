@@ -83,10 +83,10 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
-        dataSourceRef:
-          apiGroup: volsync.backube
-          kind: ReplicationDestination
-          name: satisfactory-dedicated-server-dest-config
+        # dataSourceRef:
+        #  apiGroup: volsync.backube
+        #  kind: ReplicationDestination
+        #  name: satisfactory-dedicated-server-dest-config
 
       data:
         type: persistentVolumeClaim
