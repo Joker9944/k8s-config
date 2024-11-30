@@ -17,6 +17,10 @@ spec:
         name: bjw-s
         namespace: flux-system
 
+  valuesFrom:
+    - kind: Secret
+      name: dedicated-server-satisfactory-secret-values
+
   values:
 
     controllers:
@@ -103,7 +107,7 @@ spec:
             trigger:
               manual: restore-once
             restic:
-              repository: satisfactory-dedicated-server-restic-config
+              repository: dedicated-satisfactory-server-restic-config
               accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
@@ -124,7 +128,7 @@ spec:
             trigger:
               schedule: '@daily'
             restic:
-              repository: satisfactory-dedicated-server-restic-config
+              repository: dedicated-satisfactory-server-restic-config
               pruneIntervalDays: 7
               retain:
                 daily: 7
