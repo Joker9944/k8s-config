@@ -158,9 +158,9 @@ spec:
                 runAsGroup: *GUID
               storageClassName: &storage_class longhorn
               volumeSnapshotClassName: *storage_class
-              cleanupTempPVC: true
 
       source-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
