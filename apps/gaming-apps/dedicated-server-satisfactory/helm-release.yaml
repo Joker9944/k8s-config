@@ -107,7 +107,7 @@ spec:
             trigger:
               manual: restore-once
             restic:
-              repository: dedicated-satisfactory-server-restic-config
+              repository: dedicated-server-satisfactory-restic-config
               accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
@@ -128,7 +128,7 @@ spec:
             trigger:
               schedule: '@daily'
             restic:
-              repository: dedicated-satisfactory-server-restic-config
+              repository: dedicated-server-satisfactory-restic-config
               pruneIntervalDays: 7
               retain:
                 daily: 7
