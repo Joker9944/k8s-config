@@ -162,7 +162,7 @@ spec:
             rootCAsSecrets: [ "wildcard-${main_namespace}-cert" ]
 
       dest-data:
-        enabled: true
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -182,7 +182,7 @@ spec:
               volumeSnapshotClassName: *storage_class
 
       source-data:
-        enabled: false
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
