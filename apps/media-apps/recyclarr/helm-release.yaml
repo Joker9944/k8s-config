@@ -76,7 +76,8 @@ spec:
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        size: 1Gi
+        size: 500 Mi
+        storageClass: longhorn
       config-overlay:
         type: configMap
         name: recyclarr-config-overlay
