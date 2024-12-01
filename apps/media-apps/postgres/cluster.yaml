@@ -10,18 +10,23 @@ spec:
   enableSuperuserAccess: true
   storage:
     size: 2Gi
+    storageClass: longhorn-local
   walStorage:
     size: 2Gi
+    storageClass: longhorn-local
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
 
   bootstrap:
     recovery:
       backup:
-        name: servarr-cnpg-daily-20240906000000
+        name: servarr-cnpg-daily-20241201000000
 
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
-      serverName: servarr-cnpg-restored-2
+      serverName: servarr-cnpg-restored-3
       destinationPath: s3://k8s-cnpg-backup
       endpointURL: https://gateway.storjshare.io
       s3Credentials:
