@@ -7,4 +7,4 @@ spec:
   interval: 5m
   url: https://github.com/cloudnative-pg/postgres-containers
   ref:
-    branch: master
+    branch: main
