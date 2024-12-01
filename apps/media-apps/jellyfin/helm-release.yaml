@@ -90,62 +90,6 @@ spec:
                 drop:
                   - ALL
 
-      autodiscovery-proxy:
-        type: daemonset
-
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-          hostNetwork: true
-
-        containers:
-          socat:
-            image:
-              repository: docker.io/alpine/socat
-              tag: 1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-                  failureThreshold: 6
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-                  failureThreshold: 30
-                  periodSeconds: 5
-            command: [/bin/sh, -c]
-            args: # Script taken from TrueCharts jellyfin chart
-              - |
-                set -e
-                export TARGET_IP=$(getent hosts 'jellyfin-autodiscovery' | awk '{ print $1 }')
-                [[ -n $TARGET_IP ]]
-                touch /tmp/healthy
-                echo "Proxing to ip $TARGET_IP"
-                socat UDP4-LISTEN:7359,fork,reuseaddr,rcvbuf=8096 "UDP4-SENDTO:$TARGET_IP:7359,rcvbuf=8096"
-                rm -rf /tmp/healthy
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-
     service:
       jellyfin:
         controller: jellyfin
@@ -156,6 +100,8 @@ spec:
             port: *port_http
       autodiscovery:
         controller: jellyfin
+        annotations:
+          metallb.universe.tf/loadBalancerIPs: 192.168.178.213
         ports:
           udp:
             port: 7359
