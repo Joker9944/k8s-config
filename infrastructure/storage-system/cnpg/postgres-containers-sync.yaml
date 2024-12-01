@@ -9,5 +9,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: postgres-containers
-  path: ./Debian/ClusterImageCatalog-bullseye.yaml
+  path: ./Debian/ClusterImageCatalog-bullseye.yaml # TODO use kustomization https://github.com/cloudnative-pg/postgres-containers/pull/118
   prune: true
