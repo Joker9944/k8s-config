@@ -8,6 +8,8 @@ spec:
   description: PostgreSQL Cluster for the Servarr family of apps
   instances: 3
   enableSuperuserAccess: true
+  imageCatalogRef:
+    major: 16
   storage:
     size: 2Gi
     storageClass: longhorn-local
