@@ -194,12 +194,17 @@ spec:
             instances: 3
             storage:
               size: 1Gi
+              storageClass: longhorn-local
             walStorage:
               size: 1Gi
+              storageClass: longhorn-local
             bootstrap:
               initdb:
                 database: query-log
                 owner: blocky
+            affinity:
+              enablePodAntiAffinity: true
+              podAntiAffinityType: required
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
