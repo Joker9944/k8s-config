@@ -200,7 +200,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: &pvc_config_size 1Gi
+        size: &pvc_config_size 500Mi
         dataSourceRef:
           apiGroup: volsync.backube
           kind: ReplicationDestination
@@ -222,6 +222,7 @@ spec:
     rawResources:
 
       dest-config:
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -230,15 +231,18 @@ spec:
               manual: restore-once
             restic:
               repository: qbittorrent-restic-config
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: &storage_class longhorn
+              volumeSnapshotClassName: *storage_class
 
       source-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -252,9 +256,11 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: *storage_class
+              volumeSnapshotClassName: *storage_class
