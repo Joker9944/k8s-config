@@ -115,11 +115,11 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
-              storageClassName: &storage_class longhorn
-              volumeSnapshotClassName: *storage_class
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
-        enabled: true
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -139,5 +139,5 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
-              storageClassName: *storage_class
-              volumeSnapshotClassName: *storage_class
+              storageClassName: longhorn-local
+              volumeSnapshotClassName: *snapshot_class
