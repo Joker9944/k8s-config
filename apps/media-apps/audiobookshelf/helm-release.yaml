@@ -157,8 +157,8 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
-              storageClassName: &storage_class longhorn
-              volumeSnapshotClassName: *storage_class
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
         enabled: true
@@ -181,5 +181,5 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
-              storageClassName: *storage_class
-              volumeSnapshotClassName: *storage_class
+              storageClassName: longhorn-local
+              volumeSnapshotClassName: *snapshot_class
