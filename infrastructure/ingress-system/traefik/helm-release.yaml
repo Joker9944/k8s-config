@@ -14,21 +14,26 @@ spec:
         name: traefik
         namespace: flux-system
       interval: 5m
+
   install:
     crds: CreateReplace
     remediation:
       retries: 3
+
   upgrade:
     crds: CreateReplace
     remediation:
       retries: 3
+
   values:
-    globalArguments:
-      - '--global.sendanonymoususage'
+
     deployment:
-      replicas: 1
+      # Switched to DaemonSet since it allows node local routing with externalTrafficPolicy set to Local
+      kind: DaemonSet
+
     ingressClass:
       enabled: false
+
     experimental:
       # TODO Implement bouncer
       plugins:
@@ -36,6 +41,7 @@ spec:
           moduleName: github.com/PascalMinder/geoblock
           # renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
           version: v0.2.8
+
     ingressRoute:
       dashboard:
         enabled: true
@@ -45,22 +51,28 @@ spec:
         allowCrossNamespace: true
 
     volumes:
+      # Mount cluster interal root ca for self signed certs
       - name: cluster-root-ca-cert
         mountPath: /certs/cluster-root-ca
         type: secret
+
     logs:
       access:
         enabled: true
+
     tlsStore:
         default:
           defaultCertificate:
             secretName: wildcard-vonarx-online
+
     service:
       annotations:
         metallb.universe.tf/loadBalancerIPs: 192.168.178.210
       spec:
         externalTrafficPolicy: Local
+
     ports:
+      # DNS over TCP
       dot:
         port: 8853
         expose:
