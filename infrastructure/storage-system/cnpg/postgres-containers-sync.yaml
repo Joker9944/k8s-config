@@ -9,5 +9,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: postgres-containers
-  path: ./Debian/ClusterImageCatalog.yaml
+  path: ./Debian/ClusterImageCatalog-bullseye.yaml
   prune: true
