@@ -29,10 +29,6 @@ nodes:
       overlay:
         image: siderolabs/sbc-raspberrypi
         name: rpi_generic
-      customization:
-        systemExtensions:
-          officialExtensions:
-            - siderolabs/iscsi-tools
   - hostname: nyx-hybrid-1
     ipAddress: ${HYBRID_1_IP}
     controlPlane: true

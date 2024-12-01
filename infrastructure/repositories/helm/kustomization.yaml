@@ -9,7 +9,6 @@ resources:
   - bjw-s/helm-repository.yaml
   - cnpg/helm-repository.yaml
   - dashboard/helm-repository.yaml
-  - democratic-csi/helm-repository.yaml
   - emberstack/helm-repository.yaml
   - espresso-lab/helm-repository.yaml
   - gateway/helm-repository.yaml

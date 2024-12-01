@@ -4,12 +4,6 @@ resources:
   - namespace.yaml
   - secret.yaml
   - cnpg
-  - freenas-api-iscsi/helm-release.yaml
   - volsync/helm-release.yaml
-secretGenerator:
-  - name: freenas-api-iscsi-secret-values
-    namespace: ${main_namespace}
-    files:
-      - values.yaml=freenas-api-iscsi/secret-values.sops.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
