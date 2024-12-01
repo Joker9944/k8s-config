@@ -10,7 +10,7 @@ spec:
   enableSuperuserAccess: true
   imageCatalogRef:
     apiGroup: postgresql.cnpg.io
-    kind: ImageCatalog
+    kind: ClusterImageCatalog
     name: postgresql
     major: 16
   storage:
