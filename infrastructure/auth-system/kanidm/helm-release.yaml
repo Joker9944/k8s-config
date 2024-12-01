@@ -182,7 +182,7 @@ spec:
               volumeSnapshotClassName: &snapshot_class longhorn
 
       source-data:
-        enabled: false
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
