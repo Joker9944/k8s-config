@@ -102,7 +102,7 @@ spec:
         controller: jellyfin
         type: LoadBalancer
         annotations:
-          metallb.universe.tf/loadBalancerIPs: 192.168.178.213
+          metallb.universe.tf/loadBalancerIPs: 192.168.178.214
         ports:
           udp:
             port: 7359
