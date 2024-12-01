@@ -238,6 +238,7 @@ spec:
               volumeSnapshotClassName: *storage_class
 
       source-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
