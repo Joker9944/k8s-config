@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - secret.yaml
-  - cnpg/helm-release.yaml
+  - cnpg
   - freenas-api-iscsi/helm-release.yaml
   - volsync/helm-release.yaml
 secretGenerator:

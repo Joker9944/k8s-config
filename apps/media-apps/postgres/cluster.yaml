@@ -9,6 +9,9 @@ spec:
   instances: 3
   enableSuperuserAccess: true
   imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ImageCatalog
+    name: postgresql
     major: 16
   storage:
     size: 2Gi
