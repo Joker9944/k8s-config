@@ -76,7 +76,7 @@ spec:
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        size: 500 Mi
+        size: 500Mi
         storageClass: longhorn
       config-overlay:
         type: configMap
