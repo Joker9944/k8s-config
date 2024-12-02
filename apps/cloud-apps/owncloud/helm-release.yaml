@@ -15,20 +15,32 @@ spec:
       interval: 30m
 
   values:
-#
-#    features:
-#
-#      externalUserManagement:
-#        enabled: true
-#
-#        autoprovisionAccounts:
-#          enabled: true
-#        
-#        oidc:
-#          issuerURI: https://idm.vonarx.online/oauth2/openid/owncloud
-#          sessionManagementLink: https://idm.vonarx.online/ui/profile
-#          editAccountLink: https://idm.vonarx.online/ui/profile
-#          userIDClaim: TBD
+
+    features:
+
+      externalUserManagement:
+        enabled: true
+
+        oidc:
+          issuerURI: https://idm.vonarx.online/oauth2/openid/owncloud
+          sessionManagementLink: https://idm.vonarx.online/ui/profile
+          editAccountLink: https://idm.vonarx.online/ui/profile
+          userIDClaim: TBD
+          userIDClaimAttributeMapping: TBD
+
+        ldap:
+          writeable: false
+          uri: ldaps://kanidm-ldaps.auth-system.svc.cluster.local
+          bindDN: dn=token
+          user:
+            schema:
+              id: uuid
+              userName: name
+              usertype: TBD
+            baseDN: dc=idm,dc=vonarx,dc=online
+          group:
+            schema:
+              id: uid
 
     externalDomain: &host cloud.vonarx.online
     ingress:
@@ -41,3 +53,7 @@ spec:
         - hosts:
             - *host
           secretName: wildcard-vonarx-online
+
+    secretRefs:
+      ldapCaRef: cluster-root-ca
+      ldapSecretRef: ldap-bind
