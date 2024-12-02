@@ -8,3 +8,4 @@ spec:
   url: https://github.com/cloudnative-pg/postgres-containers
   ref:
     branch: main
+# TODO write ignore

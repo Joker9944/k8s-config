@@ -8,3 +8,4 @@ spec:
   url: https://github.com/kubernetes-csi/external-snapshotter
   ref:
     tag: v7.0.2
+# TODO write ignore

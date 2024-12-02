@@ -5,4 +5,5 @@ metadata:
   namespace: flux-system
 resources:
   - external-snapshotter/git-repository.yaml
+  - ocis-charts/git-repository.yaml
   - postgres-containers/git-repository.yaml
