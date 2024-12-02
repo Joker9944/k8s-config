@@ -57,3 +57,4 @@ spec:
     secretRefs:
       ldapCaRef: cluster-root-ca
       ldapSecretRef: ldap-bind
+      jwtSecretRef: jwt
