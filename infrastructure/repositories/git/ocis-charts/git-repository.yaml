@@ -8,7 +8,7 @@ spec:
   interval: 5m
   url: https://github.com/owncloud/ocis-charts
   ref:
-    tag: v0.5.0
+    branch: stable-5
   ignore: |-
     # exclude all
     /*
