@@ -42,6 +42,12 @@ spec:
             schema:
               id: uid
 
+    services:
+      web:
+        config:
+          oidc:
+            webClientID: owncloud
+
     externalDomain: &host cloud.vonarx.online
     ingress:
       enabled: true
