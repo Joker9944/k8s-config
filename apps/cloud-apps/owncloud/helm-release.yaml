@@ -132,5 +132,6 @@ spec:
                             value: /etc/ocis/ldap-ca/ca.crt
                     volumes:
                       - name: ldap-ca
+                        emptyDir: null
                         secret:
                           secretName: cluster-root-ca-cert
