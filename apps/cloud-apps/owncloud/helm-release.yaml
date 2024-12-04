@@ -23,7 +23,6 @@ spec:
 
         oidc:
           issuerURI: https://idm.vonarx.online/oauth2/openid/owncloud
-          webClientID: owncloud
           sessionManagementLink: https://idm.vonarx.online/ui/profile
           editAccountLink: https://idm.vonarx.online/ui/profile
           userIDClaim: profile.sub
@@ -45,11 +44,12 @@ spec:
             schema:
               id: uid
 
-    # services:
-    #   web:
-    #     config:
-    #       oidc:
-    #         webClientID: owncloud
+    services:
+      web:
+        config:
+          oidc:
+            webClientID: owncloud
+            webClientScope: "openid profile email groups"
 
     externalDomain: &host cloud.vonarx.online
     ingress:
