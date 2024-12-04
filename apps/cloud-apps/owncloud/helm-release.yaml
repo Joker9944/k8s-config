@@ -37,6 +37,7 @@ spec:
         ldap:
           writeable: false
           uri: ldaps://kanidm-ldaps.auth-system.svc.cluster.local
+          certTrusted: false
           bindDN: dn=token
           user:
             schema:
