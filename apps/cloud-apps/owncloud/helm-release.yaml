@@ -89,3 +89,31 @@ spec:
                         env:
                           - name: USERS_LDAP_CACERT
                             value: /etc/ocis/ldap-ca/ca.crt
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: groups
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: users
+                        env:
+                          - name: GROUPS_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: graph
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: users
+                        env:
+                          - name: GRAPH_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
