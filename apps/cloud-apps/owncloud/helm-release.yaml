@@ -60,6 +60,7 @@ spec:
       csp:
         directives:
           connectSrc:
+            - '''self'''
             - https://idm.vonarx.online/oauth2/token
 
     externalDomain: &host cloud.vonarx.online
