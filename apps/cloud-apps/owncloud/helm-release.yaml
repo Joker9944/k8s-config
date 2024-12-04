@@ -26,8 +26,10 @@ spec:
           webClientID: owncloud
           sessionManagementLink: https://idm.vonarx.online/ui/profile
           editAccountLink: https://idm.vonarx.online/ui/profile
-          userIDClaim: TBD
-          userIDClaimAttributeMapping: TBD
+          userIDClaim: profile.sub
+          roleAssignment:
+            enabled: false
+            claim: groups
 
         ldap:
           writeable: false
