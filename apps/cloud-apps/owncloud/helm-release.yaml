@@ -18,6 +18,10 @@ spec:
 
     features:
 
+      logging:
+        level: debug
+        pretty: true
+
       externalUserManagement:
         enabled: true
 

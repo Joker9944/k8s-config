@@ -13,8 +13,8 @@ kanidm system oauth2 add-redirect-url owncloud https://cloud.vonarx.online/oidc-
 
 kanidm system oauth2 prefer-short-username owncloud
 
-kanidm system oauth2 update-scope-map owncloud owncloud_admins openid profile email
-kanidm system oauth2 update-scope-map owncloud owncloud_users openid profile email
+kanidm system oauth2 update-scope-map owncloud owncloud_admins openid profile email groups
+kanidm system oauth2 update-scope-map owncloud owncloud_users openid profile email groups
 
 # ldap setup
 
