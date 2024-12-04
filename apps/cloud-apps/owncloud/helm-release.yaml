@@ -71,3 +71,21 @@ spec:
     secretRefs:
       ldapCaRef: cluster-root-ca-cert
       ldapSecretRef: ocis-ldap-bind
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: users
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: users
+                        env:
+                          - name: USERS_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
