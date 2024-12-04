@@ -35,9 +35,9 @@ spec:
             claim: groups
             mapping:
               - role_name: admin
-                claim_value: owncloud_admins
+                claim_value: owncloud_admins@idm.vonarx.online
               - role_name: user
-                claim_value: owncloud_users
+                claim_value: owncloud_users@idm.vonarx.online
 
         ldap:
           writeable: false
