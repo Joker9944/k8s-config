@@ -68,5 +68,5 @@ spec:
           secretName: wildcard-vonarx-online
 
     secretRefs:
-      ldapCaRef: cluster-root-ca
+      ldapCaRef: cluster-root-ca-cert
       ldapSecretRef: ocis-ldap-bind
