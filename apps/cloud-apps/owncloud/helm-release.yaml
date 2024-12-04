@@ -117,3 +117,7 @@ spec:
                         env:
                           - name: GRAPH_LDAP_CACERT
                             value: /etc/ocis/ldap-ca/ca.crt
+                    volumes:
+                      - name: ldap-ca
+                        secret:
+                          secretName: cluster-root-ca-cert
