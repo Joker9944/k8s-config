@@ -112,7 +112,7 @@ spec:
                 template:
                   spec:
                     containers:
-                      - name: users
+                      - name: groups
                         env:
                           - name: GROUPS_LDAP_CACERT
                             value: /etc/ocis/ldap-ca/ca.crt
@@ -126,7 +126,7 @@ spec:
                 template:
                   spec:
                     containers:
-                      - name: users
+                      - name: graph
                         env:
                           - name: GRAPH_LDAP_CACERT
                             value: /etc/ocis/ldap-ca/ca.crt
