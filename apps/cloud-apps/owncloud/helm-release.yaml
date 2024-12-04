@@ -56,6 +56,12 @@ spec:
             webClientID: owncloud
             webClientScope: "openid profile email groups"
 
+    http:
+      csp:
+        directives:
+          connectSrc:
+            - https://idm.vonarx.online/oauth2/token
+
     externalDomain: &host cloud.vonarx.online
     ingress:
       enabled: true
