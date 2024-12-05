@@ -30,7 +30,12 @@ spec:
 
         pod:
           securityContext:
-            runAsNonRoot: false
+            runAsUser: &PUID 6011
+            runAsGroup: &GUID 6000
+            runAsNonRoot: true
+            fsGroup: *GUID
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups: [ 568 ]
             seccompProfile:
               type: RuntimeDefault
 
@@ -41,8 +46,9 @@ spec:
               repository: ghcr.io/wolveix/satisfactory-server
               tag: v1.8.9@sha256:b9dab6a8c44a14e06c181c0b1f35fe0cda56ddb4b2c1e736498a9947201751b9
             env:
-              PUID: &PUID 568
-              GUID: &GUID 568
+              PUID: *PUID
+              GUID: *GUID
+              ROOTLESS: true
             resources:
               requests:
                 cpu: 100m
