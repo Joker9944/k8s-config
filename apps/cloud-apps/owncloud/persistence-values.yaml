@@ -1,0 +1,16 @@
+services:
+  ocm:
+    persistence:
+      enabled: true
+  search:
+    persistence:
+      enabled: true
+  storagesystem:
+    persistence:
+      enabled: true
+  storageusers:
+    persistence:
+      enabled: true
+  thumbnails:
+    persistence:
+      enabled: true

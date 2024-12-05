@@ -12,3 +12,7 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - values.yml=oidc-values.yaml
+  - name: ocis-persistence-values
+    namespace: ${main_namespace}
+    files:
+      - values.yml=persistence-values.yaml

@@ -19,6 +19,8 @@ spec:
       name: ocis-ingress-values
     - kind: ConfigMap
       name: ocis-oidc-values
+    - kind: ConfigMap
+      name: ocis-persistence-values
 
   postRenderers:
     - kustomize:
