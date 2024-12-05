@@ -45,10 +45,11 @@ spec:
               GUID: &GUID 568
             resources:
               requests:
-                cpu: 100m
-                memory: 8Gi
+                cpu: 60m
+                memory: 2Gi
               limits:
-                memory: 16Gi
+                cpu: 4000m
+                memory: 8Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
@@ -70,9 +71,9 @@ spec:
         annotations:
           metallb.universe.tf/loadBalancerIPs: 192.168.178.213
         ports:
-          tcp:
+          server:
             port: 7777
-          udp:
+          game:
             port: 7777
             protocol: UDP
 
