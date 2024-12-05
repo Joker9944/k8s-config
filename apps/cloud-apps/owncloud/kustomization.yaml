@@ -3,3 +3,12 @@ kind: Kustomization
 resources:
   - secret.yaml
   - helm-release.yaml
+configMapGenerator:
+  - name: ocis-ingress-values
+    namespace: flux-system
+    files:
+      - values.yml=ingress-values.yaml
+  - name: ocis-oidc-values
+    namespace: flux-system
+    files:
+      - values.yml=oidc-values.yaml

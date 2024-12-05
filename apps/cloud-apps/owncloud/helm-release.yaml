@@ -14,76 +14,13 @@ spec:
         namespace: flux-system
       interval: 30m
 
-  values:
-
-    logging:
-      level: debug
-      pretty: true
-
-    features:
-
-      externalUserManagement:
-        enabled: true
-
-        oidc:
-          issuerURI: https://idm.vonarx.online/oauth2/openid/owncloud
-          sessionManagementLink: https://idm.vonarx.online/ui/profile
-          editAccountLink: https://idm.vonarx.online/ui/profile
-          userIDClaim: profile.sub
-          roleAssignment:
-            enabled: true
-            claim: groups
-            mapping:
-              - role_name: admin
-                claim_value: owncloud_admins@idm.vonarx.online
-              - role_name: user
-                claim_value: owncloud_users@idm.vonarx.online
-
-        ldap:
-          writeable: false
-          uri: ldaps://kanidm-ldaps.auth-system.svc.cluster.local
-          certTrusted: false
-          bindDN: dn=token
-          user:
-            schema:
-              id: uuid
-            baseDN: dc=idm,dc=vonarx,dc=online
-            objectClass: person
-          group:
-            schema:
-              id: uid
-            baseDN: dc=idm,dc=vonarx,dc=online
-            objectClass: group
-
-    services:
-      web:
-        config:
-          oidc:
-            webClientID: owncloud
-            webClientScope: "openid profile email groups"
-
-    http:
-      csp:
-        directives:
-          connectSrc:
-            - '''self'''
-            - https://idm.vonarx.online/oauth2/token
-
-    externalDomain: &host cloud.vonarx.online
-    ingress:
-      enabled: true
-      annotations:
-        traefik.ingress.kubernetes.io/router.tls: "true"
-        traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-      tls:
-        - hosts:
-            - *host
-          secretName: wildcard-vonarx-online
-
-    secretRefs:
-      ldapCaRef: cluster-root-ca-cert
-      ldapSecretRef: ocis-ldap-bind
+  valuesFrom:
+    - kind: ConfigMap
+      name: ocis-ingress-values
+      namespace: flux-system
+    - kind: ConfigMap
+      name: ocis-oidc-values
+      namespace: flux-system
 
   postRenderers:
     - kustomize:
@@ -134,4 +71,4 @@ spec:
                       - name: ldap-ca
                         emptyDir: null
                         secret:
-                          secretName: cluster-root-ca-cert
+                          secretName: wildcard-${main_namespace}-cert
