@@ -17,10 +17,8 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: ocis-ingress-values
-      namespace: flux-system
     - kind: ConfigMap
       name: ocis-oidc-values
-      namespace: flux-system
 
   postRenderers:
     - kustomize:

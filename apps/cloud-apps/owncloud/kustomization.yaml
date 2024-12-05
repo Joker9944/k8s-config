@@ -5,10 +5,10 @@ resources:
   - helm-release.yaml
 configMapGenerator:
   - name: ocis-ingress-values
-    namespace: flux-system
+    namespace: ${main_namespace}
     files:
       - values.yml=ingress-values.yaml
   - name: ocis-oidc-values
-    namespace: flux-system
+    namespace: ${main_namespace}
     files:
       - values.yml=oidc-values.yaml

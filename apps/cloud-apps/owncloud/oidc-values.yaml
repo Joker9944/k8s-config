@@ -47,7 +47,6 @@ http:
         - '''self'''
         - https://idm.vonarx.online/oauth2/token
 
-# TODO create custom ns cert
 secretRefs:
   ldapCaRef: wildcard-${main_namespace}-cert
   ldapSecretRef: ocis-ldap-bind
