@@ -1,10 +1,13 @@
 externalDomain: &host cloud.vonarx.online
+
 ingress:
   enabled: true
+
   annotations:
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+
   tls:
     - hosts:
         - *host

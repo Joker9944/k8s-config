@@ -7,12 +7,12 @@ configMapGenerator:
   - name: ocis-ingress-values
     namespace: ${main_namespace}
     files:
-      - values.yml=ingress-values.yaml
+      - values.yaml=ingress-values.yaml
   - name: ocis-oidc-values
     namespace: ${main_namespace}
     files:
-      - values.yml=oidc-values.yaml
+      - values.yaml=oidc-values.yaml
   - name: ocis-persistence-values
     namespace: ${main_namespace}
     files:
-      - values.yml=persistence-values.yaml
+      - values.yaml=persistence-values.yaml
