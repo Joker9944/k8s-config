@@ -7,7 +7,7 @@ features:
       issuerURI: https://idm.vonarx.online/oauth2/openid/owncloud
       sessionManagementLink: https://idm.vonarx.online/ui/profile
       editAccountLink: https://idm.vonarx.online/ui/profile
-      userIDClaim: openid
+      userIDClaim: profile.sub
       roleAssignment:
         enabled: true
         claim: groups
