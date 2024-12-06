@@ -32,7 +32,8 @@ spec:
       hosts:
         - host: &host office.vonarx.online
           paths:
-            - path: / 
+            - path: /
+              pathType: Prefix
 
       tls:
         - hosts:
