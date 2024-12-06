@@ -26,13 +26,11 @@ features:
         schema:
           id: uuid
         baseDN: dc=idm,dc=vonarx,dc=online
-        scope: base
         objectClass: person
       group:
         schema:
           id: uuid
         baseDN: dc=idm,dc=vonarx,dc=online
-        scope: base
         objectClass: group
 
 services:
