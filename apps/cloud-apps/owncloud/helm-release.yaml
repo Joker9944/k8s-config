@@ -24,8 +24,7 @@ spec:
 
   values:
     image:
-      repository: owncloud/ocis
-      tag: 5.0.9@sha256:96671605863b38b0b8021400fdb2d843586dfa31451a8c7766f15eabe85d8267
+      tag: 6.6.1@sha256:7f80de523cd08cb67d0684e4a9296e6141cfec619f53ea57e43319d97cc4d6fe
 
   postRenderers:
     - kustomize:
