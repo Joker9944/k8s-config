@@ -74,27 +74,27 @@ spec:
                           secretName: wildcard-${main_namespace}-cert
           # This is a hack to use NFS storage instead of a PVC for user data
           # TODO Use standard ways after https://github.com/owncloud/ocis-charts/issues/722
-          - patch: |-
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: storageusers
-                namespace: ${main_namespace}
-              spec:
-                template:
-                  spec:
-                    containers:
-                      - name: storageusers
-                        securityContext:
-                          runAsUser: 6010
-                          runAsGroup: 6001
-                          fsGroup: 6001
-                    volumes:
-                      - name: storageusers-data
-                        persistentVolumeClaim: null
-                        nfs:
-                          server: 192.168.178.14
-                          path: /mnt/chronos/cloud-data
+      #    - patch: |-
+      #        apiVersion: apps/v1
+      #        kind: Deployment
+      #        metadata:
+      #          name: storageusers
+      #          namespace: ${main_namespace}
+      #        spec:
+      #          template:
+      #            spec:
+      #              containers:
+      #                - name: storageusers
+      #                  securityContext:
+      #                    runAsUser: 6010
+      #                    runAsGroup: 6001
+      #                    fsGroup: 6001
+      #              volumes:
+      #                - name: storageusers-data
+      #                  persistentVolumeClaim: null
+      #                  nfs:
+      #                    server: 192.168.178.14
+      #                    path: /mnt/chronos/cloud-data
           - patch: |-
               apiVersion: batch/v1
               kind: CronJob
