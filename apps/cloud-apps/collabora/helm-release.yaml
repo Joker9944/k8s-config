@@ -27,6 +27,7 @@ spec:
         - host: collaboration-collabora.${main_namespace}
         - host: collaboration-collabora.${main_namespace}.svc.cluster.local
       extra_params: --o:ssl.enable=false --o:ssl.termination=true --o:net.frame_ancestors=cloud.vonarx.online
+      proofKeysSecretRef: collabora-proof-key
 
     ingress:
       enabled: true
