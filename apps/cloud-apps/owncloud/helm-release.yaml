@@ -22,6 +22,11 @@ spec:
     - kind: ConfigMap
       name: ocis-persistence-values
 
+  values:
+    image:
+      repository: owncloud/ocis
+      tag: 5.0.9@sha256:96671605863b38b0b8021400fdb2d843586dfa31451a8c7766f15eabe85d8267
+
   postRenderers:
     - kustomize:
         patches:
