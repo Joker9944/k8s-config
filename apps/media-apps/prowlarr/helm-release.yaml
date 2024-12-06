@@ -184,7 +184,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,kube-system-oidc-forward-auth-middleware@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
           oidc.ingress.kubernetes.io/forward-auth-enabled: "true"
           oidc.ingress.kubernetes.io/issuer-url: https://idm.vonarx.online/oauth2/openid/prowlarr/
           oidc.ingress.kubernetes.io/audience: prowlarr
