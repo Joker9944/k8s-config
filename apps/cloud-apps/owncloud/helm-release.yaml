@@ -24,7 +24,8 @@ spec:
 
   values:
     image:
-      tag: 6.6.1@sha256:7f80de523cd08cb67d0684e4a9296e6141cfec619f53ea57e43319d97cc4d6fe
+      tag: 6.6.1
+      sha: 7f80de523cd08cb67d0684e4a9296e6141cfec619f53ea57e43319d97cc4d6fe
 
   postRenderers:
     - kustomize:
