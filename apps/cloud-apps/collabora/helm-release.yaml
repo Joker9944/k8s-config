@@ -26,6 +26,7 @@ spec:
         - host: collaboration-collabora
         - host: collaboration-collabora.${main_namespace}
         - host: collaboration-collabora.${main_namespace}.svc.cluster.local
+      extra_params: --o:ssl.enable=false --o:ssl.termination=true
 
     ingress:
       enabled: true
