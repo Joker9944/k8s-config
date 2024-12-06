@@ -1,27 +1,58 @@
 services:
 
+  nats:
+
+    persistence:
+      enabled: true
+      size: 1Gi
+
   ocm:
+
     persistence:
       enabled: true
       size: 1Gi
 
   search:
+
     persistence:
       enabled: true
       size: 1Gi
 
   storagesystem:
+
     persistence:
       enabled: true
       size: 1Gi
 
   storageusers:
+
     persistence:
       enabled: true
       # This is a hack to use NFS storage instead of a PVC for user data
       existingClaim: storageusers-hack
 
+    maintenance:
+
+      cleanUpExpiredUploads:
+        enabled: true
+        schedule: "@weekly"
+
+      purgeExpiredTrashBinItems:
+        enabled: true
+        schedule: "@weekly"
+
+      restartPostprocessing:
+        enabled: true
+        schedule: "@weekly"
+
   thumbnails:
+
     persistence:
       enabled: true
       size: 1Gi
+
+    maintenance:
+
+      cleanUpOldThumbnails:
+        enabled: true
+        schedule: "@weekly"
