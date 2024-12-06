@@ -12,7 +12,7 @@ features:
           uri: https://office.vonarx.online
           iconURI: https://office.vonarx.online/favicon.ico
           ingress:
-            enabled: fals
+            enabled: false
 
     mimetypes:
 
