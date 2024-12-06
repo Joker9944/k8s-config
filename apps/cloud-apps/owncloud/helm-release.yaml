@@ -41,6 +41,9 @@ spec:
             - "blob:"
             - https://embed.diagrams.net
 
+    monitoring:
+      enabled: true
+
   postRenderers:
     - kustomize:
         patches:
