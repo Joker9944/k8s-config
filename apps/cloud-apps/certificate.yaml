@@ -5,6 +5,7 @@ metadata:
   name: wildcard-${main_namespace}
   namespace: ${main_namespace}
 spec:
+  commonName: nyx-${main_namespace}
   dnsNames:
     - "*.${main_namespace}.svc.cluster.local"
     - "*.${main_namespace}"

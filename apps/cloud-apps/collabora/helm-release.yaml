@@ -17,9 +17,15 @@ spec:
 
   values:
 
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+
     collabora:
       aliasgroups:
-        - host: cloud.vonarx.online
+        - host: collaboration-collabora
+        - host: collaboration-collabora.${main_namespace}
+        - host: collaboration-collabora.${main_namespace}.svc.cluster.local
 
     ingress:
       enabled: true
@@ -39,3 +45,8 @@ spec:
         - hosts:
             - *host
           secretName: wildcard-vonarx-online
+
+    trusted_certs_install:
+      enabled: true
+      trusted_certs:
+        - wildcard-cloud-apps-cert
