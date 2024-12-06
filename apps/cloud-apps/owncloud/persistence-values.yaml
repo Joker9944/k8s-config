@@ -2,20 +2,24 @@ services:
 
   ocm:
     persistence:
-      enabled: false
+      enabled: true
+      size: 1Gi
 
   search:
     persistence:
-      enabled: false
+      enabled: true
+      size: 1Gi
 
   storagesystem:
     persistence:
-      enabled: false
+      enabled: true
+      size: 1Gi
 
   storageusers:
     persistence:
-      enabled: false
+      enabled: true
 
   thumbnails:
     persistence:
-      enabled: false
+      enabled: true
+      size: 1Gi

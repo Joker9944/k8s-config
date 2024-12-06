@@ -23,6 +23,7 @@ spec:
       name: ocis-persistence-values
 
   values:
+
     image:
       tag: 6.6.1
       sha: 7f80de523cd08cb67d0684e4a9296e6141cfec619f53ea57e43319d97cc4d6fe
@@ -79,93 +80,93 @@ spec:
                           secretName: wildcard-${main_namespace}-cert
           # This is a hack to use NFS storage instead of a PVC for user data
           # TODO Use standard ways after https://github.com/owncloud/ocis-charts/issues/722
-      #    - patch: |-
-      #        apiVersion: apps/v1
-      #        kind: Deployment
-      #        metadata:
-      #          name: storageusers
-      #          namespace: ${main_namespace}
-      #        spec:
-      #          template:
-      #            spec:
-      #              containers:
-      #                - name: storageusers
-      #                  securityContext:
-      #                    runAsUser: 6010
-      #                    runAsGroup: 6001
-      #                    fsGroup: 6001
-      #              volumes:
-      #                - name: storageusers-data
-      #                  persistentVolumeClaim: null
-      #                  nfs:
-      #                    server: 192.168.178.14
-      #                    path: /mnt/chronos/cloud-data
-      #    - patch: |-
-      #        apiVersion: batch/v1
-      #        kind: CronJob
-      #        metadata:
-      #          name: storage-users-clean-expired-uploads
-      #          namespace: ${main_namespace}
-      #        spec:
-      #          jobTemplate:
-      #            spec:
-      #              template:
-      #                spec:
-      #                  containers:
-      #                    - name: storage-users-clean-expired-uploads
-      #                      securityContext:
-      #                        runAsUser: 6010
-      #                        runAsGroup: 6001
-      #                        fsGroup: 6001
-      #                  volumes:
-      #                    - name: storageusers-data
-      #                      persistentVolumeClaim: null
-      #                      nfs:
-      #                        server: 192.168.178.14
-      #                        path: /mnt/chronos/cloud-data
-      #    - patch: |-
-      #        apiVersion: batch/v1
-      #        kind: CronJob
-      #        metadata:
-      #          name: storage-users-purge-expired-trash-bin-items
-      #          namespace: ${main_namespace}
-      #        spec:
-      #          jobTemplate:
-      #            spec:
-      #              template:
-      #                spec:
-      #                  containers:
-      #                    - name: storage-users-purge-expired-trash-bin-items
-      #                      securityContext:
-      #                        runAsUser: 6010
-      #                        runAsGroup: 6001
-      #                        fsGroup: 6001
-      #                  volumes:
-      #                    - name: storageusers-data
-      #                      persistentVolumeClaim: null
-      #                      nfs:
-      #                        server: 192.168.178.14
-      #                        path: /mnt/chronos/cloud-data
-      #    - patch: |-
-      #        apiVersion: batch/v1
-      #        kind: CronJob
-      #        metadata:
-      #          name: storage-users-restart-postprocessing
-      #          namespace: ${main_namespace}
-      #        spec:
-      #          jobTemplate:
-      #            spec:
-      #              template:
-      #                spec:
-      #                  containers:
-      #                    - name: storage-users-restart-postprocessing
-      #                      securityContext:
-      #                        runAsUser: 6010
-      #                        runAsGroup: 6001
-      #                        fsGroup: 6001
-      #                  volumes:
-      #                    - name: storageusers-data
-      #                      persistentVolumeClaim: null
-      #                      nfs:
-      #                        server: 192.168.178.14
-      #                        path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: storageusers
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: storageusers
+                        securityContext:
+                          runAsUser: 6010
+                          runAsGroup: 6001
+                          fsGroup: 6001
+                    volumes:
+                      - name: storageusers-data
+                        persistentVolumeClaim: null
+                        nfs:
+                          server: 192.168.178.14
+                          path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-clean-expired-uploads
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-clean-expired-uploads
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-purge-expired-trash-bin-items
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-purge-expired-trash-bin-items
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-restart-postprocessing
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-restart-postprocessing
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data
