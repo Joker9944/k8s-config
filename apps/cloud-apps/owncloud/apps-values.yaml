@@ -4,7 +4,6 @@ features:
     enabled: true
 
     wopiIntegration:
-
       officeSuites:
 
         - name: Collabora
@@ -13,4 +12,30 @@ features:
           uri: https://office.vonarx.online
           iconURI: https://office.vonarx.online/favicon.ico
           ingress:
-            enabled: false
+            enabled: fals
+
+    mimetypes:
+
+      - mime_type: application/vnd.oasis.opendocument.text
+        extension: odt
+        name: OpenDocument
+        description: OpenDocument text document
+        icon: image-edit
+        default_app: "Collabora"
+        allow_creation: true
+
+      - mime_type: application/vnd.oasis.opendocument.spreadsheet
+        extension: ods
+        name: OpenSpreadsheet
+        description: OpenDocument spreadsheet document
+        icon: image-edit
+        default_app: "Collabora"
+        allow_creation: true
+
+      - mime_type: application/vnd.oasis.opendocument.presentation
+        extension: odp
+        name: OpenPresentation
+        description: OpenDocument presentation document
+        icon: image-edit
+        default_app: "Collabora"
+        allow_creation: true
