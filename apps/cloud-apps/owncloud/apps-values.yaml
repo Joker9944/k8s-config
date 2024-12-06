@@ -40,9 +40,7 @@ features:
         allow_creation: true
 
 services:
-
   web:
-
     additionalInitContainers:
 
       - name: draw-io

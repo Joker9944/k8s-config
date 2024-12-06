@@ -24,6 +24,23 @@ spec:
     - kind: ConfigMap
       name: ocis-apps-values
 
+  values:
+
+    # Moved this out the sub values files since helm is incapable of deep copy
+    http:
+      csp:
+        directives:
+
+          connectSrc:
+            - "'self'"
+            - https://idm.vonarx.online/oauth2/token
+            - https://raw.githubusercontent.com/owncloud/main/webApps/apps.json
+
+          frameSrc:
+            - "'self'"
+            - "blob:"
+            - https://embed.diagrams.net
+
   postRenderers:
     - kustomize:
         patches:

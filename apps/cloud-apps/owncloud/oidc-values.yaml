@@ -42,13 +42,6 @@ services:
         webClientID: owncloud
         webClientScope: "openid profile email groups"
 
-http:
-  csp:
-    directives:
-      connectSrc:
-        - '''self'''
-        - https://idm.vonarx.online/oauth2/token
-
 secretRefs:
   ldapCaRef: wildcard-${main_namespace}-cert
   ldapSecretRef: ocis-ldap-bind
