@@ -9,6 +9,7 @@ features:
 
         - name: Collabora
           enabled: true
+          product: Collabora
           uri: https://office.vonarx.online
           iconURI: https://office.vonarx.online/favicon.ico
           ingress:

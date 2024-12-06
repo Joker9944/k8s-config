@@ -22,9 +22,8 @@ spec:
         - host: cloud.vonarx.online
 
     ingress:
-      ingress: true
+      enabled: true
 
-      hostname: 
       annotations:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
