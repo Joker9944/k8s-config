@@ -37,6 +37,14 @@ spec:
 
       proofKeysSecretRef: collabora-proof-key
 
+    prometheus:
+      servicemonitor:
+        enabled: true
+
+    grafana:
+      dashboards:
+        enabled: true
+
     ingress:
       enabled: true
 
