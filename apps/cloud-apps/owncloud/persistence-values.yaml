@@ -14,7 +14,7 @@ services:
 
   storageusers:
     persistence:
-      enabled: false
+      enabled: true
 
   thumbnails:
     persistence:
