@@ -75,7 +75,6 @@ spec:
                         secret:
                           secretName: wildcard-${main_namespace}-cert
           # This is a hack to use NFS storage instead of a PVC for user data
-          # TODO Use standard ways after https://github.com/owncloud/ocis-charts/issues/722
           - patch: |-
               apiVersion: apps/v1
               kind: Deployment

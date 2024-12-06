@@ -18,6 +18,7 @@ services:
   storageusers:
     persistence:
       enabled: true
+      # This is a hack to use NFS storage instead of a PVC for user data
       existingClaim: storageusers-hack
 
   thumbnails:

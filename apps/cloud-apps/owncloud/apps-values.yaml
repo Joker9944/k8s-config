@@ -38,3 +38,20 @@ features:
         icon: image-edit
         default_app: "Collabora"
         allow_creation: true
+
+services:
+
+  web:
+
+    additionalInitContainers:
+
+      - name: draw-io
+        image: owncloud/web-extensions:draw-io-0.2.0@sha256:8924c3ade02cf0104683ebce378590ec2a95cb71ea88d35557aa157554cb8eae
+        command:
+          - cp
+          - -R
+          - /var/lib/nginx/html/draw-io/
+          - /apps
+        volumeMounts:
+          - name: apps
+            mountPath: /apps
