@@ -2,20 +2,20 @@ services:
 
   ocm:
     persistence:
-      enabled: true
+      enabled: false
 
   search:
     persistence:
-      enabled: true
+      enabled: false
 
   storagesystem:
     persistence:
-      enabled: true
+      enabled: false
 
   storageusers:
     persistence:
-      enabled: true
+      enabled: false
 
   thumbnails:
     persistence:
-      enabled: true
+      enabled: false
