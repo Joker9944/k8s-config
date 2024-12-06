@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - certificate.yaml
+  - tika/helm-release.yaml
   - collabora
   - owncloud
 configurations:

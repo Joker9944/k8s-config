@@ -1,0 +1,6 @@
+services:
+  search:
+    extractor:
+      type: tika
+      tika:
+        url: http://ocis-tika.${main_namespace}.svc.cluster.local:9998

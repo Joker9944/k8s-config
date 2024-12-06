@@ -19,4 +19,5 @@ resources:
   - postgres-operator/helm-repository.yaml
   - prometheus-community/helm-repository.yaml
   - runix/helm-repository.yaml
+  - tika/helm-repository.yaml
   - traefik/helm-repository.yaml

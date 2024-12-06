@@ -23,6 +23,10 @@ spec:
       name: ocis-persistence-values
     - kind: ConfigMap
       name: ocis-apps-values
+    - kind: ConfigMap
+      name: ocis-monitoring-values
+    - kind: ConfigMap
+      name: ocis-search-values
 
   values:
 
@@ -40,9 +44,6 @@ spec:
             - "'self'"
             - "blob:"
             - https://embed.diagrams.net
-
-    monitoring:
-      enabled: true
 
   postRenderers:
     - kustomize:

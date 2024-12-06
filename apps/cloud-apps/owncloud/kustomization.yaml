@@ -20,3 +20,11 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=apps-values.yaml
+  - name: ocis-search-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=search-values.yaml
+  - name: ocis-monitoring-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=monitoring-values.yaml
