@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - certificate.yaml
+  - collabora/helm-release.yaml
   - owncloud
 configurations:
   - ../../shared/kustomizeconfig.yaml

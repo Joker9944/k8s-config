@@ -16,3 +16,7 @@ configMapGenerator:
     namespace: ${main_namespace}
     files:
       - values.yaml=persistence-values.yaml
+  - name: ocis-apps-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=apps-values.yaml

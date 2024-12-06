@@ -1,0 +1,13 @@
+features:
+
+  appsIntegration:
+    enabled: true
+
+    wopiIntegration:
+
+      officeSuites:
+
+        - name: Collabora
+          enabled: true
+          uri: https://office.vonarx.online
+          iconURI: https://office.vonarx.online/favicon.ico

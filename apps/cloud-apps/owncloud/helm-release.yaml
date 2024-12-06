@@ -21,6 +21,8 @@ spec:
       name: ocis-oidc-values
     - kind: ConfigMap
       name: ocis-persistence-values
+    - kind: ConfigMap
+      name: ocis-apps-values
 
   values:
 
