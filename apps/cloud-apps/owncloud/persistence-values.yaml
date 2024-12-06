@@ -18,6 +18,7 @@ services:
   storageusers:
     persistence:
       enabled: true
+      existingClaim: storageusers-hack
 
   thumbnails:
     persistence:
