@@ -39,7 +39,7 @@ spec:
           satisfactory-dedicated-server:
             image:
               repository: ghcr.io/wolveix/satisfactory-server
-              tag: v1.9.0@sha256:cae3665ba5cd1bddcd59fa343a55754deea89a6813a34c2d0689eefd365770b3
+              tag: v1.9.1@sha256:c8ef7325750e156ba875c210fdce01af20b2dd3da1f8c79f4fb7b78e983f2782
             env:
               PUID: &PUID 568
               GUID: &GUID 568
