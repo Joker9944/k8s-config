@@ -49,7 +49,7 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command: [ /healthcheck.sh ]
+                    command: [ bash /healthcheck.sh ]
                   timeoutSeconds: 3
                   failureThreshold: 6
               readiness:
@@ -57,14 +57,14 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command: [ /healthcheck.sh ]
+                    command: [ bash /healthcheck.sh ]
                   timeoutSeconds: 3
               startup:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [ /healthcheck.sh ]
+                    command: [ bash /healthcheck.sh ]
                   timeoutSeconds: 3
                   # High threshold since installing, updating and validating can take some time before server starts.
                   # Estimate = 360 * 5s = 1800s = 30m
