@@ -191,3 +191,26 @@ spec:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+
+      source-metadata:
+        enabled: true
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: audiobookshelf-metadata
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: audiobookshelf-restic-metadata
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
