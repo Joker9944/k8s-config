@@ -43,6 +43,33 @@ spec:
             env:
               PUID: &PUID 568
               GUID: &GUID 568
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /healthcheck.sh ]
+                  timeoutSeconds: 3
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /healthcheck.sh ]
+                  timeoutSeconds: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [ /healthcheck.sh ]
+                  timeoutSeconds: 3
+                  # High threshold since installing, updating and validating can take some time before server starts.
+                  # Estimate = 360 * 5s = 1800s = 30m
+                  failureThreshold: 360
+                  periodSeconds: 5
             resources:
               requests:
                 cpu: 60m
