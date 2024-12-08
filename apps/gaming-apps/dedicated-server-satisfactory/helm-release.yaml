@@ -30,10 +30,42 @@ spec:
         type: statefulset
 
         pod:
+
           securityContext:
             runAsNonRoot: false
             seccompProfile:
               type: RuntimeDefault
+          
+          affinity:
+            nodeAffinity:
+
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: vonarx.online/cpu-capacity
+                        operator: Gt
+                        values:
+                          - '5'
+                      - key: vonarx.online/memory-capacity
+                        operator: Gt
+                        values:
+                          - '10240'
+
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/cpu-performance
+                        operator: In
+                        values:
+                          - high
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/memory-performance
+                        operator: In
+                        values:
+                          - high
 
         containers:
 
@@ -73,10 +105,10 @@ spec:
                   periodSeconds: 5
             resources:
               requests:
-                cpu: 2
+                cpu: 200m
                 memory: 4Gi
               limits:
-                cpu: 6
+                cpu: 5
                 memory: 10Gi
             securityContext:
               allowPrivilegeEscalation: false

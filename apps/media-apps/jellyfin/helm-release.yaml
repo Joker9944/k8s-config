@@ -42,6 +42,15 @@ spec:
               operator: Exists
               effect: NoSchedule
 
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/nfs-host
+                        operator: Exists
+
         containers:
           jellyfin:
             image:

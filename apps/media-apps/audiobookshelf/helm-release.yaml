@@ -38,6 +38,15 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/nfs-host
+                        operator: Exists
+
         containers:
           audiobookshelf:
             image:
