@@ -1,0 +1,24 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: minio-operator
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: minio-operator
+      version: 4.3.7
+      sourceRef:
+        kind: HelmRepository
+        name: minio-operator
+        namespace: flux-system
+      interval: 30m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3

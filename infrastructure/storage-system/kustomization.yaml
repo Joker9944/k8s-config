@@ -5,5 +5,6 @@ resources:
   - secret.yaml
   - cnpg
   - volsync/helm-release.yaml
+  - minio/helm-release.yaml
 configurations:
   - ../../shared/kustomizeconfig.yaml
