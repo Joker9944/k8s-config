@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - kube-prometheus-stack/helm-release.yaml
+  - loki/helm-release.yaml
+secretGenerator:
+  - name: loki-secret-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=loki/secret-values.sops.yaml
+configurations:
+  - ../../shared/kustomizeconfig.yaml

@@ -12,6 +12,7 @@ resources:
   - emberstack/helm-repository.yaml
   - espresso-lab/helm-repository.yaml
   - gateway/helm-repository.yaml
+  - grafana/helm-repository.yaml
   - jetstack/helm-repository.yaml
   - longhorn/helm-repository.yaml
   - metallb/helm-repository.yaml
