@@ -36,13 +36,18 @@ spec:
         directives:
 
           connectSrc:
+              # default values
             - "'self'"
+              # oidc
             - https://idm.vonarx.online/oauth2/token
+              # web apps
             - https://raw.githubusercontent.com/owncloud/main/webApps/apps.json
 
           frameSrc:
+              # default values
             - "'self'"
             - "blob:"
+              # web apps
             - https://embed.diagrams.net
 
   postRenderers:
