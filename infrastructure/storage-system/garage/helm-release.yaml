@@ -44,6 +44,22 @@ spec:
     ingress:
       s3:
 
+        api:
+          enabeld: true
+          annotations:
+            traefik.ingress.kubernetes.io/router.tls: "true"
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+          hosts:
+            - host: &api_host garage-api.vonarx.online
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - hosts:
+                - *api_host
+              secretName: wildcard-vonarx-online
+
         web:
           enabled: true
           annotations:
@@ -51,7 +67,7 @@ spec:
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
             traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
           hosts:
-            - host: &web_host garage.vonarx.online
+            - host: &web_host garage-web.vonarx.online
               paths:
                 - path: /
                   pathType: Prefix
