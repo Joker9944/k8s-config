@@ -45,7 +45,7 @@ spec:
       s3:
 
         api:
-          enabeld: true
+          enabled: true
           annotations:
             traefik.ingress.kubernetes.io/router.tls: "true"
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
