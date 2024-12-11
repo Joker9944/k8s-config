@@ -57,7 +57,7 @@ spec:
           endpoint: http://garage.storage-system.svc.cluster.local:3900
           region: nyx
           signatureVersion: v4
-          s3ForcePathStyle: false
+          s3ForcePathStyle: true
           insecure: true
           http_config: {}
 
