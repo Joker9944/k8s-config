@@ -18,6 +18,13 @@ spec:
 
     garage:
 
+        s3:
+          api:
+            region: nyx
+            rootDomain:
+          web:
+            rootDomain:
+
     persistence:
       meta:
         storageClass: longhorn-local
