@@ -18,12 +18,6 @@ spec:
 
     garage:
 
-      s3:
-        region: nyx
-        rootDomain: .garage.storage-system.svc.cluster.local
-      web:
-        rootDomain: .garage.storage-system.svc.cluster.local
-
     persistence:
       meta:
         storageClass: longhorn-local
@@ -31,6 +25,25 @@ spec:
       data:
         storageClass: longhorn-local
         size: 10Gi
+
+    ingress:
+      s3:
+
+        web:
+          enabled: true
+          annotations:
+            traefik.ingress.kubernetes.io/router.tls: "true"
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+          hosts:
+            - host: &web_host garage.vonarx.online
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - hosts:
+                - *web_host
+              secretName: wildcard-vonarx-online
 
     monitoring:
       metrics:
