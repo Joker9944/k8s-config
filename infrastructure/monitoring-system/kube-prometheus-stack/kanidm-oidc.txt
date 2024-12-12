@@ -1,0 +1,19 @@
+# Group Setup
+
+kanidm group create grafana_admins
+kanidm group add-members grafana_admins monitoring_admins
+kanidm group create grafana_users
+kanidm group add-members grafana_users monitoring_users
+
+# OIDC Setup
+
+kanidm system oauth2 create grafana "Grafana" https://grafana.vonarx.online/
+
+kanidm system oauth2 prefer-short-username grafana
+
+kanidm system oauth2 set-landing-url grafana https://grafana.vonarx.online/login/generic_oauth
+
+kanidm system oauth2 update-scope-map grafana grafana_users email openid profile groups
+
+kanidm system oauth2 update-claim-map-join grafana grafana_role array
+kanidm system oauth2 update-claim-map grafana grafana_role grafana_admins Admin
