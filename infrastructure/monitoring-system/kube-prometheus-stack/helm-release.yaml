@@ -29,8 +29,6 @@ spec:
 
     # TODO Pull this stack chart apart and use the individual app charts
 
-    # Alertmanager
-
     alertmanager:
 
       ingress:
@@ -47,8 +45,6 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - alertmanager.vonarx.online
-
-    # Grafana
 
     grafana:
 
@@ -70,15 +66,13 @@ spec:
             hosts:
               - grafana.vonarx.online.vonarx.online
 
-    # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
-    additionalDataSources:
+      # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
+      additionalDataSources:
 
-      - name: loki
-        type: loki
-        access: proxy
-        url: http://loki-read.monitoring-system.svc.cluster.local:3100
-
-    # Prometheus
+        - name: loki
+          type: loki
+          access: proxy
+          url: http://loki-read.monitoring-system.svc.cluster.local:3100
 
     prometheus:
 
