@@ -80,6 +80,15 @@ spec:
         retention: 14d
         retentionSize: 30GB
 
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: [ "ReadWriteOnce" ]
+              resources:
+                requests:
+                  storage: 30Gi
+
       ingress:
         enabled: true
         annotations:
@@ -94,12 +103,3 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - prometheus.vonarx.online.vonarx.online
-
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: longhorn
-            accessModes: [ "ReadWriteOnce" ]
-            resources:
-              requests:
-                storage: 30Gi
