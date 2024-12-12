@@ -33,7 +33,7 @@ spec:
 
       existingSecret:
         enabled: true
-        secretName: collabora-user
+        secretName: collabora-admin
 
       proofKeysSecretRef: collabora-proof-key
 
