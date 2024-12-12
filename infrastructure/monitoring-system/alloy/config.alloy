@@ -14,8 +14,9 @@ loki.source.syslog "talos_kernel_logs" {
     protocol = "udp"
 
     labels = {
-      job     = "talos/kernel",
-      cluster = "nyx",
+      job       = "talos/kernel",
+      node_name = sys.env("HOSTNAME"),
+      cluster   = "nyx",
     }
   }
 }
@@ -28,8 +29,9 @@ loki.source.syslog "talos_service_logs" {
     protocol = "udp"
 
     labels = {
-      job     = "talos/kernel",
-      cluster = "nyx",
+      job       = "talos/service",
+      node_name = sys.env("HOSTNAME"),
+      cluster   = "nyx",
     }
   }
 }
