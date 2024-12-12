@@ -57,8 +57,11 @@ spec:
         type: secret
 
     logs:
+      general:
+        format:  json
       access:
         enabled: true
+        format:  json
 
     tlsStore:
         default:
