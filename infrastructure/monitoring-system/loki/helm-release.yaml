@@ -23,6 +23,11 @@ spec:
 
     loki:
 
+      # Auth requires a revers proxy providing basic auth
+      # https://grafana.com/docs/loki/latest/operations/authentication/
+      # TODO manage auth and TLS for monitoring in general
+      auth_enabled: false
+
       # https://grafana.com/docs/loki/latest/configuration/#schema_config
       schemaConfig:
         # https://grafana.com/docs/loki/latest/configure/#period_config

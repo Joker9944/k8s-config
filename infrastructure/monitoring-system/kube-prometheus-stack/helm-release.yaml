@@ -4,7 +4,7 @@ metadata:
   name: kube-prometheus-stack
   namespace: ${main_namespace}
 spec:
-  interval: 5m
+  interval: 30m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -13,17 +13,24 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
-      interval: 5m
+      interval: 30m
+
   install:
     crds: CreateReplace
     remediation:
       retries: 3
+
   upgrade:
     crds: CreateReplace
     remediation:
       retries: 3
+
   values:
+
+    # Alertmanager
+
     alertmanager:
+
       ingress:
         enabled: true
         annotations:
@@ -38,7 +45,11 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - alertmanager.vonarx.online
+
+    # Grafana
+
     grafana:
+
       ingress:
         enabled: true
         annotations:
@@ -53,10 +64,23 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - grafana.vonarx.online.vonarx.online
+
+    # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
+    additionalDataSources:
+
+      - name: loki
+        type: loki
+        access: proxy
+        url: http://loki-read.monitoring-system.svc.cluster.local:3100
+
+    # Prometheus
+
     prometheus:
+
       prometheusSpec:
         retention: 30d
         retentionSize: 100GB
+
       ingress:
         enabled: true
         annotations:
