@@ -78,6 +78,12 @@ discovery.relabel "k8s_pod_logs" {
   }
 
   rule {
+    source_labels = ["__meta_kubernetes_pod_node_name"]
+    action = "replace"
+    target_label = "node_name"
+  }
+
+  rule {
     source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
     action = "replace"
     target_label = "app"
@@ -129,7 +135,7 @@ loki.source.kubernetes_events "k8s_events" {
   forward_to = [ loki.process.k8s_events.receiver ]
 
   job_name   = "integrations/kubernetes/eventhandler"
-  log_format = "logfmt"
+  log_format = "json"
 }
 
 loki.process "k8s_events" {
