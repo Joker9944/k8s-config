@@ -27,6 +27,8 @@ spec:
 
   values:
 
+    # TODO Pull this stack chart apart and use the individual app charts
+
     # Alertmanager
 
     alertmanager:
@@ -49,6 +51,9 @@ spec:
     # Grafana
 
     grafana:
+
+      plugins:
+        - grafana-lokiexplore-app
 
       ingress:
         enabled: true
