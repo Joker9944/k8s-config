@@ -14,9 +14,9 @@ loki.source.syslog "talos_kernel_logs" {
     protocol = "udp"
 
     labels = {
-      job     = "talos/kernel"
-      node    = constants.hostname
-      cluster = "nyx"
+      job     = "talos/kernel",
+      node    = constants.hostname,
+      cluster = "nyx",
     }
   }
 }
@@ -29,19 +29,19 @@ loki.source.syslog "talos_service_logs" {
     protocol = "udp"
 
     labels = {
-      job     = "talos/service"
-      node    = constants.hostname
-      cluster = "nyx"
+      job     = "talos/service",
+      node    = constants.hostname,
+      cluster = "nyx",
     }
   }
 }
 
 local.file_match "talos_audit_logs" {
   path_targets = [{
-    __path__ = "/var/log/audit/kube/*.log"
-    job      = "talos/audit"
-    node     = constants.hostname
-    cluster  = "nyx"
+    __path__ = "/var/log/audit/kube/*.log",
+    job      = "talos/audit",
+    node     = constants.hostname,
+    cluster  = "nyx",
   }]
 }
 
@@ -124,7 +124,7 @@ loki.process "k8s_pod_logs" {
 
   stage.static_labels {
       values = {
-        cluster = "nyx"
+        cluster = "nyx",
       }
   }
 }
@@ -143,13 +143,13 @@ loki.process "k8s_events" {
 
   stage.static_labels {
     values = {
-      cluster = "nyx"
+      cluster = "nyx",
     }
   }
 
   stage.labels {
     values = {
-      kubernetes_cluster_events = "job"
+      kubernetes_cluster_events = "job",
     }
   }
 }
