@@ -77,8 +77,8 @@ spec:
     prometheus:
 
       prometheusSpec:
-        retention: 30d
-        retentionSize: 100GB
+        retention: 14d
+        retentionSize: 30GB
 
       ingress:
         enabled: true
@@ -94,3 +94,12 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - prometheus.vonarx.online.vonarx.online
+
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: longhorn
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: 30Gi
