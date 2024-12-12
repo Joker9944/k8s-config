@@ -47,7 +47,8 @@ spec:
         allow_structured_metadata: true
         volume_enabled: true
         retention_period: 168h # 7 * 24h = 168h
-        reject_old_samples_max_age: 168h # 7 * 24h = 168h
+        # TODO Settings this temporarily to false so alloy can scrape all the logs
+        reject_old_samples: false
 
       querier:
         max_concurrent: 2
