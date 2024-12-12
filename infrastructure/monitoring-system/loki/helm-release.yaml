@@ -46,7 +46,8 @@ spec:
       limits_config:
         allow_structured_metadata: true
         volume_enabled: true
-        retention_period: 168h # 7 days retention
+        retention_period: 168h # 7 * 24h = 168h
+        reject_old_samples_max_age: 168h # 7 * 24h = 168h
 
       querier:
         max_concurrent: 2
