@@ -2,14 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - kube-prometheus-stack/helm-release.yaml
+  - kube-prometheus-stack
   - loki/helm-release.yaml
   - alloy
 secretGenerator:
-  - name: kube-prometheus-stack-secret-values
-    namespace: ${main_namespace}
-    files:
-      - values.yaml=kube-prometheus-stack/secret-values.sops.yaml
   - name: loki-secret-values
     namespace: ${main_namespace}
     files:

@@ -25,10 +25,6 @@ spec:
     remediation:
       retries: 3
 
-  valuesFrom:
-    - kind: Secret
-      name: kube-prometheus-stack-secret-values
-
   values:
 
     # TODO Pull this stack chart apart and use the individual app charts
@@ -53,6 +49,11 @@ spec:
 
     grafana:
 
+      admin:
+        existingSecret: grafana-admin
+        userKey: username
+        passwordKey: password
+
       grafana.ini:
 
         auth.generic_oauth:
@@ -70,6 +71,8 @@ spec:
           groups_attribute_path: groups
           role_attribute_path: contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'
           allow_assign_grafana_admin: false
+
+      envFromSecret: grafana-environment
 
       plugins:
         - grafana-lokiexplore-app
