@@ -12,6 +12,11 @@ loki.source.syslog "talos_kernel_logs" {
   listener {
     address  = "127.0.0.1:6050"
     protocol = "udp"
+
+    labels = {
+      job     = "talos/kernel",
+      cluster = "nyx",
+    }
   }
 }
 
@@ -21,13 +26,18 @@ loki.source.syslog "talos_service_logs" {
   listener {
     address  = "127.0.0.1:6051"
     protocol = "udp"
+
+    labels = {
+      job     = "talos/kernel",
+      cluster = "nyx",
+    }
   }
 }
 
 local.file_match "talos_audit_logs" {
   path_targets = [{
     __path__  = "/var/log/audit/kube/*.log",
-    job       = "node/syslog",
+    job       = "talos/audit",
     node_name = sys.env("HOSTNAME"),
     cluster   = "nyx",
   }]

@@ -51,6 +51,7 @@ nodes:
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
     nodeLabels:
       'vonarx.online/cpu-capacity': '6'
       'vonarx.online/cpu-performance': high
@@ -78,6 +79,7 @@ nodes:
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
     nodeLabels:
       'vonarx.online/cpu-capacity': '6'
       'vonarx.online/cpu-performance': high
@@ -106,6 +108,7 @@ nodes:
     patches:
       - '@patches/nvidia.yaml'
       - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
     nodeLabels:
       'vonarx.online/nfs-host': 'true'
       'vonarx.online/s3-host': 'true'
