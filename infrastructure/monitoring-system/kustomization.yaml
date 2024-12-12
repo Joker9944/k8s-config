@@ -4,7 +4,7 @@ resources:
   - namespace.yaml
   - kube-prometheus-stack/helm-release.yaml
   - loki/helm-release.yaml
-  - alloy/helm-release.yaml
+  - alloy
 secretGenerator:
   - name: loki-secret-values
     namespace: ${main_namespace}

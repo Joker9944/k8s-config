@@ -1,0 +1,137 @@
+loki.write "default" {
+  endpoint {
+    url = "http://loki-write.monitoring-system.svc.cluster.local/loki/api/v1/push"
+  }
+}
+
+// Talos logs
+
+loki.source.syslog "talos_kernel_logs" {
+  forward_to = [ loki.write.default.receiver ]
+
+  listener {
+    address  = "127.0.0.1:6050"
+    protocol = udp
+  }
+}
+
+loki.source.syslog "talos_service_logs" {
+  forward_to = [ loki.write.default.receiver ]
+
+  listener {
+    address  = "127.0.0.1:6051"
+    protocol = udp
+  }
+}
+
+local.file_match "talos_audit_logs" {
+  path_targets = [{
+    __path__  = "/var/log/audit/kube/*.log",
+    job       = "node/syslog",
+    node_name = sys.env("HOSTNAME"),
+    cluster   = "nyx",
+  }]
+}
+
+loki.source.file "talos_audit_logs" {
+  targets    = local.file_match.talos_audit_logs.targets
+  forward_to = [ loki.write.default.receiver ]
+}
+
+// Pod logs
+
+discovery.kubernetes "k8s_pod" {
+  role = "pod"
+}
+
+discovery.relabel "k8s_pod_logs" {
+  targets = discovery.kubernetes.k8s_pod.targets
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    action = "replace"
+    target_label = "namespace"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    action = "replace"
+    target_label = "pod"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    action = "replace"
+    target_label = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+    action = "replace"
+    target_label = "app"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+    action = "replace"
+    target_label = "job"
+    separator = "/"
+    replacement = "$1"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+    action = "replace"
+    target_label = "__path__"
+    separator = "/"
+    replacement = "/var/log/pods/*$1/*.log"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_id"]
+    action = "replace"
+    target_label = "container_runtime"
+    regex = "^(\\S+):\\/\\/.+$"
+    replacement = "$1"
+  }
+}
+
+loki.source.kubernetes "k8s_pod_logs" {
+  targets    = discovery.relabel.k8s_pod_logs.output
+  forward_to = [ loki.process.k8s_pod_logs.receiver ]
+}
+
+loki.process "k8s_pod_logs" {
+  forward_to = [ loki.write.default.receiver ]
+
+  stage.static_labels {
+      values = {
+        cluster = "nyx",
+      }
+  }
+}
+
+// Cluster events
+
+loki.source.kubernetes_events "k8s_events" {
+  forward_to = [ loki.process.k8s_events.receiver ]
+
+  job_name   = "integrations/kubernetes/eventhandler"
+  log_format = "logfmt"
+}
+
+loki.process "k8s_events" {
+  forward_to = [ loki.write.default.receiver ]
+
+  stage.static_labels {
+    values = {
+      cluster = "nyx",
+    }
+  }
+
+  stage.labels {
+    values = {
+      kubernetes_cluster_events = "job",
+    }
+  }
+}

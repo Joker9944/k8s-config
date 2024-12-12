@@ -15,4 +15,12 @@ spec:
         namespace: flux-system
       interval: 30m
 
-  # crds are already installed by the loki release
+  # crds are already installed by the loki helm release
+
+  values:
+
+    alloy:
+      configMap:
+        create: false
+        name: alloy-config
+        key: config.alloy
