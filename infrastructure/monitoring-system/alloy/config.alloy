@@ -14,9 +14,9 @@ loki.source.syslog "talos_kernel_logs" {
     protocol = "udp"
 
     labels = {
-      job       = "talos/kernel",
-      node_name = sys.env("HOSTNAME"),
-      cluster   = "nyx",
+      job     = "talos/kernel",
+      node    = sys.env("HOSTNAME"),
+      cluster = "nyx",
     }
   }
 }
@@ -29,19 +29,19 @@ loki.source.syslog "talos_service_logs" {
     protocol = "udp"
 
     labels = {
-      job       = "talos/service",
-      node_name = sys.env("HOSTNAME"),
-      cluster   = "nyx",
+      job     = "talos/service",
+      node    = sys.env("HOSTNAME"),
+      cluster = "nyx",
     }
   }
 }
 
 local.file_match "talos_audit_logs" {
   path_targets = [{
-    __path__  = "/var/log/audit/kube/*.log",
-    job       = "talos/audit",
-    node_name = sys.env("HOSTNAME"),
-    cluster   = "nyx",
+    __path__ = "/var/log/audit/kube/*.log",
+    job      = "talos/audit",
+    node     = sys.env("HOSTNAME"),
+    cluster  = "nyx",
   }]
 }
 
@@ -80,7 +80,7 @@ discovery.relabel "k8s_pod_logs" {
   rule {
     source_labels = ["__meta_kubernetes_pod_node_name"]
     action = "replace"
-    target_label = "node_name"
+    target_label = "node"
   }
 
   rule {
