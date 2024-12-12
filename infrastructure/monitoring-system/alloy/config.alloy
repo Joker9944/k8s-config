@@ -11,7 +11,7 @@ loki.source.syslog "talos_kernel_logs" {
 
   listener {
     address  = "127.0.0.1:6050"
-    protocol = udp
+    protocol = "udp"
   }
 }
 
@@ -20,7 +20,7 @@ loki.source.syslog "talos_service_logs" {
 
   listener {
     address  = "127.0.0.1:6051"
-    protocol = udp
+    protocol = "udp"
   }
 }
 
