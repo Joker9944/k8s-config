@@ -140,7 +140,7 @@ spec:
               OAUTH2_PROXY_HTTP_ADDRESS: :4180
             envFrom:
               - secretRef:
-                  name: prowlarr-oath2
+                  name: prowlarr-oauth2
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
