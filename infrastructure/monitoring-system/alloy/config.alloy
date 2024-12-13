@@ -138,8 +138,8 @@ loki.process "k8s_pod_logs" {
   stage.match {
     selector = "{container=`kanidm`}"
 
-    stage.regex = {
-      expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+)     (?P<message>.+)$"
+    stage.regex {
+      expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+) {5}(?P<message>.+)$"
     }
   }
 }
