@@ -287,9 +287,6 @@ spec:
             forwardAuth:
               address: https://prowlarr.vonarx.online/oauth2/auth
               trustForwardHeader: true
-              authResponseHeaders:
-                - X-Auth-Request-Access-Token
-                - Authorization
 
       oauth2-redirect:
         apiVersion: traefik.io/v1alpha1
@@ -297,10 +294,7 @@ spec:
         spec:
           spec:
             errors:
-              status:
-                - "401"
-                - "402"
-                - "403"
+              status: [ "401" ]
               service:
                 name: prowlarr-oauth2-proxy
                 port: 4180
