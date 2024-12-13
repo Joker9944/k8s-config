@@ -158,9 +158,9 @@ loki.process "k8s_pod_logs" {
     }
   }
 
-  // Prowlarr
+  // Servarr
   stage.match {
-    selector = "{container=\"prowlarr\"}"
+    selector = "{container=~\"prowlarr|radarr|sonarr\"}"
 
     stage.drop {
       expression = "^\\n$"
