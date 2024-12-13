@@ -294,7 +294,7 @@ spec:
         spec:
           spec:
             errors:
-              status: [ "401" ]
+              status: [ "401-403" ]
               service:
                 name: prowlarr-oauth2-proxy
                 port: 4180
