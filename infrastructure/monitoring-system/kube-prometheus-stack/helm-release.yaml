@@ -61,7 +61,7 @@ spec:
 
         auth.generic_oauth:
           enabled: true
-          name: kanidm
+          name: Kanidm
           client_id: grafana
           scopes: openid,profile,email,groups
           auth_url: https://idm.vonarx.online/ui/oauth2
