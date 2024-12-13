@@ -151,11 +151,28 @@ loki.process "k8s_pod_logs" {
   }
 
   stage.match {
-    selector     = "{container=\"audiobookshelf\"}"
+    selector = "{container=\"audiobookshelf\"}"
 
     stage.regex {
       expression = "^\\[(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2}) (?P<hour>\\d{2}):(?P<minute>\\d{2}):(?P<second>\\d{2}).(?P<millisecond>\\d{3})\\] (?P<level>\\w+): \\[(?P<unit>\\w+)\\] (?P<message>.+)$"
     }
+  }
+
+  // Prowlarr
+  stage.match {
+    selector = "{app=\"prowlarr\"}"
+
+    stage.drop {
+      expression = "^\\n$"
+    }
+
+    stage.multiline {
+      firstline = "^\\[\\w+?\\] .+?:.*$"
+    }
+
+    stage.regex {
+      expression + "^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+)$"
+    } 
   }
 }
 
