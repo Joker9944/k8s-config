@@ -298,4 +298,4 @@ spec:
               service:
                 name: prowlarr-oauth2-proxy
                 port: 4180
-              query: "/oauth2/sign_in?={url}"
+              query: "/oauth2/sign_in?rd={url}"
