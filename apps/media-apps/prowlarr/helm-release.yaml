@@ -130,8 +130,8 @@ spec:
             env:
               LOG_FORMAT: json
               PORT: &port_auth 4181
-              PROVIDER_URI: https://idm.vonarx.online/oauth2/openid/prowlarr
-              CLIENT_ID: prowlarr
+              PROVIDERS_OIDC_ISSUER_URL: https://idm.vonarx.online/oauth2/openid/prowlarr
+              PROVIDERS_OIDC_CLIENT_ID: prowlarr
             envFrom:
               - secretRef:
                   name: prowlarr-forward-auth-env
