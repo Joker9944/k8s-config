@@ -137,7 +137,6 @@ spec:
               OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
               OAUTH2_PROXY_REDIRECT_URL: https://prowlarr.vonarx.online/oauth2/callback
               OAUTH2_PROXY_REVERSE_PROXY: true
-              OAUTH2_PROXY_UPSTREAM: static://202
               OAUTH2_PROXY_HTTP_ADDRESS: :4180
               OAUTH2_PROXY_EMAIL_DOMAINS: '*'
             envFrom:
