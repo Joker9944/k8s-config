@@ -61,11 +61,6 @@ spec:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: 0
               PROWLARR__APP__INSTANCENAME: Prowlarr
-              PROWLARR__AUTH__APIKEY:
-                valueFrom:
-                  secretKeyRef:
-                    name: prowlarr-api-key
-                    key: key
               PROWLARR__AUTH__METHOD: External
               PROWLARR__AUTH__REQUIRED: Enabled
               PROWLARR__SERVER__PORT: &port_http 9696
@@ -87,6 +82,9 @@ spec:
                     key: PASSWORD
               PROWLARR__POSTGRES__MAINDB: prowlarr-main
               PROWLARR__POSTGRES__LOGDB: prowlarr-log
+            envFrom:
+              - secretRef:
+                  name: prowlarr-env
             probes:
               liveness:
                 enabled: true
@@ -125,24 +123,18 @@ spec:
                 drop:
                   - ALL
 
-          oauth2-proxy:
+          forward-auth:
             image:
-              repository: quay.io/oauth2-proxy/oauth2-proxy
-              tag: v7.7.1@sha256:f6a4aa83a27e316114bf79664302b1ffb2cc8ce697fb479273af4feb3fb16fe3
+              repository: mesosphere/traefik-forward-auth
+              tag: v3.2.0@sha256:556695201b06fb6e2ff0b5685388b34ee21c4b7176c881087a88a6d8316401b0
             env:
-              OAUTH2_PROXY_PROVIDER: oidc
-              OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Kanidm
-              OAUTH2_PROXY_CLIENT_ID: prowlarr
-              OAUTH2_PROXY_OIDC_ISSUER_URL: https://idm.vonarx.online/oauth2/openid/prowlarr
-              OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
-              OAUTH2_PROXY_REDIRECT_URL: https://prowlarr.vonarx.online/oauth2/callback
-              OAUTH2_PROXY_REVERSE_PROXY: true
-              OAUTH2_PROXY_HTTP_ADDRESS: :4180
-              OAUTH2_PROXY_EMAIL_DOMAINS: '*'
-              OAUTH2_PROXY_WHITELIST_DOMAIN: .vonarx.online
+              LOG_FORMAT: json
+              PORT: &port_auth 4181
+              PROVIDERS_OIDC_ISSUER_URL: https://idm.vonarx.online/oauth2/openid/prowlarr
+              PROVIDERS_OIDC_CLIENT_ID: prowlarr
             envFrom:
               - secretRef:
-                  name: prowlarr-oauth2
+                  name: prowlarr-forward-auth-env
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -202,11 +194,12 @@ spec:
         ports:
           http:
             port: *port_http
-      oauth2-proxy:
+
+      forward-auth:
         controller: prowlarr
         ports:
           auth:
-            port: 4180
+            port: *port_auth
 
     ingress:
 
@@ -214,7 +207,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oauth2-redirect@kubernetescrd,${main_namespace}-prowlarr-oauth2-forward@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-oidc-forward@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
@@ -222,23 +215,6 @@ spec:
                 service:
                   identifier: prowlarr
                   port: http
-        tls:
-          - hosts:
-              - *host
-            secretName: wildcard-vonarx-online
-
-      oauth2-proxy:
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-        hosts:
-          - host: *host
-            paths:
-              - path: /oauth2/
-                service:
-                  identifier: oauth2-proxy
-                  port: auth
         tls:
           - hosts:
               - *host
@@ -280,23 +256,12 @@ spec:
             secretName: cnpg-user
             privileges: OWNER
 
-      oauth2-forward:
+      oidc-forward:
         apiVersion: traefik.io/v1alpha1
         kind: Middleware
         spec:
           spec:
             forwardAuth:
-              address: https://prowlarr.vonarx.online/oauth2/auth
-              trustForwardHeader: true
-
-      oauth2-redirect:
-        apiVersion: traefik.io/v1alpha1
-        kind: Middleware
-        spec:
-          spec:
-            errors:
-              status: [ "401-403" ]
-              service:
-                name: prowlarr-oauth2-proxy
-                port: 4180
-              query: "/oauth2/sign_in?rd={url}"
+              address: http://prowlarr-forward-auth.media-apps.svc.cluster.local:4181
+              authResponseHeaders:
+                - X-Auth-User
