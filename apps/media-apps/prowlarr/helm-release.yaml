@@ -134,6 +134,7 @@ spec:
               OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Kanidm
               OAUTH2_PROXY_CLIENT_ID: prowlarr
               OAUTH2_PROXY_OIDC_ISSUER_URL: https://idm.vonarx.online/oauth2/openid/prowlarr
+              OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
               OAUTH2_PROXY_REDIRECT_URL: https://prowlarr.vonarx.online/oauth2/callback
               OAUTH2_PROXY_REVERSE_PROXY: true
               OAUTH2_PROXY_UPSTREAM: static://202
