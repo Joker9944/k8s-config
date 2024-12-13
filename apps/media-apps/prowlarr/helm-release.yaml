@@ -222,6 +222,19 @@ spec:
                 service:
                   identifier: prowlarr
                   port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+      oauth2-proxy:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        hosts:
+          - host: *host
+            paths:
               - path: /oauth2/
                 service:
                   identifier: oauth2-proxy
