@@ -130,13 +130,13 @@ loki.process "k8s_pod_logs" {
 
   // Kanidm
   stage.match {
-    selector            = "{container=`kanidm`} |= `| uri: /status |`"
+    selector            = "{container=\"kanidm\"} |= \"| uri: /status |\""
     action              = "drop"
     drop_counter_reason = "healthcheck_call"
   }
 
   stage.match {
-    selector = "{container=`kanidm`}"
+    selector = "{container=\"kanidm\"}"
 
     stage.regex {
       expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+) {5}(?P<message>.+)$"
