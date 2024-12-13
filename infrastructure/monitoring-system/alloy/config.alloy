@@ -130,8 +130,8 @@ loki.process "k8s_pod_logs" {
 
   // Kanidm
   stage.match {
-    selector = "{container=`kanidm`} |= `| uri: /status |`"
-    action   = drop
+    selector            = "{container=`kanidm`} |= `| uri: /status |`"
+    action              = "drop"
     drop_counter_reason = "healthcheck_call"
   }
 
