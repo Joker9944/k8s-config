@@ -139,7 +139,7 @@ loki.process "k8s_pod_logs" {
     selector     = "{container=\"kanidm\"}"
 
     stage.regex {
-      expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+) {5}(?P<message>.+)$"
+      expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+?) {5}(?P<message>.+)$"
     }
   }
 
@@ -154,13 +154,13 @@ loki.process "k8s_pod_logs" {
     selector = "{container=\"audiobookshelf\"}"
 
     stage.regex {
-      expression = "^\\[(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2}) (?P<hour>\\d{2}):(?P<minute>\\d{2}):(?P<second>\\d{2}).(?P<millisecond>\\d{3})\\] (?P<level>\\w+): \\[(?P<unit>\\w+)\\] (?P<message>.+)$"
+      expression = "^\\[(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2}) (?P<hour>\\d{2}):(?P<minute>\\d{2}):(?P<second>\\d{2}).(?P<millisecond>\\d{3})\\] (?P<level>\\w+?): \\[(?P<unit>\\w+?)\\] (?P<message>.+)$"
     }
   }
 
   // Prowlarr
   stage.match {
-    selector = "{app=\"prowlarr\"}"
+    selector = "{container=\"prowlarr\"}"
 
     stage.drop {
       expression = "^\\n$"
