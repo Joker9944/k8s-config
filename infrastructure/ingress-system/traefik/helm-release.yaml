@@ -42,10 +42,6 @@ spec:
           # renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
           version: v0.2.8
 
-    ingressRoute:
-      dashboard:
-        enabled: true
-
     providers:
       kubernetesCRD:
         allowCrossNamespace: true
@@ -96,3 +92,30 @@ spec:
           default: true
         exposedPort: 7777
         protocol: UDP
+
+    extraObjects:
+      - |
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: traefik-dashboard
+          namespace: ${main_namespace}
+          labels:
+            app.kubernetes.io/name: traefik
+            app.kubernetes.io/instance: traefik-ingress-system
+          annotations:
+            traefik.ingress.kubernetes.io/router.tls: 'true'
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        spec:
+          rules:
+          - host: traefik.vonarx.online
+            http:
+              paths:
+              - pathType: Prefix
+                path: "/dashboard"
+                backend:
+                  service:
+                    name: traefik
+                    port: 
+                      number: 7777
