@@ -125,31 +125,6 @@ spec:
                 drop:
                   - ALL
 
-          oauth2-proxy:
-            image:
-              repository: quay.io/oauth2-proxy/oauth2-proxy
-              tag: v7.7.1@sha256:f6a4aa83a27e316114bf79664302b1ffb2cc8ce697fb479273af4feb3fb16fe3
-            env:
-              OAUTH2_PROXY_PROVIDER: oidc
-              OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Kanidm
-              OAUTH2_PROXY_CLIENT_ID: prowlarr
-              OAUTH2_PROXY_OIDC_ISSUER_URL: https://idm.vonarx.online/oauth2/openid/prowlarr
-              OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
-              OAUTH2_PROXY_REDIRECT_URL: https://prowlarr.vonarx.online/oauth2/callback
-              OAUTH2_PROXY_REVERSE_PROXY: true
-              OAUTH2_PROXY_HTTP_ADDRESS: :4180
-              OAUTH2_PROXY_EMAIL_DOMAINS: '*'
-              OAUTH2_PROXY_WHITELIST_DOMAIN: .vonarx.online
-            envFrom:
-              - secretRef:
-                  name: prowlarr-oauth2
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-
         initContainers:
 
           postgresql:
@@ -202,11 +177,6 @@ spec:
         ports:
           http:
             port: *port_http
-      oauth2-proxy:
-        controller: prowlarr
-        ports:
-          auth:
-            port: 4180
 
     ingress:
 
@@ -214,7 +184,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oauth2-redirect@kubernetescrd,${main_namespace}-prowlarr-oauth2-forward@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oidc@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
@@ -222,23 +192,6 @@ spec:
                 service:
                   identifier: prowlarr
                   port: http
-        tls:
-          - hosts:
-              - *host
-            secretName: wildcard-vonarx-online
-
-      oauth2-proxy:
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-        hosts:
-          - host: *host
-            paths:
-              - path: /oauth2/
-                service:
-                  identifier: oauth2-proxy
-                  port: auth
         tls:
           - hosts:
               - *host
@@ -280,23 +233,26 @@ spec:
             secretName: cnpg-user
             privileges: OWNER
 
-      oauth2-forward:
+      oidc:
         apiVersion: traefik.io/v1alpha1
         kind: Middleware
         spec:
           spec:
-            forwardAuth:
-              address: https://prowlarr.vonarx.online/oauth2/auth
-              trustForwardHeader: true
-
-      oauth2-redirect:
-        apiVersion: traefik.io/v1alpha1
-        kind: Middleware
-        spec:
-          spec:
-            errors:
-              status: [ "401-403" ]
-              service:
-                name: prowlarr-oauth2-proxy
-                port: 4180
-              query: "/oauth2/sign_in?rd={url}"
+            traefikoidc:
+              providerURL: https://idm.vonarx.online/oauth2/openid/prowlarr
+              clientID: prowlarr
+              clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
+              sessionEncryptionKey: urn:k8s:secret:prowlarr-oidc:SESSION_ENCRYPTION_KEY
+              callbackURL: /oauth2/callback
+              logoutURL: /oauth2/logout\
+              forceHTTPS: true
+              scopes:
+                - openid
+                - groups
+              allowedRolesAndGroups:
+                - prowlarr_admins@idm.vonarx.online
+              allowedUserDomains:
+                - vonarx.online
+              excludedURLs:
+                - /login
+                - /favicon.ico

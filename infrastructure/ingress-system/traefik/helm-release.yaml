@@ -41,6 +41,10 @@ spec:
           moduleName: github.com/PascalMinder/geoblock
           # renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
           version: v0.2.8
+        oidc:
+          moduleName: github.com/lukaszraczylo/traefikoidc
+          # renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced
+          version: v0.4.2
 
     providers:
       kubernetesCRD:
