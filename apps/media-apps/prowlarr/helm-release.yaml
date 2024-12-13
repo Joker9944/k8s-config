@@ -125,6 +125,29 @@ spec:
                 drop:
                   - ALL
 
+          oauth2-proxy:
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.7.1@sha256:f6a4aa83a27e316114bf79664302b1ffb2cc8ce697fb479273af4feb3fb16fe3
+            env:
+              OAUTH2_PROXY_PROVIDER: oidc
+              OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: Kanidm
+              OAUTH2_PROXY_CLIENT_ID: prowlarr
+              OAUTH2_PROXY_OIDC_ISSUES_URL: https://idm.vonarx.online/oauth2/openid/prowlarr/
+              OAUTH2_PROXY_REDIRECT_URL: https://prowlarr.vonarx.online/oauth2/callback
+              OAUTH2_PROXY_REVERSE_PROXY: true
+              OAUTH2_PROXY_UPSTREAM: static://202
+              OAUTH2_PROXY_HTTP_ADDRESS: :4180
+            envFrom:
+              - secretRef:
+                  name: prowlarr-oath2
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
         initContainers:
 
           postgresql:
@@ -177,6 +200,11 @@ spec:
         ports:
           http:
             port: *port_http
+      oauth2-proxy:
+        controller: prowlarr
+        ports:
+          auth:
+            port: 4180
 
     ingress:
 
@@ -184,12 +212,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-          oidc.ingress.kubernetes.io/forward-auth-enabled: "true"
-          oidc.ingress.kubernetes.io/issuer-url: https://idm.vonarx.online/oauth2/openid/prowlarr/
-          oidc.ingress.kubernetes.io/audience: prowlarr
-          oidc.ingress.kubernetes.io/scopes: openid
-          oidc.ingress.kubernetes.io/existing-secret: prowlarr-oidc
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,prowlarr-oauth2-forward@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
@@ -197,6 +220,10 @@ spec:
                 service:
                   identifier: prowlarr
                   port: http
+              - path: /oauth2/
+                service:
+                  identifier: prowlarr
+                  port: auth
         tls:
           - hosts:
               - *host
@@ -237,3 +264,15 @@ spec:
             database: prowlarr-main
             secretName: cnpg-user
             privileges: OWNER
+
+      oauth2-forward:
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        spec:
+          spec:
+            forwardAuth:
+              address: https://prowlarr.vonarx.online/oauth2/auth
+              trustForwardHeader: true
+              authResponseHeaders:
+                - X-Auth-Request-Access-Token
+                - Authorization
