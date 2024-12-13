@@ -171,7 +171,7 @@ loki.process "k8s_pod_logs" {
     }
 
     stage.regex {
-      expression + "^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+)$"
+      expression = "^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+)$"
     } 
   }
 }
