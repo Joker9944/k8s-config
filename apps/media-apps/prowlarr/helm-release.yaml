@@ -214,7 +214,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oauth2-forward@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oauth2-redirect@kubernetescrd,${main_namespace}-prowlarr-oauth2-forward@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
@@ -278,3 +278,18 @@ spec:
               authResponseHeaders:
                 - X-Auth-Request-Access-Token
                 - Authorization
+
+      oauth2-redirect:
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        spec:
+          spec:
+            errors:
+              status:
+                - 401
+                - 402
+                - 403
+              service:
+                name: prowlarr-oauth2-proxy
+                port: 4180
+              query: "/oauth2/sign_in?={url}"
