@@ -59,7 +59,7 @@ spec:
               tag: 1.27.0.4852@sha256:d0f250eb05f5933c04987d62611894f5eb29b374c73fa08843d415060f9a2bd3
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
-              COMPlus_EnableDiagnostics: "0"
+              COMPlus_EnableDiagnostics: 0
               PROWLARR__APP__INSTANCENAME: Prowlarr
               PROWLARR__AUTH__APIKEY:
                 valueFrom:
@@ -224,7 +224,7 @@ spec:
                   port: http
               - path: /oauth2/
                 service:
-                  identifier: prowlarr
+                  identifier: oauth2-proxy
                   port: auth
         tls:
           - hosts:
