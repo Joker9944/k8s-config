@@ -51,7 +51,7 @@ spec:
       annotations:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
       
       hosts:
         - host: &host office.vonarx.online
