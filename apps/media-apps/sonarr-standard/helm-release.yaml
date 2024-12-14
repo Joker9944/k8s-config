@@ -208,6 +208,14 @@ spec:
       tmp:
         type: emptyDir
 
+      media-cover-overlay:
+        type: persistentVolumeClaim
+        retain: false
+        accessMode: ReadWriteMany
+        size: 500Mi
+        globalMounts:
+          - path: /config/MediaCover
+
       media:
         type: nfs
         server: 192.168.178.14
