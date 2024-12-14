@@ -7,7 +7,6 @@ kanidm group add-members prowlarr_admins media_admins
 
 kanidm system oauth2 create prowlarr "Prowlarr" https://prowlarr.vonarx.online/
 
-kanidm system oauth2 set-landing-url prowlarr https://prowlarr.vonarx.online/oauth2/start
 kanidm system oauth2 add-redirect-url prowlarr https://prowlarr.vonarx.online/oauth2/callback
 
-kanidm system oauth2 update-scope-map prowlarr prowlarr_admins openid profile email
+kanidm system oauth2 update-scope-map prowlarr prowlarr_admins openid groups
