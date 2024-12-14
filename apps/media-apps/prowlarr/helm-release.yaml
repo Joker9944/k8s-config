@@ -238,21 +238,22 @@ spec:
         kind: Middleware
         spec:
           spec:
-            traefikoidc:
-              providerURL: https://idm.vonarx.online/oauth2/openid/prowlarr
-              clientID: prowlarr
-              clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
-              sessionEncryptionKey: urn:k8s:secret:prowlarr-oidc:SESSION_ENCRYPTION_KEY
-              callbackURL: /oauth2/callback
-              logoutURL: /oauth2/logout\
-              forceHTTPS: true
-              scopes:
-                - openid
-                - groups
-              allowedRolesAndGroups:
-                - prowlarr_admins@idm.vonarx.online
-              allowedUserDomains:
-                - vonarx.online
-              excludedURLs:
-                - /login
-                - /favicon.ico
+            plugin:
+              traefikoidc:
+                providerURL: https://idm.vonarx.online/oauth2/openid/prowlarr
+                clientID: prowlarr
+                clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
+                sessionEncryptionKey: urn:k8s:secret:prowlarr-oidc:SESSION_ENCRYPTION_KEY
+                callbackURL: /oauth2/callback
+                logoutURL: /oauth2/logout
+                forceHTTPS: true
+                scopes:
+                  - openid
+                  - groups
+                allowedRolesAndGroups:
+                  - prowlarr_admins@idm.vonarx.online
+                allowedUserDomains:
+                  - vonarx.online
+                excludedURLs:
+                  - /login
+                  - /favicon.ico
