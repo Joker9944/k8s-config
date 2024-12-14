@@ -239,7 +239,7 @@ spec:
         spec:
           spec:
             plugin:
-              traefikoidc:
+              oidc:
                 providerURL: https://idm.vonarx.online/oauth2/openid/prowlarr
                 clientID: prowlarr
                 clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
