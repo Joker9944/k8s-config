@@ -14,6 +14,7 @@ kanidm system oauth2 prefer-short-username grafana
 kanidm system oauth2 set-landing-url grafana https://grafana.vonarx.online/login/generic_oauth
 
 kanidm system oauth2 update-scope-map grafana grafana_users email openid profile groups
+kanidm system oauth2 update-scope-map grafana grafana_admins email openid profile groups
 
 kanidm system oauth2 update-claim-map-join grafana grafana_role array
 kanidm system oauth2 update-claim-map grafana grafana_role grafana_admins Admin

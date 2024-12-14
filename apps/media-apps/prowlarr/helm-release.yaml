@@ -249,11 +249,11 @@ spec:
                 forceHTTPS: true
                 scopes:
                   - openid
+                  - email
                   - groups
                 allowedRolesAndGroups:
                   - prowlarr_admins@idm.vonarx.online
                 allowedUserDomains:
                   - vonarx.online
                 excludedURLs:
-                  - /login
                   - /favicon.ico
