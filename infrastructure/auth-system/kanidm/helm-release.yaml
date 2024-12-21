@@ -44,7 +44,7 @@ spec:
           kanidm:
             image:
               repository: kanidm/server
-              tag: 1.4.4@sha256:423baa48c4cb0e41642d88772aa5d170daac69c827392a00f96de6a387032745
+              tag: 1.4.5@sha256:29971d1844a8d93c85eeb11f57772cbb0d62902097d5154be0def2695e662623
             env:
               KANIDM_BINDADDRESS: '[::]:8443'
               KANIDM_LDAPBINDADDRESS: '[::]:3636'
