@@ -38,7 +38,7 @@ services:
     config:
       oidc:
         webClientID: owncloud
-        webClientScope: "openid profile email groups"
+        webClientScope: "openid profile email groups offline_access"
 
 secretRefs:
   ldapCaRef: wildcard-${main_namespace}-cert
