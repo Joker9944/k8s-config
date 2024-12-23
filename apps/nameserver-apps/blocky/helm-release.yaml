@@ -30,7 +30,11 @@ spec:
           type: RuntimeDefault
 
     controllers:
+
       blocky:
+        type: deployment
+        replicas: 2
+        strategy: RollingUpdate
 
         containers:
 
