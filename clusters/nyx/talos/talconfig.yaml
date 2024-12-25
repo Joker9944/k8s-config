@@ -10,25 +10,6 @@ additionalApiServerCertSans:
   - ${VIP}
   - nyx.internal
 nodes:
-  - hostname: nyx-master-1
-    ipAddress: ${MASTER_1_IP}
-    controlPlane: true
-    installDisk: /dev/mmcblk0
-    machineSpec:
-      arch: arm64
-    networkInterfaces:
-      - interface: enxdca6325aa72d
-        addresses:
-          - ${MASTER_1_IP}/24
-        routes:
-          - network: 0.0.0.0/0
-            gateway: ${GATEWAY}
-        vip:
-          ip: ${VIP}
-    schematic:
-      overlay:
-        image: siderolabs/sbc-raspberrypi
-        name: rpi_generic
   - hostname: nyx-hybrid-1
     ipAddress: ${HYBRID_1_IP}
     controlPlane: true

@@ -1,6 +1,5 @@
 talosconfig
 nyx-nyx-hybrid-1.yaml
-nyx-nyx-master-1.yaml
-nyx-nyx-worker-1.yaml
 nyx-nyx-hybrid-2.yaml
 nyx-nyx-hybrid-3.yaml
+nyx-nyx-worker-1.yaml
