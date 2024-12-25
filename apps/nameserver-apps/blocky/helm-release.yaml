@@ -65,8 +65,9 @@ spec:
                   exec:
                     command: [/app/blocky, healthcheck]
                   timeoutSeconds: 3
-                  # High threshold since initial download of all blocklist can take quite some time.
-                  failureThreshold: 90
+                  # High threshold since initial download of all blocklists can take quite some time.
+                  # Estimate = 120 * 5s = 600s = 10m
+                  failureThreshold: 120
                   periodSeconds: 5
             resources:
               requests:
