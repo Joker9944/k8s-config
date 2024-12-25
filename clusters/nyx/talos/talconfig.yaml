@@ -85,6 +85,34 @@ nodes:
       'vonarx.online/cpu-performance': high
       'vonarx.online/memory-capacity': '31929'
       'vonarx.online/memory-performance': high
+  - hostname: nyx-hybrid-3
+    ipAddress: ${HYBRID_3_IP}
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - interface: enp2s0
+        addresses:
+          - ${HYBRID_3_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+        vip:
+          ip: ${VIP}
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
+    patches:
+      - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
+    nodeLabels:
+      'vonarx.online/cpu-capacity': '6'
+      'vonarx.online/cpu-performance': high
+      'vonarx.online/memory-capacity': '31929'
+      'vonarx.online/memory-performance': high
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
