@@ -16,7 +16,7 @@ services:
 
     persistence:
       enabled: true
-      size: 1Gi
+      size: 2Gi
 
   storagesystem:
 
