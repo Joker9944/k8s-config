@@ -33,6 +33,7 @@ nodes:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
       'vonarx.online/cpu-capacity': '6'
       'vonarx.online/cpu-performance': high
@@ -61,6 +62,7 @@ nodes:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
       'vonarx.online/cpu-capacity': '6'
       'vonarx.online/cpu-performance': high
@@ -89,6 +91,7 @@ nodes:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
       'vonarx.online/cpu-capacity': '6'
       'vonarx.online/cpu-performance': high
@@ -118,6 +121,7 @@ nodes:
       - '@patches/nvidia.yaml'
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
       'vonarx.online/nfs-host': 'true'
       'vonarx.online/s3-host': 'true'
