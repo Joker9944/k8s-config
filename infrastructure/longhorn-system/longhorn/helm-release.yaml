@@ -17,6 +17,9 @@ spec:
 
   values:
 
+    persistence:
+      defaultDataLocality: best-effort
+
     ingress:
       enabled: true
       annotations:
