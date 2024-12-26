@@ -1,16 +1,30 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - secret.yaml
   - helm-release.yaml
-secretGenerator:
-  - name: owncloud-secret-values
-    namespace: ${main_namespace}
-    files:
-      - values.yaml=secret-values.sops.yaml
 configMapGenerator:
-  - name: owncloud-config-templates
+  - name: ocis-ingress-values
     namespace: ${main_namespace}
     files:
-      - oidc.config.php=oidc.config.php
-configurations:
-  - kustomizeconfig.yaml
+      - values.yaml=ingress-values.yaml
+  - name: ocis-oidc-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=oidc-values.yaml
+  - name: ocis-persistence-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=persistence-values.yaml
+  - name: ocis-apps-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=apps-values.yaml
+  - name: ocis-search-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=search-values.yaml
+  - name: ocis-monitoring-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=monitoring-values.yaml

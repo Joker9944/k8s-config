@@ -4,7 +4,7 @@ metadata:
   name: kube-prometheus-stack
   namespace: ${main_namespace}
 spec:
-  interval: 5m
+  interval: 30m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -13,17 +13,25 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
-      interval: 5m
+      interval: 30m
+
   install:
     crds: CreateReplace
     remediation:
       retries: 3
+
   upgrade:
     crds: CreateReplace
     remediation:
       retries: 3
+
   values:
+
+    # TODO Pull this stack chart apart and use the individual app charts
+    # create a monitoring-apps ns for Grafana
+
     alertmanager:
+
       ingress:
         enabled: true
         annotations:
@@ -38,13 +46,57 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - alertmanager.vonarx.online
+
     grafana:
+
+      admin:
+        existingSecret: grafana-admin
+        userKey: username
+        passwordKey: password
+
+      grafana.ini:
+
+        server:
+          root_url: https://grafana.vonarx.online/
+
+        auth.generic_oauth:
+          enabled: true
+          name: Kanidm
+          client_id: grafana
+          scopes: openid,profile,email,groups
+          auth_url: https://idm.vonarx.online/ui/oauth2
+          token_url: https://idm.vonarx.online/oauth2/token
+          api_url: https://idm.vonarx.online/oauth2/openid/grafana/userinfo
+          use_pkce: true
+          use_refresh_token: true
+          allow_sign_up: true
+          login_attribute_path: preferred_username
+          groups_attribute_path: groups
+          role_attribute_path: contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'
+          allow_assign_grafana_admin: false
+
+        users:
+          viewers_can_edit: true
+
+      envFromSecret: grafana-environment
+
+      plugins:
+        - grafana-lokiexplore-app
+
+      # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
+      additionalDataSources:
+
+        - name: loki
+          type: loki
+          access: proxy
+          url: http://loki-read.monitoring-system.svc.cluster.local:3100
+
       ingress:
         enabled: true
         annotations:
           traefik.ingress.kubernetes.io/router.tls: 'true'
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
         hosts:
           - grafana.vonarx.online
         paths:
@@ -53,10 +105,22 @@ spec:
           - secretName: wildcard-vonarx-online
             hosts:
               - grafana.vonarx.online.vonarx.online
+
     prometheus:
+
       prometheusSpec:
-        retention: 30d
-        retentionSize: 100GB
+        retention: 14d
+        retentionSize: 30GB
+
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: [ "ReadWriteOnce" ]
+              resources:
+                requests:
+                  storage: 30Gi
+
       ingress:
         enabled: true
         annotations:

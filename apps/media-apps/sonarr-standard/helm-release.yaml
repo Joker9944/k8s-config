@@ -58,7 +58,7 @@ spec:
           sonarr:
             image:
               repository: ghcr.io/onedr0p/sonarr
-              tag: 4.0.10.2544@sha256:78c92531eeb6a3aec14b746a79102a1fe69ba8e8dcff84d9ef0549c382befc01
+              tag: 4.0.11.2680@sha256:61fe40251b0a8684520e6d3897e321430cab9994dd4d77e6ab35b587e0204a6d
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
@@ -133,7 +133,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.3@sha256:44cb1faae34bb0a44b1caa6afd0c140ee5167cfbac6482dec0692b25e91ecf54
+              tag: 3.21.0@sha256:4f37d3a352cde995f10ffd6ecf5a2266e1b97a14fb72eddb236724c9c49545b3
             env:
               PGHOST:
                 valueFrom:
@@ -207,6 +207,14 @@ spec:
 
       tmp:
         type: emptyDir
+
+      media-cover-overlay:
+        type: persistentVolumeClaim
+        retain: false
+        accessMode: ReadWriteMany
+        size: 500Mi
+        globalMounts:
+          - path: /config/MediaCover
 
       media:
         type: nfs

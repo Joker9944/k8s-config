@@ -1,232 +1,193 @@
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: owncloud
+  name: ocis
   namespace: ${main_namespace}
 spec:
   interval: 30m
   chart:
     spec:
-      chart: app-template
-      version: 3.5.1
-      interval: 30m
+      chart: charts/ocis
       sourceRef:
-        kind: HelmRepository
-        name: bjw-s
+        kind: GitRepository
+        name: ocis-charts
         namespace: flux-system
+      interval: 30m
 
   valuesFrom:
-    - kind: Secret
-      name: owncloud-secret-values
+    - kind: ConfigMap
+      name: ocis-ingress-values
+    - kind: ConfigMap
+      name: ocis-oidc-values
+    - kind: ConfigMap
+      name: ocis-persistence-values
+    - kind: ConfigMap
+      name: ocis-apps-values
+    - kind: ConfigMap
+      name: ocis-monitoring-values
+    - kind: ConfigMap
+      name: ocis-search-values
 
   values:
 
-    controllers:
+    # Moved this out the sub values files since helm is incapable of deep copy
+    http:
+      csp:
+        directives:
 
-      owncloud:
-        type: statefulset
+          connectSrc:
+              # default values
+            - "'self'"
+              # oidc
+            - https://idm.vonarx.online/oauth2/token
+              # web apps
+            - https://raw.githubusercontent.com/owncloud/main/webApps/apps.json
 
-        pod:
-          securityContext:
-            runAsNonRoot: true
-            supplementalGroups: [ 568 ]
-            seccompProfile:
-              type: RuntimeDefault
+          frameSrc:
+              # default values
+            - "'self'"
+            - "blob:"
+              # web apps
+            - https://embed.diagrams.net
 
-        containers:
-
-          owncloud:
-            image:
-              repository: owncloud/server
-              tag: 10.15.0@sha256:51d9b74fc2a81875c0ecc643d49f83e0453c83b0d039fb564b8ca40ec5d711c2
-            env:
-              OWNCLOUD_DOMAIN: cloud.vonarx.online
-              OWNCLOUD_TRUSTED_DOMAINS: cloud.vonarx.online
-              OWNCLOUD_DB_TYPE: pgsql
-              OWNCLOUD_DB_NAME:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: dbname
-              OWNCLOUD_DB_USERNAME:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: user
-              OWNCLOUD_DB_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: password
-              OWNCLOUD_DB_HOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-cnpg-app
-                    key: host
-              OWNCLOUD_REDIS_ENABLED: true
-              OWNCLOUD_REDIS_HOST: owncloud-redis-master.${main_namespace}
-              OWNCLOUD_REDIS_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: owncloud-redis
-                    key: redis-password
-              OWNCLOUD_TRUSTED_PROXIES: 10.244.0.0/16
-            envFrom:
-              - secretRef:
-                  name: owncloud-admin-user
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [ /usr/bin/healthcheck ]
-                  failureThreshold: 6
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [ /usr/bin/healthcheck ]
-              startup:
-                enabled: true
-                port: &port_http 8080
-                spec:
-                  failureThreshold: 30
-                  periodSeconds: 5
-            # TODO monitor and set
-            resources:
-              requests:
-                cpu: 50m
-                memory: 500Mi
-              limits:
-                memory: 1Gi
-            securityContext:
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
-              capabilities:
-                add:
-                  - CHOWN
-                  - SETUID
-                  - SETGID
-                  - FOWNER
-                  - DAC_OVERRIDE
-                drop:
-                  - ALL
-
-        # Init waits for cnpg and redis not needed since ownCloud preforms those checks itself
-        initContainers:
-
-          # WORKAROUND ownCloud does not like it when files are read-only so instead of mounting em directly we just overwritten em with every restart.
-          jinja:
-            image:
-              repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.13.0@sha256:b2b40dd5803c4dcba2282b198ad917ddc5ad96b2a4235ee9272cbd830cddc86b
-            envFrom:
-              - secretRef:
-                  name: owncloud-oidc-config
-            command: [/bin/sh, -c]
-            args: [jinja2 /templates/oidc.config.php > /mnt/data/config/oidc.config.php]
-            securityContext:
-              runAsUser: 0
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                add:
-                  - CHOWN
-                  - SETUID
-                  - SETGID
-                  - FOWNER
-                  - DAC_OVERRIDE
-                drop:
-                  - ALL
-
-    service:
-
-      owncloud:
-        controller: owncloud
-        ports:
-          http:
-            port: *port_http
-
-    ingress:
-
-      owncloud:
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls: "true"
-          traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
-        hosts:
-          - host: &host cloud.vonarx.online
-            paths:
-              - path: /
-                service:
-                  identifier: owncloud
-                  port: http
-        tls:
-          - hosts:
-              - *host
-            secretName: wildcard-vonarx-online
-
-    persistence:
-
-      data:
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        retain: true
-        size: &pvc_config_size 1Gi
-        globalMounts:
-          - path: /mnt/data
-
-      config-templates:
-        type: configMap
-        name: owncloud-config-templates
-        advancedMounts:
-          owncloud:
-            jinja:
-              - path: /templates
-
-    rawResources:
-      cnpg:
-        apiVersion: postgresql.cnpg.io/v1
-        kind: Cluster
-        spec:
-          spec:
-            description: PostgreSQL Cluster for owncloud
-            instances: 3
-            storage:
-              size: 1Gi
-            walStorage:
-              size: 1Gi
-            bootstrap:
-              initdb:
-                database: owncloud
-                owner: owncloud
-
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: owncloud-redis
-  namespace: ${main_namespace}
-spec:
-  interval: 30m
-  chart:
-    spec:
-      chart: redis
-      version: 20.2.1
-      interval: 30m
-      sourceRef:
-        kind: HelmRepository
-        name: bitnami
-        namespace: flux-system
-  values:
-
-    architecture: standalone
-    master:
-      persistence:
-        enabled: false
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: users
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: users
+                        env:
+                          - name: USERS_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: groups
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: groups
+                        env:
+                          - name: GROUPS_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: graph
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: graph
+                        env:
+                          - name: GRAPH_LDAP_CACERT
+                            value: /etc/ocis/ldap-ca/ca.crt
+                    volumes:
+                      - name: ldap-ca
+                        emptyDir: null
+                        secret:
+                          secretName: wildcard-${main_namespace}-cert
+          # This is a hack to use NFS storage instead of a PVC for user data
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: storageusers
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: storageusers
+                        securityContext:
+                          runAsUser: 6010
+                          runAsGroup: 6001
+                          fsGroup: 6001
+                    volumes:
+                      - name: storageusers-data
+                        persistentVolumeClaim: null
+                        nfs:
+                          server: 192.168.178.14
+                          path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-clean-expired-uploads
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-clean-expired-uploads
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-purge-expired-trash-bin-items
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-purge-expired-trash-bin-items
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data
+          - patch: |-
+              apiVersion: batch/v1
+              kind: CronJob
+              metadata:
+                name: storage-users-restart-postprocessing
+                namespace: ${main_namespace}
+              spec:
+                jobTemplate:
+                  spec:
+                    template:
+                      spec:
+                        containers:
+                          - name: storage-users-restart-postprocessing
+                            securityContext:
+                              runAsUser: 6010
+                              runAsGroup: 6001
+                              fsGroup: 6001
+                        volumes:
+                          - name: storageusers-data
+                            persistentVolumeClaim: null
+                            nfs:
+                              server: 192.168.178.14
+                              path: /mnt/chronos/cloud-data

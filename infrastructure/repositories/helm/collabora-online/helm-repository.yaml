@@ -1,8 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: dashboard
+  name: collabora-online
   namespace: flux-system
 spec:
   interval: 5m
-  url: https://kubernetes.github.io/dashboard/
+  url: https://collaboraonline.github.io/online/

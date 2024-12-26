@@ -22,11 +22,3 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
-
-  values:
-    image:
-      repository: zimbres/volsync
-      tag: 0.9.1@sha256:613840e8c53545c1a1a1880fa2fb901221c73546face8a40515b30ae4543c5b3
-    restic:
-      repository: zimbres/volsync
-      tag: 0.9.1@sha256:613840e8c53545c1a1a1880fa2fb901221c73546face8a40515b30ae4543c5b3

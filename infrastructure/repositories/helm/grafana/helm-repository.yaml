@@ -1,8 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: democratic-csi
+  name: grafana
   namespace: flux-system
 spec:
   interval: 5m
-  url: https://democratic-csi.github.io/charts/
+  url: https://grafana.github.io/helm-charts

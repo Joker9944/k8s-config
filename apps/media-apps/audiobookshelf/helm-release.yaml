@@ -38,11 +38,20 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/nfs-host
+                        operator: Exists
+
         containers:
           audiobookshelf:
             image:
               repository: advplyr/audiobookshelf
-              tag: 2.16.2@sha256:acfda2baa0dce0c7a31e1703b8cd694e59cd3f3de9cfabe5b7e9dd2029896169
+              tag: 2.17.5@sha256:aa88c9f4652872a2a72043511a87d17ec743b60f53e8024e9868ebec5aae59bd
             env:
               UMASK: 0002
               PORT: &port_http 8080
@@ -141,6 +150,7 @@ spec:
     rawResources:
 
       dest-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -149,15 +159,18 @@ spec:
               manual: restore-once
             restic:
               repository: audiobookshelf-restic-config
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -171,8 +184,32 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
-              copyMethod: Snapshot
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+
+      source-metadata:
+        enabled: true
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: audiobookshelf-metadata
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: audiobookshelf-restic-metadata
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID

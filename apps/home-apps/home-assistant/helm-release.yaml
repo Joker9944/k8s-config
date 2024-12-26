@@ -41,7 +41,7 @@ spec:
           home-assistant:
             image:
               repository: homeassistant/home-assistant
-              tag: 2024.11.2@sha256:2ddb0ceb186218e6daf423ac26be2e5a6ce1cd430c6064fe82d1d3d70b95cf38
+              tag: 2024.12.5@sha256:132ef461504be5c5ebd6e34e5d3fb3d7958bb6758a5136107eea9f84c299254a
             env:
               PGURI:
                 valueFrom:
@@ -99,7 +99,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.3@sha256:44cb1faae34bb0a44b1caa6afd0c140ee5167cfbac6482dec0692b25e91ecf54
+              tag: 3.21.0@sha256:4f37d3a352cde995f10ffd6ecf5a2266e1b97a14fb72eddb236724c9c49545b3
             env:
               PGHOST:
                 valueFrom:
@@ -183,7 +183,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: &pvc_config_size 2Gi
+        size: &pvc_config_size 1Gi
         dataSourceRef:
           apiGroup: volsync.backube
           kind: ReplicationDestination
@@ -196,16 +196,24 @@ spec:
         kind: Cluster
         spec:
           spec:
-            description: PostgreSQL Cluster for blocky
+            description: PostgreSQL Cluster for Home Assistant
             instances: 3
             storage:
-              size: &cnpg_recorder_size 1Gi
+              size: 1Gi
+              storageClass: longhorn-local
+            walStorage:
+              size: 1Gi
+              storageClass: longhorn-local
             bootstrap:
               initdb:
                 database: recorder
                 owner: home-assistant
+            affinity:
+              enablePodAntiAffinity: true
+              podAntiAffinityType: required
 
       dest-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -214,15 +222,18 @@ spec:
               manual: restore-once
             restic:
               repository: home-assistant-restic-config
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -236,8 +247,9 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
-              copyMethod: Snapshot
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID

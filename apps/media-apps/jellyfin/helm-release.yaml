@@ -42,11 +42,20 @@ spec:
               operator: Exists
               effect: NoSchedule
 
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/nfs-host
+                        operator: Exists
+
         containers:
           jellyfin:
             image:
               repository: ghcr.io/jellyfin/jellyfin
-              tag: 10.10.1@sha256:12b7aa2c8086e5566badc35370fab41b8cc8774dc3a80b07a1d6eb14f282b816
+              tag: 10.10.3@sha256:17c3a8d9dddb97789b5f37112840ebf96566442c14d4754193a6c2eb154bc221
             env:
               UMASK: "0002"
               NVIDIA_DRIVER_CAPABILITIES: all
@@ -90,62 +99,6 @@ spec:
                 drop:
                   - ALL
 
-      autodiscovery-proxy:
-        type: daemonset
-
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-          hostNetwork: true
-
-        containers:
-          socat:
-            image:
-              repository: docker.io/alpine/socat
-              tag: 1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-                  failureThreshold: 6
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command: [cat, /tmp/healthy]
-                  failureThreshold: 30
-                  periodSeconds: 5
-            command: [/bin/sh, -c]
-            args: # Script taken from TrueCharts jellyfin chart
-              - |
-                set -e
-                export TARGET_IP=$(getent hosts 'jellyfin-autodiscovery' | awk '{ print $1 }')
-                [[ -n $TARGET_IP ]]
-                touch /tmp/healthy
-                echo "Proxing to ip $TARGET_IP"
-                socat UDP4-LISTEN:7359,fork,reuseaddr,rcvbuf=8096 "UDP4-SENDTO:$TARGET_IP:7359,rcvbuf=8096"
-                rm -rf /tmp/healthy
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-
     service:
       jellyfin:
         controller: jellyfin
@@ -156,8 +109,14 @@ spec:
             port: *port_http
       autodiscovery:
         controller: jellyfin
+        type: LoadBalancer
+        annotations:
+          metallb.universe.tf/loadBalancerIPs: 192.168.178.214
         ports:
-          udp:
+          service-discovery:
+            port: 1900
+            protocol: UDP
+          client-discovery:
             port: 7359
             protocol: UDP
 
@@ -184,7 +143,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: &pvc_config_size 2Gi
+        size: &pvc_config_size 4Gi
         dataSourceRef:
           apiGroup: volsync.backube
           kind: ReplicationDestination
@@ -219,6 +178,7 @@ spec:
     rawResources:
 
       dest-config:
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -227,15 +187,18 @@ spec:
               manual: restore-once
             restic:
               repository: jellyfin-restic-config
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -249,9 +212,9 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
-              copyMethod: Snapshot
-              cacheCapacity: 2Gi
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID

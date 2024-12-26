@@ -1,0 +1,48 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: script/helm/garage
+      sourceRef:
+        kind: GitRepository
+        name: garage
+        namespace: flux-system
+      interval: 30m
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  values:
+
+    garage:
+
+        s3:
+          api:
+            region: nyx
+            rootDomain: garage.${main_namespace}.svc.cluster.local
+          web:
+            rootDomain: garage.${main_namespace}.svc.cluster.local
+
+    persistence:
+      meta:
+        storageClass: longhorn-local
+        size: 1Gi
+      data:
+        storageClass: longhorn-local
+        size: 10Gi
+
+    monitoring:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true

@@ -30,7 +30,11 @@ spec:
           type: RuntimeDefault
 
     controllers:
+
       blocky:
+        type: deployment
+        replicas: 2
+        strategy: RollingUpdate
 
         containers:
 
@@ -61,8 +65,9 @@ spec:
                   exec:
                     command: [/app/blocky, healthcheck]
                   timeoutSeconds: 3
-                  # High threshold since initial download of all blocklist can take quite some time.
-                  failureThreshold: 90
+                  # High threshold since initial download of all blocklists can take quite some time.
+                  # Estimate = 120 * 5s = 600s = 10m
+                  failureThreshold: 120
                   periodSeconds: 5
             resources:
               requests:
@@ -85,7 +90,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.13.0@sha256:b2b40dd5803c4dcba2282b198ad917ddc5ad96b2a4235ee9272cbd830cddc86b
+              tag: 3.13.1@sha256:5b7a65ed5f31b5d3798e6626706184644a3ea3b3aa9484ea582f14de6cf8d596
             env:
               PGURI:
                 valueFrom:
@@ -110,7 +115,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.3@sha256:44cb1faae34bb0a44b1caa6afd0c140ee5167cfbac6482dec0692b25e91ecf54
+              tag: 3.21.0@sha256:4f37d3a352cde995f10ffd6ecf5a2266e1b97a14fb72eddb236724c9c49545b3
             env:
               PGHOST:
                 valueFrom:
@@ -194,12 +199,17 @@ spec:
             instances: 3
             storage:
               size: 1Gi
+              storageClass: longhorn-local
             walStorage:
               size: 1Gi
+              storageClass: longhorn-local
             bootstrap:
               initdb:
                 database: query-log
                 owner: blocky
+            affinity:
+              enablePodAntiAffinity: true
+              podAntiAffinityType: required
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
@@ -280,7 +290,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 20.2.1
+      version: 20.6.1
       interval: 30m
       sourceRef:
         kind: HelmRepository

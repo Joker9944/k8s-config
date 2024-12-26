@@ -8,15 +8,17 @@ resources:
   - bitnami/helm-repository.yaml
   - bjw-s/helm-repository.yaml
   - cnpg/helm-repository.yaml
-  - dashboard/helm-repository.yaml
-  - democratic-csi/helm-repository.yaml
+  - collabora-online/helm-repository.yaml
   - emberstack/helm-repository.yaml
   - espresso-lab/helm-repository.yaml
   - gateway/helm-repository.yaml
+  - grafana/helm-repository.yaml
   - jetstack/helm-repository.yaml
+  - longhorn/helm-repository.yaml
   - metallb/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - postgres-operator/helm-repository.yaml
   - prometheus-community/helm-repository.yaml
   - runix/helm-repository.yaml
+  - tika/helm-repository.yaml
   - traefik/helm-repository.yaml

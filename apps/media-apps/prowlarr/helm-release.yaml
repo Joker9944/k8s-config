@@ -56,10 +56,10 @@ spec:
           prowlarr:
             image:
               repository: ghcr.io/onedr0p/prowlarr
-              tag: 1.25.4.4818@sha256:4df8b9d21469e5051d53d753fb1a277875ac5cdd1dc69068541adb165aae17a1
+              tag: 1.28.2.4885@sha256:a87986574d729dfe8fdee8ad2242ec52b6ae374e3d320040e8123c9c7bdf37ca
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
-              COMPlus_EnableDiagnostics: "0"
+              COMPlus_EnableDiagnostics: 0
               PROWLARR__APP__INSTANCENAME: Prowlarr
               PROWLARR__AUTH__APIKEY:
                 valueFrom:
@@ -130,7 +130,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.20.3@sha256:44cb1faae34bb0a44b1caa6afd0c140ee5167cfbac6482dec0692b25e91ecf54
+              tag: 3.21.0@sha256:4f37d3a352cde995f10ffd6ecf5a2266e1b97a14fb72eddb236724c9c49545b3
             env:
               PGHOST:
                 valueFrom:
@@ -184,12 +184,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,kube-system-oidc-forward-auth-middleware@kubernetescrd
-          oidc.ingress.kubernetes.io/forward-auth-enabled: "true"
-          oidc.ingress.kubernetes.io/issuer-url: https://idm.vonarx.online/oauth2/openid/prowlarr/
-          oidc.ingress.kubernetes.io/audience: prowlarr
-          oidc.ingress.kubernetes.io/scopes: openid
-          oidc.ingress.kubernetes.io/existing-secret: prowlarr-oidc
+          traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd,${main_namespace}-prowlarr-oidc@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
@@ -237,3 +232,28 @@ spec:
             database: prowlarr-main
             secretName: cnpg-user
             privileges: OWNER
+
+      oidc:
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        spec:
+          spec:
+            plugin:
+              oidc:
+                providerURL: https://idm.vonarx.online/oauth2/openid/prowlarr
+                clientID: prowlarr
+                clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
+                sessionEncryptionKey: urn:k8s:secret:prowlarr-oidc:SESSION_ENCRYPTION_KEY
+                callbackURL: /oauth2/callback
+                logoutURL: /oauth2/logout
+                forceHTTPS: true
+                scopes:
+                  - openid
+                  - email
+                  - groups
+                allowedRolesAndGroups:
+                  - prowlarr_admins@idm.vonarx.online
+                allowedUserDomains:
+                  - vonarx.online
+                excludedURLs:
+                  - /favicon.ico

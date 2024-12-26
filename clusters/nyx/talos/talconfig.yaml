@@ -10,52 +10,6 @@ additionalApiServerCertSans:
   - ${VIP}
   - nyx.internal
 nodes:
-  - hostname: nyx-master-1
-    ipAddress: ${MASTER_1_IP}
-    controlPlane: true
-    installDisk: /dev/mmcblk0
-    machineSpec:
-      arch: arm64
-    networkInterfaces:
-      - interface: enxdca6325aa72d
-        addresses:
-          - ${MASTER_1_IP}/24
-        routes:
-          - network: 0.0.0.0/0
-            gateway: ${GATEWAY}
-        vip:
-          ip: ${VIP}
-    schematic:
-      overlay:
-        image: siderolabs/sbc-raspberrypi
-        name: rpi_generic
-      customization:
-        systemExtensions:
-          officialExtensions:
-            - siderolabs/iscsi-tools
-  - hostname: nyx-master-2
-    ipAddress: ${MASTER_2_IP}
-    controlPlane: true
-    installDisk: /dev/mmcblk0
-    machineSpec:
-      arch: arm64
-    networkInterfaces:
-      - interface: enxdca632d938d0
-        addresses:
-          - ${MASTER_2_IP}/24
-        routes:
-          - network: 0.0.0.0/0
-            gateway: ${GATEWAY}
-        vip:
-          ip: ${VIP}
-    schematic:
-      overlay:
-        image: siderolabs/sbc-raspberrypi
-        name: rpi_generic
-      customization:
-        systemExtensions:
-          officialExtensions:
-            - siderolabs/iscsi-tools
   - hostname: nyx-hybrid-1
     ipAddress: ${HYBRID_1_IP}
     controlPlane: true
@@ -74,8 +28,78 @@ nodes:
         systemExtensions:
           officialExtensions:
             - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
     patches:
       - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
+    nodeLabels:
+      'vonarx.online/cpu-capacity': '6'
+      'vonarx.online/cpu-performance': high
+      'vonarx.online/memory-capacity': '31929'
+      'vonarx.online/memory-performance': high
+  - hostname: nyx-hybrid-2
+    ipAddress: ${HYBRID_2_IP}
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - interface: enp2s0
+        addresses:
+          - ${HYBRID_2_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+        vip:
+          ip: ${VIP}
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
+    patches:
+      - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
+    nodeLabels:
+      'vonarx.online/cpu-capacity': '6'
+      'vonarx.online/cpu-performance': high
+      'vonarx.online/memory-capacity': '31929'
+      'vonarx.online/memory-performance': high
+  - hostname: nyx-hybrid-3
+    ipAddress: ${HYBRID_3_IP}
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - interface: enp2s0
+        addresses:
+          - ${HYBRID_3_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+        vip:
+          ip: ${VIP}
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
+    patches:
+      - '@patches/hybrid.yaml'
+      - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
+    nodeLabels:
+      'vonarx.online/cpu-capacity': '6'
+      'vonarx.online/cpu-performance': high
+      'vonarx.online/memory-capacity': '31929'
+      'vonarx.online/memory-performance': high
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
     controlPlane: false
@@ -91,14 +115,23 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
             - siderolabs/qemu-guest-agent
+            - siderolabs/iscsi-tools
+            - siderolabs/util-linux-tools
             - siderolabs/nonfree-kmod-nvidia-production
             - siderolabs/nvidia-container-toolkit-production
     patches:
       - '@patches/nvidia.yaml'
+      - '@patches/longhorn.yaml'
+      - '@patches/logging.yaml'
+      - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
-      nfs-host: 'true'
+      'vonarx.online/nfs-host': 'true'
+      'vonarx.online/s3-host': 'true'
+      'vonarx.online/cpu-capacity': '6'
+      'vonarx.online/cpu-performance': low
+      'vonarx.online/memory-capacity': '15972'
+      'vonarx.online/memory-performance': high
 controlPlane:
   nameservers:
     - 1.1.1.1

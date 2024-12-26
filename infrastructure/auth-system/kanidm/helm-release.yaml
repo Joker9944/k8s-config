@@ -44,7 +44,7 @@ spec:
           kanidm:
             image:
               repository: kanidm/server
-              tag: 1.4.2@sha256:f9e397baf9294bab0539d27c267b62957a7ab1bb95241d96a6c98fcf60cc339e
+              tag: 1.4.5@sha256:29971d1844a8d93c85eeb11f57772cbb0d62902097d5154be0def2695e662623
             env:
               KANIDM_BINDADDRESS: '[::]:8443'
               KANIDM_LDAPBINDADDRESS: '[::]:3636'
@@ -136,11 +136,11 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         retain: true
-        size: &pvc_config_size 1Gi
-      # dataSourceRef:
-      #   apiGroup: volsync.backube
-      #   kind: ReplicationDestination
-      #   name: kanidm-dest-data
+        size: &pvc_config_size 500Mi
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: kanidm-dest-data
 
       data-overlay-tls:
         type: secret
@@ -171,15 +171,18 @@ spec:
               manual: restore-once
             restic:
               repository: kanidm-restic-data
-              accessModes: [ReadWriteOnce]
+              accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID
                 runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
 
       source-data:
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
@@ -193,8 +196,9 @@ spec:
               retain:
                 daily: 7
                 weekly: 4
-              accessModes: [ReadWriteOnce]
-              copyMethod: Snapshot
+              copyMethod: Clone
+              storageClassName: longhorn-local
+              cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
                 fsGroup: *GUID

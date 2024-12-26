@@ -1,5 +1,7 @@
 kanidm system oauth2 create audiobookshelf "Audiobookshelf" https://audiobookshelf.vonarx.online/
 
+kanidm system oauth2 prefer-short-username audiobookshelf
+
 kanidm system oauth2 add-redirect-url audiobookshelf https://audiobookshelf.vonarx.online/auth/openid/callback
 kanidm system oauth2 add-redirect-url audiobookshelf https://audiobookshelf.vonarx.online/auth/openid/mobile-redirect
 
