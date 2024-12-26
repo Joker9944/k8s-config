@@ -29,6 +29,7 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
@@ -58,6 +59,7 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
@@ -87,6 +89,7 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/util-linux-tools
+            - siderolabs/realtek-firmware
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
