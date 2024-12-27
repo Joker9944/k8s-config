@@ -38,10 +38,10 @@ nodes:
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
-      'vonarx.online/cpu-capacity': '6'
-      'vonarx.online/cpu-performance': high
-      'vonarx.online/memory-capacity': '31929'
-      'vonarx.online/memory-performance': high
+      vonarx.online/cpu-capacity: '6'
+      vonarx.online/cpu-performance: high
+      vonarx.online/memory-capacity: '31929'
+      vonarx.online/memory-performance: high
 
   - hostname: nyx-hybrid-2
     ipAddress: ${HYBRID_2_IP}
@@ -69,10 +69,10 @@ nodes:
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
-      'vonarx.online/cpu-capacity': '6'
-      'vonarx.online/cpu-performance': high
-      'vonarx.online/memory-capacity': '31929'
-      'vonarx.online/memory-performance': high
+      vonarx.online/cpu-capacity: '6'
+      vonarx.online/cpu-performance: high
+      vonarx.online/memory-capacity: '31929'
+      vonarx.online/memory-performance: high
 
   - hostname: nyx-hybrid-3
     ipAddress: ${HYBRID_3_IP}
@@ -100,10 +100,10 @@ nodes:
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
     nodeLabels:
-      'vonarx.online/cpu-capacity': '6'
-      'vonarx.online/cpu-performance': high
-      'vonarx.online/memory-capacity': '31929'
-      'vonarx.online/memory-performance': high
+      vonarx.online/cpu-capacity: '6'
+      vonarx.online/cpu-performance: high
+      vonarx.online/memory-capacity: '31929'
+      vonarx.online/memory-performance: high
 
   - hostname: nyx-worker-1
     ipAddress: ${WORKER_1_IP}
@@ -129,13 +129,15 @@ nodes:
       - '@patches/nvidia.yaml'
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
+    nodeTaints:
+      vonarx.online/weak-node: true:PreferNoSchedule
     nodeLabels:
-      'vonarx.online/nfs-host': 'true'
-      'vonarx.online/s3-host': 'true'
-      'vonarx.online/cpu-capacity': '6'
-      'vonarx.online/cpu-performance': low
-      'vonarx.online/memory-capacity': '15972'
-      'vonarx.online/memory-performance': high
+      vonarx.online/nfs-host: 'true'
+      vonarx.online/s3-host: 'true'
+      vonarx.online/cpu-capacity: '6'
+      vonarx.online/cpu-performance: low
+      vonarx.online/memory-capacity: '15972'
+      vonarx.online/memory-performance: high
 
 controlPlane:
   nameservers:
