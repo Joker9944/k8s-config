@@ -1,4 +1,6 @@
 machine:
+  nodeLabels:
+    vonarx.online/longhorn: true
   kubelet:
     extraMounts:
       - destination: /var/lib/longhorn

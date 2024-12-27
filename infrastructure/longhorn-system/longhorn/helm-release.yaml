@@ -17,6 +17,10 @@ spec:
 
   values:
 
+    global:
+      nodeSelector:
+        vonarx.online/longhorn: true
+
     persistence:
       defaultDataLocality: best-effort
 
