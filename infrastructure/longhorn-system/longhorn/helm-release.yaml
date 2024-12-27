@@ -16,8 +16,12 @@ spec:
       interval: 30m
 
   values:
+    
+    longhornManager:
+      nodeSelector:
+        vonarx.online/longhorn: 'true'
 
-    global:
+    longhornUI:
       nodeSelector:
         vonarx.online/longhorn: 'true'
 
