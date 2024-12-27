@@ -16,14 +16,6 @@ spec:
       interval: 30m
 
   values:
-    
-    longhornManager:
-      nodeSelector:
-        vonarx.online/longhorn: 'true'
-
-    longhornUI:
-      nodeSelector:
-        vonarx.online/longhorn: 'true'
 
     persistence:
       defaultDataLocality: best-effort
