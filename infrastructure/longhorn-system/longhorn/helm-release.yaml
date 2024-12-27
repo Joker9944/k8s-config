@@ -17,6 +17,13 @@ spec:
 
   values:
 
+    longhornManager:
+      tolerations:
+        - key: vonarx.online/weak-node
+          value: 'true'
+          effect: "PreferNoSchedule"
+          operator: "Equal"
+
     persistence:
       defaultDataLocality: best-effort
 
