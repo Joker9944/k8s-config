@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.5.1
+      version: 3.6.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -90,7 +90,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.13.1@sha256:5b7a65ed5f31b5d3798e6626706184644a3ea3b3aa9484ea582f14de6cf8d596
+              tag: 3.13.1@sha256:7a664d2b34bbe7eabcda245366e7680e5afe6698131e8b411831a42c6410aee1
             env:
               PGURI:
                 valueFrom:

@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.5.1
+      version: 3.6.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -56,7 +56,7 @@ spec:
           prowlarr:
             image:
               repository: ghcr.io/onedr0p/prowlarr
-              tag: 1.28.2.4885@sha256:a87986574d729dfe8fdee8ad2242ec52b6ae374e3d320040e8123c9c7bdf37ca
+              tag: 1.28.2.4885@sha256:5c31e562ce080c8bcb1bee9f320b69ab0c376dce2988dfd3f19bbaf7f08c6f07
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: 0
