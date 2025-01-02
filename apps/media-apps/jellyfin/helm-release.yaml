@@ -213,7 +213,7 @@ spec:
                 daily: 7
                 weekly: 4
               copyMethod: Clone
-              storageClassName: longhorn-local
+              storageClassName: longhorn-local-lax
               cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
