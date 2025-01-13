@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.0
+      version: 3.6.1
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -115,7 +115,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.21.0@sha256:4f37d3a352cde995f10ffd6ecf5a2266e1b97a14fb72eddb236724c9c49545b3
+              tag: 3.21.2@sha256:8657321be1e61a355467bd0a237cdd722d56385360c48ae263e32ae74ce7adef
             env:
               PGHOST:
                 valueFrom:
@@ -290,7 +290,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 20.6.1
+      version: 20.6.2
       interval: 30m
       sourceRef:
         kind: HelmRepository
