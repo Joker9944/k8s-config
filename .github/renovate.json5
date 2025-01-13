@@ -12,7 +12,7 @@
       "(?:^|/)(?:helm|git|oci)-repository\\.ya?ml$",
     ],
   },
-  helm-values: {
+  "helm-values": {
     fileMatch: [
       "(?:^|/)helm-release\\.ya?ml$",
       "(^|/).+\\.values\\.ya?ml$",
