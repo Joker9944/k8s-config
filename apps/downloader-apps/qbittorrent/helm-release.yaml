@@ -124,6 +124,7 @@ spec:
               FIREWALL_INPUT_PORTS: *port_http
               VPN_INTERFACE: *vpn_interface
               FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12
+              BLOCK_MALICIOUS: 'off'
             probes:
               liveness:
                 enabled: true
