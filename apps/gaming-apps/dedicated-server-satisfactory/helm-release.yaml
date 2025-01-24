@@ -36,10 +36,10 @@ spec:
             runAsUser: &PUID 1000
             runAsGroup: &GUID 1000
             fsGroup: *GUID
-            fsGroupChangePolicy: Always
+            supplementalGroups: [ 568 ]
             seccompProfile:
               type: RuntimeDefault
-          
+
           affinity:
             nodeAffinity:
 
