@@ -32,7 +32,11 @@ spec:
         pod:
 
           securityContext:
-            runAsNonRoot: false
+            runAsNonRoot: true
+            runAsUser: &PUID 1000
+            runAsGroup: &GUID 1000
+            fsGroup: *GUID
+            fsGroupChangePolicy: Always
             seccompProfile:
               type: RuntimeDefault
           
@@ -72,10 +76,10 @@ spec:
           satisfactory-dedicated-server:
             image:
               repository: ghcr.io/wolveix/satisfactory-server
-              tag: v1.9.1@sha256:c8ef7325750e156ba875c210fdce01af20b2dd3da1f8c79f4fb7b78e983f2782
+              tag: v1.9.3@sha256:7b38a2b3905eb493e51aa51b11eb9b62fee92ed3eea8601fd71435f059be4561 
             env:
-              PUID: &PUID 568
-              GUID: &GUID 568
+              PUID: *PUID
+              GUID: *GUID
             probes:
               liveness:
                 enabled: true
@@ -114,12 +118,6 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
               capabilities:
-                add:
-                  - CHOWN
-                  - SETUID
-                  - SETGID
-                  - FOWNER
-                  - DAC_OVERRIDE
                 drop:
                   - ALL
 
