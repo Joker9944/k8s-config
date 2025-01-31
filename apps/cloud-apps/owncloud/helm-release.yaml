@@ -95,11 +95,6 @@ spec:
                         env:
                           - name: GRAPH_LDAP_CACERT
                             value: /etc/ocis/ldap-ca/ca.crt
-                    volumes:
-                      - name: ldap-ca
-                        emptyDir: null
-                        secret:
-                          secretName: wildcard-${main_namespace}-cert
           # This is a hack to use NFS storage instead of a PVC for user data
           - patch: |-
               apiVersion: apps/v1
