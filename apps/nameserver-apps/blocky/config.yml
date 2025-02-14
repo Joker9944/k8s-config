@@ -95,7 +95,7 @@ blocking:
       - | # Twitter
         twitter.com
         x.com
-        abs.twimg.com
+        *.twimg.com
 
   clientGroupsBlock:
     default:
