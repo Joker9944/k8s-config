@@ -93,6 +93,7 @@ blocking:
         vm.tiktok.com
 
       - | # Twitter
+        twitter.com
         x.com
 
   clientGroupsBlock:
