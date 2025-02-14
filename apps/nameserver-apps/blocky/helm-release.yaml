@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.6.1
+      version: 3.7.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -41,7 +41,7 @@ spec:
           blocky:
             image:
               repository: ghcr.io/0xerr0r/blocky
-              tag: v0.24@sha256:9a82e0235c52ef3048586f8006add06e52132adaae70d02f980569dae16421a2
+              tag: v0.25@sha256:347f8c6addc1775ef74b83dfc609c28436a67f812ef0ee7e2602569dc0e56cd1
             probes:
               liveness:
                 enabled: true
@@ -90,7 +90,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.13.1@sha256:837cbb03a3977ec443d6ab8e99536f38dcf0017fd6d6977b2bed433ddbc41fdc
+              tag: 3.13.2@sha256:1be6a5a8c38a97982cdeff17b2c804a4c1df8707b782f60febe19f6d50152a3b
             env:
               PGURI:
                 valueFrom:
