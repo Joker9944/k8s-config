@@ -92,6 +92,9 @@ blocking:
         www.tiktok.com
         vm.tiktok.com
 
+      - | # Twitter
+        x.com
+
   clientGroupsBlock:
     default:
       - advertisement
