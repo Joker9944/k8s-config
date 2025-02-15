@@ -99,7 +99,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.21.2@sha256:8657321be1e61a355467bd0a237cdd722d56385360c48ae263e32ae74ce7adef
+              tag: 3.21.3@sha256:277e38f7ddfd09049e5f7a31a5fc391cf99b36a3b0fc614cd8b8829529fef7a8
             env:
               PGHOST:
                 valueFrom:
