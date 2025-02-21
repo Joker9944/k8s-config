@@ -13,3 +13,9 @@ spec:
     kind: ClusterIssuer
     name: cluster-ca
   secretName: wildcard-${main_namespace}-cert
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: 'true'
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},ingress-system,.*-apps
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: 'true'
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: ingress-system,.*-apps

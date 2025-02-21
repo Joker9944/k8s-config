@@ -1,4 +1,5 @@
 ---
+# Replace with https://cert-manager.io/docs/trust/trust-manager/
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
