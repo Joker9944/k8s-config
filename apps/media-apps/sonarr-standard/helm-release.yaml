@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.7.0
+      version: 3.7.1
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -58,7 +58,7 @@ spec:
           sonarr:
             image:
               repository: ghcr.io/onedr0p/sonarr
-              tag: 4.0.12.2823@sha256:55c6878a5367fc2398d15c9a16a70653f5e5f42c9fe9b708a038f2781fb0360f
+              tag: 4.0.13.2932@sha256:004aa9dc8e670e28b3ee2dc65b3b850ea3bd5a45d3c5ce5068bc4d45583c1770
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
@@ -133,7 +133,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 3.21.2@sha256:8657321be1e61a355467bd0a237cdd722d56385360c48ae263e32ae74ce7adef
+              tag: 3.21.3@sha256:277e38f7ddfd09049e5f7a31a5fc391cf99b36a3b0fc614cd8b8829529fef7a8
             env:
               PGHOST:
                 valueFrom:

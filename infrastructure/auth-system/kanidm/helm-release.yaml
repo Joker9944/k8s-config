@@ -12,7 +12,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.7.0
+      version: 3.7.1
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -44,7 +44,7 @@ spec:
           kanidm:
             image:
               repository: kanidm/server
-              tag: 1.4.6@sha256:009a4027ed608b7d0cd4e493bb76ceb28857534d813d1dc782b1d808c9fe6e06
+              tag: 1.5.0@sha256:c7ff01c0eda06c95ded2cbd39104c9db2d4aaf0ff4a36a9a16f2989cacf9a2fb
             env:
               KANIDM_BINDADDRESS: '[::]:8443'
               KANIDM_LDAPBINDADDRESS: '[::]:3636'
