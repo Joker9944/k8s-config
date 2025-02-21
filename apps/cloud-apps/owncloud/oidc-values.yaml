@@ -41,5 +41,5 @@ services:
         webClientScope: "openid profile email groups offline_access"
 
 secretRefs:
-  ldapCaRef: wildcard-${main_namespace}-cert
+  ldapCaRef: wildcard-auth-cert
   ldapSecretRef: ocis-ldap-bind
