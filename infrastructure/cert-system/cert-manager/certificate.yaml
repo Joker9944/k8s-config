@@ -29,6 +29,7 @@ metadata:
   namespace: ${main_namespace}
 spec:
   isCA: true
+  duration: 6480h # 270d
   commonName: nyx-root-ca
   issuerRef:
     group: cert-manager.io
