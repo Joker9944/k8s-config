@@ -56,7 +56,7 @@ spec:
           prowlarr:
             image:
               repository: ghcr.io/onedr0p/prowlarr
-              tag: 1.30.2.4939@sha256:7234ae8ca5b14153baddf42257cc2ddc928695ce604d11a9616b635eca0e43e7
+              tag: 1.31.2.4975@sha256:f1c8615cab30b98b2a71254ceafea5b99fa8000d71276df3347cb230e9e5af01
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: 0
