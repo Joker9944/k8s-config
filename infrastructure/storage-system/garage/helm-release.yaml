@@ -36,10 +36,10 @@ spec:
     persistence:
       meta:
         storageClass: longhorn-local
-        size: 1Gi
+        size: 3Gi
       data:
         storageClass: longhorn-local
-        size: 10Gi
+        size: 30Gi
 
     monitoring:
       metrics:
