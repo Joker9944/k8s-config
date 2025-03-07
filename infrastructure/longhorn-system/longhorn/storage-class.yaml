@@ -4,6 +4,7 @@ kind: StorageClass
 metadata:
   name: longhorn-local # TODO rename to longhorn-local-strict
 provisioner: driver.longhorn.io
+allowVolumeExpansion: true
 parameters:
   dataLocality: strict-local
   numberOfReplicas: '1'
@@ -13,7 +14,7 @@ kind: StorageClass
 metadata:
   name: longhorn-local-lax
 provisioner: driver.longhorn.io
+allowVolumeExpansion: true
 parameters:
   dataLocality: best-effort
   numberOfReplicas: '1'
-  
