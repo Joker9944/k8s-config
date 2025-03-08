@@ -127,6 +127,7 @@ spec:
         controller: satisfactory-dedicated-server
         type: LoadBalancer
         annotations:
+          lbipam.cilium.io/ips: 192.168.178.213
           metallb.universe.tf/loadBalancerIPs: 192.168.178.213
         ports:
           server:

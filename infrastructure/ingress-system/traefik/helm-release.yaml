@@ -70,6 +70,7 @@ spec:
 
     service:
       annotations:
+        lbipam.cilium.io/ips: 192.168.178.210
         metallb.universe.tf/loadBalancerIPs: 192.168.178.210
       spec:
         externalTrafficPolicy: Local

@@ -147,6 +147,7 @@ spec:
         controller: home-assistant
         type: LoadBalancer
         annotations:
+          lbipam.cilium.io/ips: 192.168.178.212
           metallb.universe.tf/loadBalancerIPs: 192.168.178.212
         ports:
           # https://www.home-assistant.io/integrations/sonos/#network-requirements
