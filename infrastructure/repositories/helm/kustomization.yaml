@@ -16,6 +16,7 @@ resources:
   - jetstack/helm-repository.yaml
   - longhorn/helm-repository.yaml
   - metallb/helm-repository.yaml
+  - nextcloud/helm-repository.yaml
   - nvidia-device-plugin/helm-repository.yaml
   - postgres-operator/helm-repository.yaml
   - prometheus-community/helm-repository.yaml

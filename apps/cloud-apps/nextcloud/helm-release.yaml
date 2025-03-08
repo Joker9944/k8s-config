@@ -1,0 +1,79 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nextcloud
+  namespace: ${main_namespace}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: nextcloud
+      version: 6.6.6
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: nextcloud
+        namespace: flux-system
+
+  values:
+
+    # TODO:
+    #  - Monitoring
+    #  - Collabora
+    #  - Persitance
+
+    nextcloud:
+
+      host: &host cloud2.vonarx.online
+
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-credentials
+
+      objectStore:
+        s3:
+          enabled: true
+
+          ssl: false
+          port: 3900
+          region: nyx
+          usePathStyle: true
+
+          existingSecret: nextcloud-s3
+
+          secretKeys:
+            host: host
+            accessKey: accessKey
+            secretKey: secretKey
+            bucket: bucket
+            sse_c_key: sse_c_key
+
+    internalDatabase:
+      enabled: false
+
+    externalDatabase:
+      enabled: true
+
+      type: postgresql
+      
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-cnpg-app
+
+        hostKey: host
+        usernameKey: username
+        passwordKey: password
+        databaseKey: dbname
+
+    ingress:
+      enabled: true
+
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
+
+      tls:
+        - hosts:
+            - *host
+          secretName: wildcard-vonarx-online

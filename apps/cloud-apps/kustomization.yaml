@@ -5,5 +5,6 @@ resources:
   - tika/helm-release.yaml
   - collabora
   - owncloud
+  - nextcloud
 configurations:
   - ../../shared/kustomizeconfig.yaml
