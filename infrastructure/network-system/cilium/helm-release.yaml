@@ -55,5 +55,8 @@ spec:
       autoMount:
         enabled: false
 
-    bpf:
+    k8sServiceHost: localhost
+    k8sServicePort: 7445
+
+    bpf: # TODO switch dns resolution
       hostLegacyRouting: true

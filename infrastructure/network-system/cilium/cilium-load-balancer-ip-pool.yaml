@@ -3,6 +3,6 @@ kind: CiliumLoadBalancerIPPool
 metadata:
   name: main-pool
 spec:
-  blocks:
+  blocks: # TODO proper cidr range
     - start: "192.168.178.210"
       stop: "192.168.178.219"
