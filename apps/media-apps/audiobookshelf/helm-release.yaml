@@ -135,6 +135,7 @@ spec:
       metadata:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
+        retain: true
         size: &pvc_metadata_size 1Gi
         globalMounts:
           - path: *path_metadata

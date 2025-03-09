@@ -141,11 +141,11 @@ nodes:
 
 controlPlane:
   nameservers:
+    - ${GATEWAY}
     - 1.1.1.1
     - 1.0.0.1
-    #- ${GATEWAY}
 worker:
   nameservers:
+    - ${GATEWAY}
     - 1.1.1.1
     - 1.0.0.1
-    - ${GATEWAY}
