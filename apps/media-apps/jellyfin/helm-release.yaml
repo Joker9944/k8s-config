@@ -178,7 +178,7 @@ spec:
     rawResources:
 
       dest-config:
-        enabled: true
+        enabled: false
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         spec:
@@ -198,7 +198,7 @@ spec:
               volumeSnapshotClassName: &snapshot_class longhorn
 
       source-config:
-        enabled: false
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
