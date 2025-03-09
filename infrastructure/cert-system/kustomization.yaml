@@ -8,3 +8,4 @@ resources:
   - cert-manager/issuer.yaml
   - cert-manager/cluster-issuer.yaml
   - cert-manager/certificate.yaml
+  - trust-manager/helm-release.yaml
