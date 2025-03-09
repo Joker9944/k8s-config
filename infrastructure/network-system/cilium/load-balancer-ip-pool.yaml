@@ -1,8 +1,0 @@
-apiVersion: cilium.io/v2alpha1
-kind: CiliumLoadBalancerIPPool
-metadata:
-  name: main
-spec:
-  blocks: # TODO proper cidr range
-    - start: "192.168.178.210"
-      stop: "192.168.178.219"

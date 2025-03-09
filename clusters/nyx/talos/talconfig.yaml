@@ -37,7 +37,6 @@ nodes:
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
-      - '@patches/cilium.yaml'
     nodeLabels:
       vonarx.online/cpu-capacity: '6'
       vonarx.online/cpu-performance: high
@@ -69,7 +68,6 @@ nodes:
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
-      - '@patches/cilium.yaml'
     nodeLabels:
       vonarx.online/cpu-capacity: '6'
       vonarx.online/cpu-performance: high
@@ -101,7 +99,6 @@ nodes:
       - '@patches/longhorn.yaml'
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
-      - '@patches/cilium.yaml'
     nodeLabels:
       vonarx.online/cpu-capacity: '6'
       vonarx.online/cpu-performance: high
@@ -132,7 +129,6 @@ nodes:
       - '@patches/nvidia.yaml'
       - '@patches/logging.yaml'
       - '@patches/kube-proxy-metrics.yaml'
-      - '@patches/cilium.yaml'
     nodeTaints:
       vonarx.online/weak-node: true:PreferNoSchedule
     nodeLabels:

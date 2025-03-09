@@ -7,7 +7,6 @@ resources:
   - backube/helm-repository.yaml
   - bitnami/helm-repository.yaml
   - bjw-s/helm-repository.yaml
-  - cilium/helm-repository.yaml
   - cnpg/helm-repository.yaml
   - collabora-online/helm-repository.yaml
   - emberstack/helm-repository.yaml

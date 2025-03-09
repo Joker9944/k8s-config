@@ -158,7 +158,6 @@ spec:
         controller: blocky
         type: LoadBalancer
         annotations:
-          lbipam.cilium.io/ips: 192.168.178.211
           metallb.universe.tf/loadBalancerIPs: 192.168.178.211
         ports:
           dns-tcp:
