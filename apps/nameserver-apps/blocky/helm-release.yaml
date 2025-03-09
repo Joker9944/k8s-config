@@ -193,6 +193,8 @@ spec:
       cnpg:
         apiVersion: postgresql.cnpg.io/v1
         kind: Cluster
+        annotations:
+          cnpg.io/hibernation: 'off'
         spec:
           spec:
             description: PostgreSQL Cluster for blocky
