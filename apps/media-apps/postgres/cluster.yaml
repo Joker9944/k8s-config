@@ -26,7 +26,7 @@ spec:
   bootstrap:
     recovery:
       backup:
-        name: servarr-cnpg-daily-20250309000000
+        name: servarr-cnpg-daily-20250308000000
 
   backup:
     retentionPolicy: 30d
