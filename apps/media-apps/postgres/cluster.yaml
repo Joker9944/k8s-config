@@ -26,12 +26,12 @@ spec:
   bootstrap:
     recovery:
       backup:
-        name: servarr-cnpg-daily-20250120000000
+        name: servarr-cnpg-daily-20250309000000
 
   backup:
     retentionPolicy: 30d
     barmanObjectStore:
-      serverName: servarr-cnpg-restored-4
+      serverName: servarr-cnpg-restored-5
       destinationPath: s3://k8s-cnpg-backup
       endpointURL: https://gateway.storjshare.io
       s3Credentials:
