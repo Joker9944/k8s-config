@@ -61,6 +61,11 @@ spec:
     k8sServiceHost: localhost
     k8sServicePort: 7445
 
+    # L2 announcements
+
+    l2announcements:
+      enabled: true
+
     # Host DNS workaround
     # TODO replace with in cluster dns resolution
 
