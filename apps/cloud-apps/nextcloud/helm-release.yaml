@@ -34,11 +34,7 @@ spec:
         s3:
           enabled: true
 
-          ssl: false
-          port: 3900
           region: nyx
-          usePathStyle: true
-
           existingSecret: nextcloud-s3
 
           secretKeys:
