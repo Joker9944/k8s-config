@@ -58,10 +58,11 @@ spec:
 
     logs:
       general:
-        format:  json
+        level: DEBUG
+        format: json
       access:
         enabled: true
-        format:  json
+        format: json
 
     tlsStore:
         default:
