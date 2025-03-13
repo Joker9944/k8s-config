@@ -102,7 +102,10 @@ spec:
                   secretKeyRef:
                     name: blocky-redis
                     key: redis-password
-              K8S_NAMESPACE: ${main_namespace}
+              KUBERNETES_NAMESPACE:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
             command: [/bin/sh, -c]
             args: [jinja2 /templates/config.yml > /config/config.yml]
             securityContext:
