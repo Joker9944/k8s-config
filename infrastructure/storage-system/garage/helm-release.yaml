@@ -100,9 +100,7 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
+            runAsNonRoot: false
             seccompProfile:
               type: RuntimeDefault
 
@@ -148,7 +146,7 @@ spec:
         controller: caddy
         ports:
           https:
-            port: 443
+            port: 8443
 
     persistence:
       caddy-overlay-caddyfile:
