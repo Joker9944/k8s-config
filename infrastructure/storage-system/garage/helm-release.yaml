@@ -156,7 +156,7 @@ spec:
           - path: /etc/caddy/Caddyfile
             subPath: Caddyfile
       certs-overlay-tls:
-        type: configMap
+        type: secret
         name: wildcard-${main_namespace}-cert
         globalMounts:
           - path: /certs/tls.crt
