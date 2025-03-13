@@ -79,7 +79,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: grage-proxy
+  name: garage-proxy
   namespace: ${main_namespace}
 spec:
   interval: 30m
@@ -100,7 +100,9 @@ spec:
 
         pod:
           securityContext:
-            runAsNonRoot: false
+            runAsUser: 568
+            runAsGroup: 568
+            runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
 
