@@ -32,7 +32,7 @@ metadata:
 spec:
   isCA: true
   commonName: root.${main_namespace}.svc.cluster.local
-  duration: 810d
+  duration: 19440h # 810 days
   issuerRef:
     group: cert-manager.io
     kind: Issuer
@@ -48,7 +48,7 @@ metadata:
 spec:
   isCA: true
   commonName: intermediate.${main_namespace}.svc.cluster.local
-  duration: 270d
+  duration: 6480h # 270 days
   issuerRef:
     group: cert-manager.io
     kind: Issuer
