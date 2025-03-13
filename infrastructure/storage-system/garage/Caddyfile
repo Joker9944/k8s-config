@@ -8,11 +8,11 @@
 }
 
 https://grage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local {
-    import garage-api-proxy
+    import snippet garage-api-proxy
 }
 
 https://grage-proxy.{$KUBERNETES_NAMESPACE} {
-    import garage-api-proxy
+    import snippet garage-api-proxy
 }
 
 :2020 /health {
