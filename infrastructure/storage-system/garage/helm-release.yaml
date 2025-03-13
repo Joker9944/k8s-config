@@ -100,9 +100,11 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 568
-            runAsGroup: 568
+            runAsUser: &PUID 568
+            runAsGroup: &GUID 568
             runAsNonRoot: true
+            fsGroup: *GUID
+            fsGroupChangePolicy: OnRootMismatch
             seccompProfile:
               type: RuntimeDefault
 
@@ -165,3 +167,7 @@ spec:
             subPath: tls.crt
           - path: /certs/tls.key
             subPath: tls.key
+      config:
+        type: emptyDir
+      data:
+        type: emptyDir
