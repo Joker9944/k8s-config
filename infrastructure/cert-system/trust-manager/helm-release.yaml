@@ -25,5 +25,5 @@ spec:
 
       authorizedSecrets:
         - nyx-ca-cert-bundle
-        - nyx-root-ca-cert
-        - nyx-intermediate-ca-cert
+        - nyx-root-ca-cert-bundle
+        - nyx-intermediate-ca-cert-bundle

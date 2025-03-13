@@ -160,8 +160,8 @@ spec:
           spec:
             serverName: kanidm.${main_namespace}
             rootCAsSecrets:
-              - nyx-intermediate-ca-cert
-              - nyx-root-ca-cert
+              - nyx-intermediate-ca-cert-bundle
+              - nyx-root-ca-cert-bundle
 
       dest-data:
         enabled: false

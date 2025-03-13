@@ -22,7 +22,7 @@ spec:
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
-  name: nyx-root-ca-cert
+  name: nyx-root-ca-cert-bundle
 spec:
   sources:
     - secret:
@@ -39,7 +39,7 @@ spec:
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
-  name: nyx-intermediate-ca-cert
+  name: nyx-intermediate-ca-cert-bundle
 spec:
   sources:
     - secret:
