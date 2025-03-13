@@ -1,10 +1,18 @@
 :8443
 
-https://grage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local, https://grage-proxy.{$KUBERNETES_NAMESPACE} {
+(garage-api-proxy) {
     reverse_proxy garage-headless:3900 {
         lb_policy round_robin
     }
     tls /certs/tls.crt /certs/tls.key
+}
+
+https://grage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local {
+    import garage-api-proxy
+}
+
+https://grage-proxy.{$KUBERNETES_NAMESPACE} {
+    import garage-api-proxy
 }
 
 :2020 /health {
