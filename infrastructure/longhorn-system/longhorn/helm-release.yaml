@@ -32,7 +32,7 @@ spec:
       annotations:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-local-link-whitelist@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-network-internal-whitelist@kubernetescrd
       host: longhorn.vonarx.online
       tls: true
       tlsSecret: wildcard-vonarx-online
