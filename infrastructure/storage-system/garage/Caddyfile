@@ -1,6 +1,6 @@
 :8443
 
-https://grage-proxy.{$NAMESPACE}.svc.cluster.local, https://grage-proxy.{$NAMESPACE} {
+https://grage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local, https://grage-proxy.{$KUBERNETES_NAMESPACE} {
     reverse_proxy garage-headless:3900 {
         lb_policy round_robin
     }
