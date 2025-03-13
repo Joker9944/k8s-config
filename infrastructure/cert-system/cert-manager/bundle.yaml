@@ -1,3 +1,4 @@
+---
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
@@ -9,6 +10,40 @@ spec:
         key: ca.crt
     - secret:
         name: nyx-root-ca-cert
+        key: ca.crt
+  target:
+    secret:
+      key: ca.crt
+    namespaceSelector:
+      matchLabels:
+        vonarx.online/reflect-nyx-ca: 'true'
+
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: nyx-root-ca-cert
+spec:
+  sources:
+    - secret:
+        name: nyx-root-ca-cert
+        key: ca.crt
+  target:
+    secret:
+      key: ca.crt
+    namespaceSelector:
+      matchLabels:
+        vonarx.online/reflect-nyx-ca: 'true'
+
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: nyx-intermediate-ca-cert
+spec:
+  sources:
+    - secret:
+        name: nyx-intermediate-ca-cert
         key: ca.crt
   target:
     secret:
