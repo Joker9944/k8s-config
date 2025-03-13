@@ -10,7 +10,6 @@ resources:
   - cnpg/helm-repository.yaml
   - collabora-online/helm-repository.yaml
   - emberstack/helm-repository.yaml
-  - espresso-lab/helm-repository.yaml
   - gateway/helm-repository.yaml
   - grafana/helm-repository.yaml
   - jetstack/helm-repository.yaml
