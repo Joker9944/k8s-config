@@ -49,7 +49,7 @@ spec:
           annotations:
             traefik.ingress.kubernetes.io/router.tls: 'true'
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
-            traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,cluster-internal-whitelist@kubernetescrd
+            traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-cluster-internal-whitelist@kubernetescrd
 
           hosts:
             - host: &host_s3_root s3.vonarx.online
