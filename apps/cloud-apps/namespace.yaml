@@ -2,5 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: ${main_namespace}
+  labels:
+    vonarx.online/reflect-nyx-ca: 'true'
   annotations:
-    volsync.backube/privileged-movers: "true"
+    volsync.backube/privileged-movers: 'true'

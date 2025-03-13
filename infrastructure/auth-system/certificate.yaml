@@ -11,7 +11,7 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: cluster-ca
+    name: nyx-intermediate-ca
   secretName: wildcard-${main_namespace}-cert
   secretTemplate:
     annotations:

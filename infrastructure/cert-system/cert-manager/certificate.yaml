@@ -27,22 +27,30 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: cluster-root-ca
+  name: nyx-root-ca
   namespace: ${main_namespace}
 spec:
   isCA: true
-  dnsNames:
-    - root.${main_namespace}.svc.cluster.local
-    - root.${main_namespace}
-  duration: 6480h # 270d
+  commonName: root.${main_namespace}.svc.cluster.local
+  duration: 810d
   issuerRef:
     group: cert-manager.io
     kind: Issuer
     name: selfsigned
-  secretName: cluster-root-ca-cert
-  secretTemplate:
-    annotations:
-      reflector.v1.k8s.emberstack.com/reflection-allowed: 'true'
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ${main_namespace},ingress-system
-      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: 'true'
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: ingress-system
+  secretName: nyx-root-ca-cert
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nyx-intermediate-ca
+  namespace: ${main_namespace}
+spec:
+  isCA: true
+  commonName: intermediate.${main_namespace}.svc.cluster.local
+  duration: 270d
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: selfsigned
+  secretName: nyx-intermediate-ca-cert
