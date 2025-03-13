@@ -48,10 +48,10 @@ spec:
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
 
-      persistence:
-        enabled: true
+    persistence:
+      enabled: true
 
-        size: 1Gi
+      size: 1Gi
 
     internalDatabase:
       enabled: false
