@@ -8,9 +8,7 @@ spec:
   dnsNames:
     - vonarx.online
     - '*.vonarx.online'
-    - s3.vonarx.online
     - '*.s3.vonarx.online'
-    - web.vonarx.online
     - '*.web.vonarx.online'
   issuerRef:
     group: cert-manager.io
