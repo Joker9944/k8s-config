@@ -1,0 +1,12 @@
+:443
+
+https://grage-proxy.{$NAMESPACE}.svc.cluster.local, https://grage-proxy.{$NAMESPACE} {
+    reverse_proxy garage-headless:3900 {
+        lb_policy round_robin
+    }
+    tls /certs/tls.crt /certs/tls.key
+}
+
+:2020 /health {
+    respond "OK" 200
+}
