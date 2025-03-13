@@ -159,7 +159,7 @@ spec:
         spec:
           spec:
             serverName: kanidm.${main_namespace}
-            rootCAsSecrets: [ "wildcard-${main_namespace}-cert" ]
+            rootCAsSecrets: [ nyx-ca-cert-bundle ]
 
       dest-data:
         enabled: false
