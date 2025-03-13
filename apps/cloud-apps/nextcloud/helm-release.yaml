@@ -44,6 +44,10 @@ spec:
             bucket: bucket
             sse_c_key: sse_c_key
 
+      extraEnv:
+        - name: TRUSTED_PROXIES
+          value: 10.244.0.0/16
+
     internalDatabase:
       enabled: false
 
