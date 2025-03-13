@@ -5,10 +5,10 @@ metadata:
 spec:
   sources:
     - secret:
-        name: nyx-root-ca-cert
+        name: nyx-intermediate-ca-cert
         key: ca.crt
     - secret:
-        name: nyx-intermediate-ca-cert
+        name: nyx-root-ca-cert
         key: ca.crt
   target:
     secret:
