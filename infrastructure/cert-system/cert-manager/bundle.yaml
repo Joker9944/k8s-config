@@ -1,7 +1,7 @@
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
-  name: nyx-ca
+  name: nyx-ca-bundle
 spec:
   sources:
     - secret:
@@ -11,7 +11,7 @@ spec:
         name: nyx-intermediate-ca-cert
         key: ca.crt
   target:
-    configMap:
+    secret:
       key: ca.crt
     namespaceSelector:
       matchLabels:
