@@ -33,6 +33,9 @@ metadata:
   namespace: ${main_namespace}
 spec:
   isCA: true
+  dnsNames:
+    - root.${main_namespace}.svc.cluster.local
+    - root.${main_namespace}
   duration: 6480h # 270d
   issuerRef:
     group: cert-manager.io
