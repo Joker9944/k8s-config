@@ -24,4 +24,4 @@ spec:
       enabled: true
 
       authorizedSecrets:
-        - nyx-ca-bundle
+        - nyx-ca-cert-bundle
