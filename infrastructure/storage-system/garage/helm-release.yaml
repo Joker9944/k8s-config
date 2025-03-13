@@ -60,11 +60,17 @@ spec:
               paths:
                 - path: /
                   pathType: Prefix
+              # WORKAROUND k8s gateway cannot resolve wildcard DNS requests
+            - host: &host_s3_nextcloud 'nextcloud.s3.vonarx.online'
+              paths:
+                - path: /
+                  pathType: Prefix
 
           tls:
             - hosts:
                 - *host_s3_root
                 - *host_s3_wildcard
+                - *host_s3_nextcloud
               secretName: wildcard-vonarx-online
 
     monitoring:
