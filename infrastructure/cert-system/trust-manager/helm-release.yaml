@@ -19,3 +19,9 @@ spec:
     app:
       trust:
         namespace: ${main_namespace}
+
+    secretTargets:
+      enabled: true
+
+      authorizedSecrets:
+        - nyx-ca-bundle
