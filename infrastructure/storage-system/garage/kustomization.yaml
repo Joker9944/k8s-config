@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - helm-release.yaml
 configMapGenerator:
-  - name: grage-proxy-config
+  - name: garage-proxy-config
     namespace: ${main_namespace}
     files:
       - Caddyfile=Caddyfile

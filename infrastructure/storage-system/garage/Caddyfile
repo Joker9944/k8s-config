@@ -1,4 +1,4 @@
-grage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local:8443 grage-proxy.{$KUBERNETES_NAMESPACE}:8443 {
+garage-proxy.{$KUBERNETES_NAMESPACE}.svc.cluster.local:8443 garage-proxy.{$KUBERNETES_NAMESPACE}:8443 {
     reverse_proxy garage-headless:3900 {
         lb_policy round_robin
     }

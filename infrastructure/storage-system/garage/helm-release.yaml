@@ -161,7 +161,7 @@ spec:
     persistence:
       caddy-overlay-caddyfile:
         type: configMap
-        name: grage-proxy-config
+        name: garage-proxy-config
         globalMounts:
           - path: /etc/caddy/Caddyfile
             subPath: Caddyfile
