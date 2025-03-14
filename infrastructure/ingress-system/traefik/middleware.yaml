@@ -72,16 +72,3 @@ spec:
     sourceRange:
       - 192.168.178.0/24
       - fe80::/10
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: cluster-internal-whitelist
-  namespace: ${main_namespace}
-spec:
-  ipAllowList:
-    ipStrategy:
-      depth: 0
-    sourceRange:
-      - 10.244.0.0/16
-      - 10.96.0.0/12
