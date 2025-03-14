@@ -50,6 +50,16 @@ spec:
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
 
+      extraVolumes:
+        - name: ssl-overlay-nyx-ca
+          secret:
+            secretName: nyx-ca-cert-bundle
+
+      extraVolumeMounts:
+        - name: ssl-overlay-nyx-ca
+          mountPath: /etc/ssl/certs/nyx_ca.pem
+          subPath: ca.crt
+
     persistence:
       enabled: true
 
