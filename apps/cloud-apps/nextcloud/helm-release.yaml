@@ -34,8 +34,10 @@ spec:
         s3:
           enabled: true
 
+          port: 8443
           region: nyx
           existingSecret: nextcloud-s3
+          usePathStyle: true
 
           secretKeys:
             host: host
