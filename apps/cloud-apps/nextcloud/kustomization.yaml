@@ -4,3 +4,10 @@ resources:
   - secret.yaml
   - cluster.yaml
   - helm-release.yaml
+configMapGenerator:
+  - name: nexcloud-install-ca
+    namespace: ${main_namespace}
+    files:
+      - install-ca.sh=scripts/install-ca.sh
+configurations:
+  - kustomizeconfig.yaml
