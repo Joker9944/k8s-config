@@ -54,18 +54,11 @@ spec:
         - name: ca-overlay-nyx-ca
           secret:
             secretName: nyx-ca-cert-bundle
-        - name: hooks-overlay-install-ca
-          configMap:
-            name: nexcloud-install-ca
-            defaultMode: 0755
 
       extraVolumeMounts:
         - name: ca-overlay-nyx-ca
           mountPath: /usr/local/share/ca-certificates/nyx_ca.crt
           subPath: ca.crt
-        - name: hooks-overlay-install-ca
-          mountPath: /docker-entrypoint-hooks.d/before-starting/install-ca.sh
-          subPath: install-ca.sh
 
     persistence:
       enabled: true

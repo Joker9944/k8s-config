@@ -1,5 +1,0 @@
-nameReference:
-  - kind: ConfigMap
-    fieldSpecs:
-      - path: spec/values/nextcloud/extraVolumes/configMap/name
-        kind: HelmRelease
