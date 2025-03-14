@@ -46,6 +46,18 @@ spec:
             bucket: bucket
             sse_c_key: sse_c_key
 
+      configs:
+        oidc.config.php : |-
+          <?php
+          $CONFIG = [
+            'allow_local_remote_servers' => true,
+            'user_oidc' => [
+                'use_pkce' => true,
+            ],
+            'allow_user_to_change_display_name' => false,
+            'lost_password_link' => 'disabled',
+          ]
+
       extraEnv:
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
