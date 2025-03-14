@@ -56,7 +56,7 @@ spec:
             ],
             'allow_user_to_change_display_name' => false,
             'lost_password_link' => 'disabled',
-          ]
+          ];
 
       extraEnv:
         - name: TRUSTED_PROXIES
