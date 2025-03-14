@@ -16,4 +16,25 @@ spec:
       key: ca.crt
     namespaceSelector:
       matchLabels:
-        vonarx.online/reflect-nyx-ca: 'true'
+        vonarx.online/distribute-nyx-ca-cert-bundle: 'true'
+
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: public-nyx-ca-cert-bundle
+spec:
+  sources:
+    - useDefaultCAs: true
+    - secret:
+        name: nyx-intermediate-ca-cert
+        key: ca.crt
+    - secret:
+        name: nyx-root-ca-cert
+        key: ca.crt
+  target:
+    secret:
+      key: ca.crt
+    namespaceSelector:
+      matchLabels:
+        vonarx.online/distribute-public-nyx-ca-cert-bundle: 'true'

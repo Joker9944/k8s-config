@@ -25,3 +25,4 @@ spec:
 
       authorizedSecrets:
         - nyx-ca-cert-bundle
+        - public-nyx-ca-cert-bundle

@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: ${main_namespace}
   labels:
-    vonarx.online/reflect-nyx-ca: 'true'
+    vonarx.online/distribute-nyx-ca-cert-bundle: 'true'

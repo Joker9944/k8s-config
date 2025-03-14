@@ -51,13 +51,13 @@ spec:
           value: 10.244.0.0/16
 
       extraVolumes:
-        - name: ca-overlay-nyx-ca
+        - name: ssl-overlay-cert-bundle
           secret:
-            secretName: nyx-ca-cert-bundle
+            secretName: public-nyx-ca-cert-bundle
 
       extraVolumeMounts:
-        - name: ca-overlay-nyx-ca
-          mountPath: /usr/local/share/ca-certificates/nyx_ca.crt
+        - name: ssl-overlay-cert-bundle
+          mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca.crt
 
     persistence:
