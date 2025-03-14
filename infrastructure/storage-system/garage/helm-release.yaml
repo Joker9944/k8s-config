@@ -37,10 +37,10 @@ spec:
     persistence:
       meta:
         storageClass: longhorn-local
-        size: 3Gi
+        size: 6Gi
       data:
         storageClass: longhorn-local
-        size: 30Gi
+        size: 60Gi
 
     ingress:
       s3:
