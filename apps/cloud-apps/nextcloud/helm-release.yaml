@@ -61,6 +61,8 @@ spec:
       extraEnv:
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
+        - name: OVERWRITEPROTOCOL
+          value: https
 
       extraVolumes:
         - name: ssl-overlay-cert-bundle
