@@ -137,7 +137,6 @@ spec:
               kind: Deployment
               metadata:
                 name: nextcloud
-                namespace: ${main_namespace}
               spec:
                 template:
                   spec:
