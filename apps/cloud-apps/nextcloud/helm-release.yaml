@@ -25,7 +25,7 @@ spec:
 
     nextcloud:
 
-      host: &host cloud2.vonarx.online
+      host: &host cloud.vonarx.online
 
       existingSecret:
         enabled: true
