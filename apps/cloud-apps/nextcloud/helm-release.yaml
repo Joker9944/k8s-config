@@ -78,6 +78,11 @@ spec:
     persistence:
       enabled: true
 
+      size: 2Gi
+
+      nextcloudData:
+        enabled: true
+
     internalDatabase:
       enabled: false
 
