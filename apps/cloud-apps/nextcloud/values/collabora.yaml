@@ -6,7 +6,7 @@ collabora:
     aliasgroups:
       - host: https://cloud.vonarx.online:443
 
-    extra_params: '--o:ssl.enable=false --o:ssl.termination=true --o:allowed_languages="de_CH en_US" --o:languagetool.enabled=true --o:languagetool.base_url="https://api.languagetoolplus.com/v2" --o:remote_font_config.url="https://cloud.vonarx.online/apps/richdocuments/settings/fonts.json"'
+    extra_params: '--o:ssl.enable=false --o:ssl.termination=true --o:allowed_languages="de_CH en_US" --o:remote_font_config.url="https://cloud.vonarx.online/apps/richdocuments/settings/fonts.json"'
 
     existingSecret:
       enabled: true
