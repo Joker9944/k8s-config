@@ -20,7 +20,8 @@ spec:
     # TODO:
     #  - Monitoring
     #  - Collabora
-    #  - Persitance
+    #  - redis
+    #  - backups
 
     nextcloud:
 
@@ -86,7 +87,7 @@ spec:
       enabled: true
 
       type: postgresql
-      
+
       existingSecret:
         enabled: true
         secretName: nextcloud-cnpg-app

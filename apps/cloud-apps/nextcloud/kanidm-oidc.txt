@@ -11,5 +11,7 @@ kanidm system oauth2 create nextcloud "Nextcloud" https://cloud2.vonarx.online/
 
 kanidm system oauth2 prefer-short-username nextcloud
 
+kanidm system oauth2 add-redirect-url nextcloud https://cloud2.vonarx.online/apps/user_oidc/code
+
 kanidm system oauth2 update-scope-map nextcloud nextcloud_admins openid profile email groups
 kanidm system oauth2 update-scope-map nextcloud nextcloud_users openid profile email groups
