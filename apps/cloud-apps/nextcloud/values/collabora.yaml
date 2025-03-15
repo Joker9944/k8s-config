@@ -12,6 +12,10 @@ collabora:
       enabled: true
       secretName: nextcloud-collabora-credentials
 
+    env:
+      - name: dictionaries
+        value: "de_CH en_US"
+
   ingress:
     enabled: true
 
