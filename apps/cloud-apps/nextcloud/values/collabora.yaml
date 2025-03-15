@@ -6,7 +6,7 @@ collabora:
     aliasgroups:
       - host: https://cloud.vonarx.online:443
 
-    extra_params: ''
+    extra_params: --o:ssl.enable=false --o:ssl.termination=true
 
     existingSecret:
       enabled: true
