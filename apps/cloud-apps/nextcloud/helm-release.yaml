@@ -114,6 +114,9 @@ spec:
             - *host
           secretName: wildcard-vonarx-online
 
+    cronjob:
+      enabled: true
+
     redis:
       enabled: true
 
