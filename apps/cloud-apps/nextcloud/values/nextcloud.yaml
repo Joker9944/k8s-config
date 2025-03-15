@@ -1,0 +1,93 @@
+nextcloud:
+
+  host: &host cloud.vonarx.online
+
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-credentials
+
+  objectStore:
+    s3:
+      enabled: true
+
+      port: 8443
+      region: nyx
+      existingSecret: nextcloud-s3
+      usePathStyle: true
+
+      secretKeys:
+        host: host
+        accessKey: accessKey
+        secretKey: secretKey
+        bucket: bucket
+        sse_c_key: sse_c_key
+
+  configs:
+    oidc.config.php : |-
+      <?php
+      $CONFIG = [
+        'allow_local_remote_servers' => true,
+        'user_oidc' => [
+            'use_pkce' => true,
+        ],
+        'allow_user_to_change_display_name' => false,
+        'lost_password_link' => 'disabled',
+      ];
+
+  extraEnv:
+    # Ingress
+    - name: TRUSTED_PROXIES
+      value: 10.244.0.0/16
+    - name: OVERWRITEPROTOCOL
+      value: https
+
+  extraVolumes:
+    - name: ssl-overlay-cert-bundle
+      secret:
+        secretName: public-nyx-ca-cert-bundle
+
+  extraVolumeMounts:
+    - name: ssl-overlay-cert-bundle
+      mountPath: /etc/ssl/certs/ca-certificates.crt
+      subPath: ca.crt
+
+persistence:
+  enabled: true
+
+  size: 2Gi
+
+  nextcloudData:
+    enabled: true
+
+internalDatabase:
+  enabled: false
+
+externalDatabase:
+  enabled: true
+
+  type: postgresql
+
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-cnpg-app
+
+    hostKey: host
+    usernameKey: username
+    passwordKey: password
+    databaseKey: dbname
+
+ingress:
+  enabled: true
+
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd,${main_namespace}-nextcloud-caldav-carddav-redirect@kubernetescrd
+
+  tls:
+    - hosts:
+        - *host
+      secretName: wildcard-vonarx-online
+
+cronjob:
+  enabled: true

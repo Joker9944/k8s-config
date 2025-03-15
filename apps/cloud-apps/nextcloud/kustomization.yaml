@@ -5,3 +5,16 @@ resources:
   - manifests/cluster.yaml
   - manifests/middleware.yaml
   - helm-release.yaml
+configMapGenerator:
+  - name: nextcloud-nextcloud-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=values/nextcloud.yaml
+  - name: nextcloud-redis-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=values/redis.yaml
+  - name: nextcloud-collabora-values
+    namespace: ${main_namespace}
+    files:
+      - values.yaml=values/collabora.yaml

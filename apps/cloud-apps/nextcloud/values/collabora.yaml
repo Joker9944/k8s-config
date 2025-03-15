@@ -1,0 +1,30 @@
+collabora:
+  enabled: true
+
+  collabora:
+
+    aliasgroups:
+      - host: https://cloud.vonarx.online:443
+
+    existingSecret:
+      enabled: true
+      secretName: nextcloud-collabora-credentials
+
+  ingress:
+    enabled: true
+
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.middlewares: ingress-system-chain-basic@kubernetescrd,ingress-system-country-whitelist@kubernetescrd
+
+      hosts:
+        - host: &host office.vonarx.online
+          paths:
+            - path: /
+              pathType: Prefix
+
+      tls:
+        - hosts:
+            - *host
+          secretName: wildcard-vonarx-online
