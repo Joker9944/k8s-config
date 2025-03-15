@@ -60,6 +60,7 @@ spec:
           ];
 
       extraEnv:
+        # Ingress
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
         - name: OVERWRITEPROTOCOL
@@ -124,3 +125,24 @@ spec:
       master:
         persistence:
           enabled: false
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |- # WORKAROUND The chart does not respect the automaticly generated Redis password
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: nextcloud
+                namespace: ${main_namespace}
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: nextcloud
+                        env:
+                          - name: REDIS_HOST_PASSWORD
+                            valueFrom:
+                              secretKeyRef:
+                                name: nextcloud-redis
+                                key: redis-password
