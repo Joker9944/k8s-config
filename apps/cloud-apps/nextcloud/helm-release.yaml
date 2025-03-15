@@ -112,3 +112,15 @@ spec:
         - hosts:
             - *host
           secretName: wildcard-vonarx-online
+
+    redis:
+      enabled: true
+
+      auth:
+        password: ''
+
+      architecture: standalone
+
+      master:
+        persistence:
+          enabled: false
