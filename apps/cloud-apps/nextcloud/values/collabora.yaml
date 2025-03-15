@@ -6,6 +6,8 @@ collabora:
     aliasgroups:
       - host: https://cloud.vonarx.online:443
 
+    extra_params: ''
+
     existingSecret:
       enabled: true
       secretName: nextcloud-collabora-credentials
