@@ -1,5 +1,5 @@
 redis:
-  enabled: true
+  enabled: false
 
   auth:
     existingSecret: nextcloud-redis-credentials
