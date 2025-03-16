@@ -28,23 +28,3 @@ spec:
     #  - Collabora
     #  - redis
     #  - backups
-
-  postRenderers:
-    - kustomize:
-        patches:
-          - patch: |- # WORKAROUND The chart does not respect the automatically generated Redis password
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: nextcloud
-              spec:
-                template:
-                  spec:
-                    containers:
-                      - name: nextcloud
-                        env:
-                          - name: REDIS_HOST_PASSWORD
-                            valueFrom:
-                              secretKeyRef:
-                                name: nextcloud-redis
-                                key: redis-password
