@@ -2,7 +2,8 @@ redis:
   enabled: true
 
   auth:
-    password: ''
+    existingSecret: nextcloud-redis-credentials
+    existingSecretPasswordKey: password
 
   architecture: standalone
 
