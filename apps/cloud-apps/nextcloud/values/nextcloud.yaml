@@ -23,7 +23,7 @@ nextcloud:
         sse_c_key: sse_c_key
 
   configs:
-    oidc.config.php : |-
+    oidc.config.php: |-
       <?php
       $CONFIG = [
         'allow_local_remote_servers' => true,
@@ -32,6 +32,11 @@ nextcloud:
         ],
         'allow_user_to_change_display_name' => false,
         'lost_password_link' => 'disabled',
+      ];
+    maintenance.config.php: |-
+      <?php
+      $CONFIG = [
+        'maintenance_window_start' => 1,
       ];
 
   extraEnv:
