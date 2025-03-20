@@ -85,6 +85,7 @@ blocking:
 
       - | # LinkedIn
         www.linkedin.com
+        brand.linkedin.com
         static.licdn.com
         media.licdn.com
 
