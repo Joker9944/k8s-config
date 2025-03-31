@@ -90,7 +90,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 3.13.2@sha256:d2da3c0cf8881ea5feff4f278952e4821e059999f11f9f08fb97cb5618a99952
+              tag: 3.13.2@sha256:8255796ed1a7282d86f9ef2cee28ebeb998cb09f0c956bad8527529910f788f7
             env:
               PGURI:
                 valueFrom:
@@ -295,7 +295,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 20.11.3
+      version: 20.11.4
       interval: 30m
       sourceRef:
         kind: HelmRepository
