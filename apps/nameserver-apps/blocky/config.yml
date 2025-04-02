@@ -12,6 +12,10 @@ upstreams:
       - https://1.1.1.1/dns-query
       - https://1.0.0.1/dns-query
 
+customDNS:
+  mapping:
+    s3.vonarx.online: 192.168.178.210
+
 conditional:
   rewrite:
     internal: fritz.box
