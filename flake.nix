@@ -47,12 +47,18 @@
             ];
 
             shellHook = ''
+              # Custom prompt
+              PS1=$(echo "$PS1" | sed 's/\\u@\\h/\$name/g')
+
               # Autocompletion
               source <(kubectl completion bash)
               source <(flux completion bash)
               source <(helm completion bash)
               source <(talosctl completion bash)
               source <(talhelper completion bash)
+
+              # Garage CLI alias
+              alias garage="kubectl exec --tty --stdin -n storage-system garage-0 -c garage -- ./garage"
             '';
           };
 
@@ -60,6 +66,11 @@
             name = "flake-dev";
 
             packages = with pkgs; [alejandra];
+
+            shellHook = ''
+              # Custom prompt
+              PS1=$(echo "$PS1" | sed 's/\\u@\\h/\$name/g')
+            '';
           };
         };
 
