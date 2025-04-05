@@ -44,7 +44,7 @@ spec:
         oidc:
           moduleName: github.com/lukaszraczylo/traefikoidc
           # renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced
-          version: v0.5.36
+          version: v0.5.41
 
     providers:
       kubernetesCRD:
