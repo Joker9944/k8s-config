@@ -12,6 +12,7 @@ resources:
   - jellyseerr/helm-release.yaml
   - jellyfin/helm-release.yaml
   - audiobookshelf/helm-release.yaml
+  - komga/helm-release.yaml
 secretGenerator:
   - name: audiobookshelf-secret-values
     namespace: ${main_namespace}
