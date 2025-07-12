@@ -7,6 +7,6 @@ spec:
   interval: 5m
   url: https://github.com/cloudnative-pg/postgres-containers
   ref:
-    commit: 36fbf7b46063c29741bb55e68248f04c6658653e
+    commit: 273f3e233cf5fe1e93e608ad2983555e808efe3d
     #branch: main
 # TODO write ignore
