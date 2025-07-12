@@ -1,0 +1,5 @@
+machine:
+  time:
+    servers:
+      - ${NTP}
+
