@@ -3,13 +3,13 @@
 
   inputs = {
     # nix pkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     # nix helpers
     flake-parts.url = "github:hercules-ci/flake-parts";
     # external pkgs
     talhelper = {
-      url = "github:budimanjojo/talhelper/v3.0.19";
+      url = "github:budimanjojo/talhelper/v3.0.30";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
   };
@@ -41,6 +41,7 @@
               kubernetes-helm
               pkgs-unstable.talosctl
               pkgs-unstable.talhelper
+              spice-gtk
 
               sops
               age

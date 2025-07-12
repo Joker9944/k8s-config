@@ -2,13 +2,13 @@ clusterName: nyx
 # renovate: datasource=docker depName=talos packageName=ghcr.io/siderolabs/installer
 talosVersion: v1.10.5
 # renovate: datasource=docker depName=kubelet packageName=ghcr.io/siderolabs/kubelet
-kubernetesVersion: v1.33.2
+kubernetesVersion: v1.32.6
 endpoint: https://${VIP}:6443
 additionalMachineCertSans:
   - ${VIP}
 additionalApiServerCertSans:
   - ${VIP}
-  - nyx.internal
+  - nyx.local
 
 nodes:
 
@@ -63,6 +63,7 @@ nodes:
             - siderolabs/iscsi-tools
             - siderolabs/util-linux-tools
             - siderolabs/realtek-firmware
+            - siderolabs/tailscale
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
@@ -94,6 +95,7 @@ nodes:
             - siderolabs/iscsi-tools
             - siderolabs/util-linux-tools
             - siderolabs/realtek-firmware
+            - siderolabs/tailscale
     patches:
       - '@patches/hybrid.yaml'
       - '@patches/longhorn.yaml'
@@ -141,11 +143,15 @@ nodes:
 
 controlPlane:
   nameservers:
-    - ${GATEWAY}
-    - 1.1.1.1
-    - 1.0.0.1
+    - ${NS_1}
+    - ${NS_2}
+  patches:
+    - |-
+      machine:
+        time:
+          servers:
+            - time.cloudflare.com
 worker:
   nameservers:
-    - ${GATEWAY}
-    - 1.1.1.1
-    - 1.0.0.1
+    - ${NS_1}
+    - ${NS_2}
