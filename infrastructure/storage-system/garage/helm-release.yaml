@@ -110,7 +110,7 @@ spec:
           caddy:
             image:
               repository: caddy
-              tag: 2.10.0@sha256:f880657326733fb266a317b4ee31d6a3090a6bbff3dcb0c97833093810d59b46
+              tag: 2.10.0@sha256:e23538fceb12f3f8cc97a174844aa99bdea7715023d6e088028850fd0601e2e2
             env:
               KUBERNETES_NAMESPACE:
                 valueFrom:
