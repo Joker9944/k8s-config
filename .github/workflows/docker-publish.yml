@@ -39,7 +39,7 @@ jobs:
         uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3.9.1
         with:
           # renovate: datasource=github-releases depName=cosign packageName=sigstore/cosign versioning=semver-coerced
-          cosign-release: v2.5.2
+          cosign-release: v2.5.3
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
