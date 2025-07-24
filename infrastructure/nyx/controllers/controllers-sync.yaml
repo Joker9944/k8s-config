@@ -1,0 +1,67 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+spec:
+  path: ./infrastructure/base/cert-manager
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg
+spec:
+  path: ./infrastructure/base/cnpg
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn
+spec:
+  path: ./infrastructure/base/longhorn
+  dependsOn:
+    - name: traefik
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: metallb
+spec:
+  path: ./infrastructure/base/metallb
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: reflector
+spec:
+  path: ./infrastructure/base/reflector
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik
+spec:
+  path: ./infrastructure/base/traefik
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: trust-manager
+spec:
+  path: ./infrastructure/base/trust-manager
+  dependsOn:
+    - name: cert-manager
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: volsync
+spec:
+  path: ./infrastructure/base/volsync

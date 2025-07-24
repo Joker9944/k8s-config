@@ -59,7 +59,7 @@
               source <(talhelper completion bash)
 
               # Garage CLI alias
-              alias garage="kubectl exec --tty --stdin -n storage-system garage-0 -c garage -- ./garage"
+              alias garage="kubectl exec --tty --stdin --namespace garage garage-0 -c garage -- ./garage"
 
               # Setup env variables
               export TALOSCONFIG=$(pwd)/clusters/nyx/talos/clusterconfig/talosconfig

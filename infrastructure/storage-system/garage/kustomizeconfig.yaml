@@ -1,6 +1,0 @@
-# TODO find a way to replace this ugly hack
-nameReference:
-  - kind: ConfigMap
-    fieldSpecs:
-      - path: spec/values/persistence/caddy-overlay-caddyfile/name
-        kind: HelmRelease

@@ -1,0 +1,5 @@
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - path: spec/values/persistence/caddy-overlay-caddyfile/name
+        kind: HelmRelease
