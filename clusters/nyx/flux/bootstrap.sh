@@ -4,6 +4,8 @@ set -e
 
 kubectl create namespace flux-system || true
 
+echo "Enter age secret key"
+
 kubectl create secret generic sops-age \
   --namespace=flux-system \
   --from-file=age.agekey=/dev/stdin

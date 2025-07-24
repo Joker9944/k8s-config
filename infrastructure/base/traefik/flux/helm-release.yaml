@@ -45,12 +45,6 @@ spec:
           # renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced
           version: v0.6.1
 
-    volumes:
-      # Mount cluster internal root ca for self signed certs
-      - name: cluster-root-ca-cert
-        mountPath: /certs/cluster-root-ca
-        type: secret
-
     logs:
       general:
         level: INFO
