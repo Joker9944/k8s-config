@@ -8,10 +8,10 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: main
+    branch: cluster-migration
   secretRef:
     name: flux-system
-  url: https://github.com/Joker9944/k8s-config.git
+  url: ssh://git@github.com/joker9944/k8s-config
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
