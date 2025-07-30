@@ -53,11 +53,6 @@ spec:
         enabled: true
         format: json
 
-    tlsStore:
-        default:
-          defaultCertificate:
-            secretName: wildcard-vonarx-online
-
     service:
       annotations:
         metallb.universe.tf/loadBalancerIPs: 192.168.178.210
