@@ -2,4 +2,3 @@ machine:
   time:
     servers:
       - ${NTP}
-
