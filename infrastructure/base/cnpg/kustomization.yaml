@@ -7,10 +7,7 @@ namespace: cnpg
 resources:
   - manifests/namespace.yaml
   - flux/helm-repository.yaml
-  - flux/git-repository.yaml
   - flux/helm-release.yaml
-  - flux/container-sync.yaml
-  - https://raw.githubusercontent.com/cloudnative-pg/postgres-containers/dff09fc22b5fc85df69f70a2776d51cf1235031b/Debian/ClusterImageCatalog-bullseye.yaml # TODO use kustomization https://github.com/cloudnative-pg/postgres-containers/pull/118
 
 components:
   - ../../../components/common-kustomizeconfig
