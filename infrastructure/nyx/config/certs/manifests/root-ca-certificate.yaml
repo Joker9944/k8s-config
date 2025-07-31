@@ -11,5 +11,5 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: Issuer
-    name: nyx-root-ca
+    name: trust-manager
   secretName: nyx-root-ca-cert
