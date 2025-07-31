@@ -10,16 +10,6 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: trust-manager
-spec:
-  path: ./infrastructure/base/trust-manager
-  dependsOn:
-    - name: cert-manager
-
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
   name: certs-config
 spec:
   path: ./infrastructure/nyx/config/certs
@@ -33,16 +23,15 @@ spec:
     - apiVersion: v1
       kind: Secret
       name: nyx-root-ca-cert
-      namespace: trust-manager
+      namespace: cert-manager
 
     - apiVersion: v1
       kind: Secret
       name: nyx-intermediate-ca-cert
-      namespace: trust-manager
+      namespace: cert-manager
 
   dependsOn:
     - name: cert-manager
-    - name: trust-manager
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
