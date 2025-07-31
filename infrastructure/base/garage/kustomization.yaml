@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: garage
 
 resources:
+  - manifests/namespace.yaml
   - flux/git-repository.yaml
   - flux/helm-repository.yaml
   - flux/helm-release.yaml
