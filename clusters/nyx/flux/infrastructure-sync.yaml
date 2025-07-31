@@ -11,6 +11,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -24,22 +25,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: config
-  namespace: flux-system
-spec:
-  interval: 30m
-  path: ./infrastructure/nyx/config
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  dependsOn:
-    - name: controllers
-    - name: plugins
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -54,7 +40,8 @@ spec:
     kind: GitRepository
     name: flux-system
   dependsOn:
-    - name: config
+    - name: controllers
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -69,7 +56,8 @@ spec:
     kind: GitRepository
     name: flux-system
   dependsOn:
-    - name: config
+    - name: controllers
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -84,4 +72,4 @@ spec:
     kind: GitRepository
     name: flux-system
   dependsOn:
-    - name: config
+    - name: controllers
