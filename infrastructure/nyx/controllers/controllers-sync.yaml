@@ -23,6 +23,23 @@ metadata:
   name: certs-config
 spec:
   path: ./infrastructure/nyx/config/certs
+
+  healthChecks:
+    - apiVersion: v1
+      kind: Secret
+      name: wildcard-vonarx-online-cert
+      namespace: cert-manager
+
+    - apiVersion: v1
+      kind: Secret
+      name: nyx-root-ca-cert
+      namespace: trust-manager
+
+    - apiVersion: v1
+      kind: Secret
+      name: nyx-intermediate-ca-cert
+      namespace: trust-manager
+
   dependsOn:
     - name: cert-manager
     - name: trust-manager

@@ -17,6 +17,7 @@ spec:
     namespaceSelector:
       matchLabels:
         vonarx.online/distribute-nyx-ca-cert-bundle: 'true'
+
 ---
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle

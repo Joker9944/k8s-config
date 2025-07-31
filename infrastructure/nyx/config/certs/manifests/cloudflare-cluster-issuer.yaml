@@ -10,13 +10,12 @@ spec:
       name: cloudflare-production-account-key
     server: https://acme-v02.api.letsencrypt.org/directory
     solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cloudflare-api-token
-            namespace: cert-manager
-            key: token
-          email: postmaster@vonarx.online
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: token
+            email: postmaster@vonarx.online
 
 ---
 apiVersion: cert-manager.io/v1
@@ -30,10 +29,9 @@ spec:
       name: cloudflare-staging-account-key
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cloudflare-api-token
-            namespace: cert-manager
-            key: token
-          email: postmaster@vonarx.online
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: token
+            email: postmaster@vonarx.online
