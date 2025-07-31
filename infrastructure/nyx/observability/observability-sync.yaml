@@ -23,5 +23,5 @@ metadata:
   name: loki
 spec:
   path: ./infrastructure/base/loki
-dependsOn:
-  - name: garage
+  dependsOn:
+    - name: garage
