@@ -5,8 +5,8 @@ metadata:
   name: alloy
 spec:
   path: ./infrastructure/base/alloy
-dependsOn:
-  - name: loki
+  dependsOn:
+    - name: loki
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
