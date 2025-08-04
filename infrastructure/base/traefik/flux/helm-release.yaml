@@ -55,7 +55,7 @@ spec:
 
     service:
       annotations:
-        metallb.universe.tf/loadBalancerIPs: 192.168.178.210
+        metallb.universe.tf/loadBalancerIPs: 192.168.0.128
       spec:
         externalTrafficPolicy: Local
 
