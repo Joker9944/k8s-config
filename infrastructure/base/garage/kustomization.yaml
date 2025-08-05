@@ -7,13 +7,13 @@ namespace: garage
 resources:
   - manifests/namespace.yaml
   - flux/git-repository.yaml
-  - flux/helm-repository.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
   - ../../../components/common-middlewares
   - ../../../components/namespace-cert-garage
+  - ../../../components/bjw-s-helm-repository
 
 configMapGenerator:
 

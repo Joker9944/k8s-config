@@ -6,8 +6,8 @@ namespace: generic-device-plugin
 
 resources:
   - manifests/namespace.yaml
-  - flux/helm-repository.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
+  - ../../../components/bjw-s-helm-repository

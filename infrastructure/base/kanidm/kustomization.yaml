@@ -5,13 +5,13 @@ namespace: kanidm
 
 resources:
   - manifests/namespace.yaml
-  - flux/helm-repository.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
   - ../../../components/common-middlewares
   - ../../../components/namespace-cert-kanidm
+  - ../../../components/bjw-s-helm-repository
 
 secretGenerator:
   - name: kanidm-secret-values
