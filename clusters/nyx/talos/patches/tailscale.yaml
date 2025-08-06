@@ -1,0 +1,8 @@
+machine:
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - ${ADDRESS_SPACE}
+  network:
+    nameservers:
+      - ${NS_TAILSCALE_IP}

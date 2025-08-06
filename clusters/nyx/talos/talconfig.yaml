@@ -8,11 +8,12 @@ endpoint: https://${VIP}:6443
 nodes:
 
   - hostname: nyx-hybrid-1
-    ipAddress: ${HYBRID_1_IP}
+    ipAddress: nyx-hybrid-1.${TAILNET_NAME}
     controlPlane: true
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - interface: enp2s0
+        dhcp: false
         addresses:
           - ${HYBRID_1_IP}/23
         routes:
@@ -26,21 +27,15 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
-            - siderolabs/util-linux-tools
-            - siderolabs/realtek-firmware
+            - siderolabs/iscsi-tools # required for longhorn
+            - siderolabs/util-linux-tools # required for longhorn
+            - siderolabs/tailscale
     patches:
-      - '@patches/hybrid.yaml'
+      - '@patches/control-plane-hybrid.yaml'
       - '@patches/longhorn.yaml'
-      - |-
-        machine:
-          kubelet:
-            nodeIP:
-              validSubnets:
-                - ${HYBRID_1_IP}/32
     nodeLabels:
-      vonarx.online/cpu-capacity: '6'
-      vonarx.online/cpu-performance: high
+      vonarx.online/cpu-capacity: '12'
+      vonarx.online/cpu-performance: low
       vonarx.online/memory-capacity: '31929'
       vonarx.online/memory-performance: high
 
@@ -50,6 +45,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - interface: enp2s0
+        dhcp: false
         addresses:
           - ${HYBRID_2_IP}/23
         routes:
@@ -63,18 +59,13 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
-            - siderolabs/util-linux-tools
             - siderolabs/realtek-firmware
+            - siderolabs/iscsi-tools # required for longhorn
+            - siderolabs/util-linux-tools # required for longhorn
+            - siderolabs/tailscale
     patches:
-      - '@patches/hybrid.yaml'
+      - '@patches/control-plane-hybrid.yaml'
       - '@patches/longhorn.yaml'
-      - |-
-        machine:
-          kubelet:
-            nodeIP:
-              validSubnets:
-                - ${HYBRID_2_IP}/32
     nodeLabels:
       vonarx.online/cpu-capacity: '6'
       vonarx.online/cpu-performance: high
@@ -87,6 +78,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - interface: enp2s0
+        dhcp: false
         addresses:
           - ${HYBRID_3_IP}/23
         routes:
@@ -100,18 +92,13 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
-            - siderolabs/util-linux-tools
             - siderolabs/realtek-firmware
+            - siderolabs/iscsi-tools # required for longhorn
+            - siderolabs/util-linux-tools # required for longhorn
+            - siderolabs/tailscale
     patches:
-      - '@patches/hybrid.yaml'
+      - '@patches/control-plane-hybrid.yaml'
       - '@patches/longhorn.yaml'
-      - |-
-        machine:
-          kubelet:
-            nodeIP:
-              validSubnets:
-                - ${HYBRID_3_IP}/32
     nodeLabels:
       vonarx.online/cpu-capacity: '6'
       vonarx.online/cpu-performance: high
@@ -119,11 +106,12 @@ nodes:
       vonarx.online/memory-performance: high
 
   - hostname: nyx-worker-1
-    ipAddress: ${WORKER_1_IP}
+    ipAddress: nyx-worker-1.${TAILNET_NAME}
     controlPlane: false
     installDisk: /dev/vda
     networkInterfaces:
-      - interface: enp5s0
+      - interface: ens3
+        dhcp: false
         addresses:
           - ${WORKER_1_IP}/23
         routes:
@@ -133,17 +121,19 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/iscsi-tools
-            - siderolabs/util-linux-tools
+            - siderolabs/qemu-guest-agent
             - siderolabs/nonfree-kmod-nvidia-production
             - siderolabs/nvidia-container-toolkit-production
+            - siderolabs/iscsi-tools # required for longhorn
+            - siderolabs/util-linux-tools # required for longhorn
+            - siderolabs/tailscale
     patches:
       - '@patches/nvidia.yaml'
       - '@patches/longhorn.yaml'
     nodeLabels:
       vonarx.online/nfs-host: 'true'
       vonarx.online/s3-host: 'true'
-      vonarx.online/cpu-capacity: '6'
+      vonarx.online/cpu-capacity: '4'
       vonarx.online/cpu-performance: low
       vonarx.online/memory-capacity: '15972'
       vonarx.online/memory-performance: high
@@ -157,16 +147,14 @@ controlPlane:
     - '@patches/ntp.yaml'
     - '@patches/logging.yaml'
     - '@patches/kube-proxy-metrics.yaml'
+    - '@patches/tailscale.yaml'
+    - '@patches/control-plane-tailscale.yaml'
   extensionServices:
     - name: tailscale
       environment:
         - TS_STATE_DIR=/var/lib/tailscale
-        - TS_ROUTES=${VIP}/32
-  schematic:
-    customization:
-      systemExtensions:
-        officialExtensions:
-          - siderolabs/tailscale
+        - TS_ROUTES=${VIP}/32,${LOAD_BALANCER_SPACE}
+
 worker:
   nameservers:
     - ${GATEWAY_IP}
@@ -176,9 +164,9 @@ worker:
     - '@patches/ntp.yaml'
     - '@patches/logging.yaml'
     - '@patches/kube-proxy-metrics.yaml'
-  schematic:
-    customization:
-      systemExtensions:
-        officialExtensions:
-          - siderolabs/iscsi-tools
-          - siderolabs/util-linux-tools
+    - '@patches/tailscale.yaml'
+  extensionServices:
+    - name: tailscale
+      environment:
+        - TS_STATE_DIR=/var/lib/tailscale
+        - TS_ROUTES=${VIP}/32,${LOAD_BALANCER_SPACE}
