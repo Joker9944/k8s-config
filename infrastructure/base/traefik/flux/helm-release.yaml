@@ -52,6 +52,9 @@ spec:
       access:
         enabled: true
         format: json
+        fields:
+          headers:
+            defaultmode: keep
 
     service:
       annotations:
