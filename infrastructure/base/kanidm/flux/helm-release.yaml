@@ -57,20 +57,20 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+                    command: [/sbin/kanidmd, healthcheck]
                   failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+                    command: [/sbin/kanidmd, healthcheck]
               startup:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck, -c, /data/server.toml]
+                    command: [/sbin/kanidmd, healthcheck]
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
