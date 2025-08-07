@@ -154,6 +154,7 @@ controlPlane:
       environment:
         - TS_STATE_DIR=/var/lib/tailscale
         - TS_ROUTES=${VIP}/32,${LOAD_BALANCER_SPACE}
+        - TS_EXTRA_ARGS=--snat-subnet-routes=false
 
 worker:
   nameservers:
@@ -170,3 +171,4 @@ worker:
       environment:
         - TS_STATE_DIR=/var/lib/tailscale
         - TS_ROUTES=${VIP}/32,${LOAD_BALANCER_SPACE}
+        - TS_EXTRA_ARGS=--snat-subnet-routes=false
