@@ -62,7 +62,7 @@
               alias garage="kubectl exec --tty --stdin --namespace garage garage-0 -c garage -- ./garage"
 
               # Setup env variables
-              export TALOSCONFIG=$(pwd)/clusters/nyx/talos/clusterconfig/talosconfig
+              export TALOSCONFIG="$PWD/clusters/nyx/talos/clusterconfig/talosconfig"
             '';
           };
 

@@ -4,6 +4,7 @@ kind: Kustomization
 metadata:
   name: generic-device-plugin
 spec:
+  suspend: true
   path: ./infrastructure/base/generic-device-plugin
 
 ---
