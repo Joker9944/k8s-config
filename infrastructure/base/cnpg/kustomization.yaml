@@ -8,6 +8,7 @@ resources:
   - manifests/namespace.yaml
   - flux/helm-repository.yaml
   - flux/helm-release.yaml
+  - https://github.com/cloudnative-pg/plugin-barman-cloud/releases/download/v0.7.0/manifest.yaml # Barman Cloud CNPG-I plugin
 
 components:
   - ../../../components/common-kustomizeconfig
