@@ -56,21 +56,17 @@ spec:
               PROWLARR__AUTH__REQUIRED: Enabled
               PROWLARR__SERVER__PORT: &port_http 9696
               PROWLARR__LOG__LEVEL: info
-              PROWLARR__POSTGRES__HOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: cnpg-user-prowlarr-user
-                    key: HOST
+              PROWLARR__POSTGRES__HOST: servarr-cnpg-rw
               PROWLARR__POSTGRES__USER:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-prowlarr-user
-                    key: ROLE
+                    name: prowlarr-cnpg-user
+                    key: username
               PROWLARR__POSTGRES__PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-prowlarr-user
-                    key: PASSWORD
+                    name: prowlarr-cnpg-user
+                    key: password
               PROWLARR__POSTGRES__MAINDB: prowlarr-main
               PROWLARR__POSTGRES__LOGDB: prowlarr-log
             probes:
@@ -118,24 +114,19 @@ spec:
               repository: ghcr.io/joker9944/postgresql-client
               tag: 3.22.1@sha256:2abc863c18410f993895afdc138cd9e19e36b5ff66fe1ce8eb95b93997fc2a83
             env:
-              PGHOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: servarr-cnpg-superuser
-                    key: host
+              PGHOST: servarr-cnpg-r
               PGUSER:
                 valueFrom:
                   secretKeyRef:
-                    name: servarr-cnpg-superuser
-                    key: user
+                    name: prowlarr-cnpg-user
+                    key: username
               PGPASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: servarr-cnpg-superuser
+                    name: prowlarr-cnpg-user
                     key: password
               MAIN_DATABASE: prowlarr-main
               LOG_DATABASE: prowlarr-log
-              DATABASE_ROLE: prowlarr-main-group
             command: [/bin/sh, -c]
             args:
               - |
@@ -146,9 +137,6 @@ spec:
                   do sleep 5
                 done
                 echo "DB $MAIN_DATABASE and $LOG_DATABASE available on $HOST"
-                echo "Changing owner of the $LOG_DATABASE database on $HOST"
-                psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
-                psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -194,30 +182,24 @@ spec:
     rawResources:
 
       main:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: Postgres
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Database
         spec:
           spec:
-            database: prowlarr-main
-            dropOnDelete: false
+            name: prowlarr-main
+            owner: prowlarr
+            cluster:
+              name: servarr-cnpg
 
       log:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: Postgres
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Database
         spec:
           spec:
-            database: prowlarr-log
-            dropOnDelete: false
-
-      user:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: PostgresUser
-        spec:
-          spec:
-            role: prowlarr
-            database: prowlarr-main
-            secretName: cnpg-user
-            privileges: OWNER
+            name: prowlarr-log
+            owner: prowlarr
+            cluster:
+              name: servarr-cnpg
 
       oidc:
         apiVersion: traefik.io/v1alpha1

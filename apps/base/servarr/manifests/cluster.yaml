@@ -44,3 +44,10 @@ spec:
         parameters:
           barmanObjectName: storj
           serverName: servarr-cnpg-restored-5
+
+  managed:
+    roles:
+      - name: prowlarr
+        login: true
+        passwordSecret:
+          name: prowlarr-cnpg-user
