@@ -1,0 +1,15 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: cnpg-artifacts
+spec:
+  interval: 5m
+  url: https://github.com/cloudnative-pg/artifacts
+  ref:
+    branch: main
+  ignore: |-
+    # exclude all
+    /*
+    # include image catalogs
+    !/image-catalogs

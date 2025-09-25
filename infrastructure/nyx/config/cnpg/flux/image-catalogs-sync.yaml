@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg-image-catalogs
+spec:
+  interval: 30m
+  path: ./image-catalogs
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: cnpg-artifacts
