@@ -7,5 +7,3 @@ namespace: cnpg
 resources:
   - flux/git-repository.yaml
   - flux/image-catalogs-sync.yaml
-  # TODO use kustomization https://github.com/cloudnative-pg/postgres-containers/pull/118
-  - https://raw.githubusercontent.com/cloudnative-pg/postgres-containers/refs/heads/main/Debian/ClusterImageCatalog-bullseye.yaml

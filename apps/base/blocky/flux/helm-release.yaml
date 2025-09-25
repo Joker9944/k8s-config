@@ -201,16 +201,26 @@ spec:
           spec:
             description: PostgreSQL Cluster for blocky
             instances: 3
+
+            imageCatalogRef:
+              apiGroup: postgresql.cnpg.io
+              kind: ClusterImageCatalog
+              name: postgresql-standard-trixie
+              major: 17
+
             storage:
               size: 1Gi
               storageClass: longhorn-local-strict
+
             walStorage:
               size: 1Gi
               storageClass: longhorn-local-strict
+
             bootstrap:
               initdb:
                 database: query-log
                 owner: blocky
+
             affinity:
               enablePodAntiAffinity: true
               podAntiAffinityType: required
