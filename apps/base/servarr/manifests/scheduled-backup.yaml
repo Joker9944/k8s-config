@@ -8,3 +8,6 @@ spec:
   cluster:
     name: servarr-cnpg
   backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

@@ -1,0 +1,18 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: storj
+spec:
+  retentionPolicy: 30d
+  configuration:
+    destinationPath: s3://k8s-cnpg-backup
+    endpointURL: https://gateway.storjshare.io
+    s3Credentials:
+      accessKeyId:
+        name: backup-s3-credentials
+        key: accessKey
+      secretAccessKey:
+        name: backup-s3-credentials
+        key: secretKey
+    wal:
+      compression: gzip

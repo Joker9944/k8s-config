@@ -6,6 +6,7 @@ namespace: servarr
 resources:
   - manifests/namespace.yaml
   - manifests/secret.yaml
+  - manifests/object-store.yaml
   - manifests/cluster.yaml
   - manifests/scheduled-backup.yaml
   - manifests/helm-repository.yaml
