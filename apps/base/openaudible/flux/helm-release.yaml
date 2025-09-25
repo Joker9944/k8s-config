@@ -1,0 +1,185 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openaudible
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.7.3
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  valuesFrom:
+    - kind: Secret
+      name: openaudible-secret-values
+
+  values:
+
+    controllers:
+      openaudible:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsNonRoot: false
+            fsGroup: &GUID 6000
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups: [568]
+            seccompProfile:
+              type: RuntimeDefault
+
+          nodeSelector:
+            kubernetes.io/arch: amd64
+
+        containers:
+          openaudible:
+            image:
+              repository: ghcr.io/lanjelin/openaudible-docker
+              tag: 4.6.3@sha256:e2d9199c4a75d8f2bd24359a0e26594f219e9e7e8b1f19429582433b4d6a5ffa
+            env:
+              CUSTOM_PORT: &port_http 3000
+              UMASK: 0002
+              PUID: &PUID 6012
+              PGID: *GUID
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/sh, -c, '/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true']
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/sh, -c, '/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true']
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/sh, -c, '/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true']
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 70m
+                memory: 700Mi
+              limits:
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                add:
+                  - CHOWN
+                  - SETUID
+                  - SETGID
+                  - FOWNER
+                  - DAC_OVERRIDE
+                drop:
+                  - ALL
+
+    service:
+      openaudible:
+        controller: openaudible
+        ports:
+          http:
+            port: *port_http
+
+    ingress:
+      openaudible:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
+          traefik.ingress.kubernetes.io/router.middlewares: openaudible-chain-network-internal-whitelist@kubernetescrd
+        hosts:
+          - host: &host openaudible.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: openaudible
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: &pvc_config_size 500Mi
+        dataSourceRef:
+          apiGroup: volsync.backube
+          kind: ReplicationDestination
+          name: openaudible-dest-config
+        globalMounts:
+          - path: /config/OpenAudible
+      media:
+        type: nfs
+        server: 192.168.0.10
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /config/.cache
+      tmp:
+        type: emptyDir
+
+    rawResources:
+
+      dest-config:
+        enabled: false
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: openaudible-restic-config
+              accessModes: [ ReadWriteOnce ]
+              capacity: *pvc_config_size
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: &snapshot_class longhorn
+
+      source-config:
+        enabled: true
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: openaudible-config
+            trigger:
+              schedule: '@daily'
+            restic:
+              repository: openaudible-restic-config
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              copyMethod: Clone
+              storageClassName: longhorn-local-lax
+              cacheStorageClassName: longhorn
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID

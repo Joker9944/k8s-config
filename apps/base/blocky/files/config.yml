@@ -1,0 +1,123 @@
+ports:
+  tls: 853
+  http: 4000
+
+log:
+  level: info
+  timestamp: true
+
+upstreams:
+  groups:
+    default:
+      - https://1.1.1.1/dns-query
+      - https://1.0.0.1/dns-query
+
+blocking:
+
+  denylists:
+    advertisement:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+      - https://blocklistproject.github.io/Lists/ads.txt
+
+    tracking:
+      - https://blocklistproject.github.io/Lists/tracking.txt
+
+    social:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
+      - https://blocklistproject.github.io/Lists/facebook.txt
+      - https://blocklistproject.github.io/Lists/tiktok.txt
+
+    gambling:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-only/hosts
+      - https://blocklistproject.github.io/Lists/gambling.txt
+
+    abuse:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-only/hosts
+      - https://blocklistproject.github.io/Lists/abuse.txt
+      - https://blocklistproject.github.io/Lists/crypto.txt
+      - https://blocklistproject.github.io/Lists/fraud.txt
+      - https://blocklistproject.github.io/Lists/malware.txt
+      - https://blocklistproject.github.io/Lists/phishing.txt
+      - https://blocklistproject.github.io/Lists/ransomware.txt
+      - https://blocklistproject.github.io/Lists/scam.txt
+
+  allowlists:
+    advertisement:
+      - | # Google Maps
+        clients2.google.com
+        clients4.google.com
+
+      - | # YouTube History
+        s.youtube.com
+        video-stats.l.google.com
+
+      - | # Google Play
+        android.clients.google.com
+
+      - | # Android TV
+        redirector.gvt1.com
+
+      - | # MS Teams
+        *.giphy.com
+
+    social:
+      - | # Instagram
+        www.instagram.com
+        static.cdninstagram.com
+        instagram.fzrh3-1.fna.fbcdn.net
+        graphql.instagram.com
+        scontent.cdninstagram.com
+
+      - | # Reddit
+        reddit.com
+        www.reddit.com
+        www.redditstatic.com
+        styles.redditmedia.com
+        *.redd.it
+        reddit.map.fastly.net
+
+      - | # LinkedIn
+        www.linkedin.com
+        brand.linkedin.com
+        content.linkedin.com
+        platform.linkedin.com
+        static.licdn.com
+        media.licdn.com
+
+      - | # TikTok
+        www.tiktok.com
+        vm.tiktok.com
+
+      - | # Twitter
+        twitter.com
+        x.com
+        *.twimg.com
+
+  clientGroupsBlock:
+    default:
+      - advertisement
+      - tracking
+      - social
+      - gambling
+      - abuse
+
+  blockType: nxDomain
+
+caching:
+  prefetching: false
+  prefetchExpires: 12h
+
+redis:
+  address: "blocky-redis-master.{{ environ('KUBERNETES_NAMESPACE') }}:6379"
+  password: "{{ environ('REDIS_PASSWORD') }}"
+  required: true
+  connectionAttempts: 10
+  connectionCooldown: 3s
+
+prometheus:
+  enable: true
+
+queryLog:
+  type: postgresql
+  target: "{{ environ('PGURI') }}"
+  logRetentionDays: 30

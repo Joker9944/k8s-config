@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: blocky
+
+resources:
+  - manifests/namespace.yaml
+  - flux/helm-repository.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/bjw-s-helm-repository
+
+configMapGenerator:
+  - name: blocky-config-templates
+    files:
+      - config.yml=files/config.yml
+
+configurations:
+  - kustomize/kustomization-hack.yaml

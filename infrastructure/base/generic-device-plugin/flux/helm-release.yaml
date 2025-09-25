@@ -1,0 +1,77 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: generic-device-plugin
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.7.3
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  values:
+
+    controllers:
+
+      generic-device-plugin:
+        type: daemonset
+
+        pod:
+          securityContext:
+            runAsNonRoot: false
+            seccompProfile:
+              type: RuntimeDefault
+          tolerations:
+            - operator: "Exists"
+              effect: "NoExecute"
+            - operator: "Exists"
+              effect: "NoSchedule"
+          priorityClassName: system-node-critical
+
+        containers:
+
+          generic-device-plugin:
+            image:
+              repository: squat/generic-device-plugin
+              tag: latest@sha256:e18ea28fb0f6d3db05b8b98fb0e5676dea20bdd5a9e6c67de0b3e7ebaf249f7c
+            resources:
+              requests:
+                cpu: 50m
+                memory: 10Mi
+              limits:
+                cpu: 50m
+                memory: 20Mi
+            args:
+              - --device
+              - |
+                name: tun
+                groups:
+                  - count: 1000
+                    paths:
+                      - path: /dev/net/tun
+            securityContext:
+              privileged: true
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    persistence:
+
+      device-plugin:
+        type: hostPath
+        hostPath: /var/lib/kubelet/device-plugins
+        globalMounts:
+          - path: /var/lib/kubelet/device-plugins
+
+      dev:
+        type: hostPath
+        hostPath: /dev
+        globalMounts:
+          - path: /dev

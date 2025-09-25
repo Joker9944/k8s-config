@@ -1,0 +1,14 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: nvidia-device-plugin
+
+resources:
+  - manifests/namespace.yaml
+  - manifests/runtime-class.yaml
+  - flux/helm-repository.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig

@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: pgadmin
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: pgadmin4
+      version: 1.50.0
+      interval: 5m
+      sourceRef:
+        kind: HelmRepository
+        name: runix
+
+  valuesFrom:
+    - kind: Secret
+      name: pgadmin-secret-values
+
+  values:
+
+    serverDefinitions:
+      enabled: true
+      servers:
+
+        blocky:
+          Name: Blocky
+          Group: Servers
+          Host: blocky-cnpg-rw.blocky.svc.cluster.local
+          Port: 5432
+          Username: blocky
+          SSLMode: prefer
+          MaintenanceDB: postgres
+
+        servarr:
+          Name: Servarr
+          Group: Servers
+          Host: servarr-cnpg-rw.servarr.svc.cluster.local
+          Port: 5432
+          Username: postgres
+          SSLMode: prefer
+          MaintenanceDB: postgres
+
+        nextcloud:
+          Name: Nextcloud
+          Group: Servers
+          Host: nextcloud-cnpg-rw.nextcloud.svc.cluster.local
+          Port: 5432
+          Username: nextcloud
+          SSLMode: prefer
+          MaintenanceDB: postgres
+
+    ingress:
+      enabled: true
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.middlewares: pgadmin-chain-network-internal-whitelist@kubernetescrd
+      hosts:
+        - host: &host pgadmin.vonarx.online
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: wildcard-vonarx-online
+          hosts:
+            - *host
+
+    persistentVolume:
+      enabled: false
+
+    networkPolicy:
+      enabled: false

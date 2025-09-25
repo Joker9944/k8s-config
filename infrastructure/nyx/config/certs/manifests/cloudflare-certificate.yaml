@@ -1,0 +1,21 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-vonarx-online
+  namespace: cert-manager
+spec:
+  dnsNames:
+    - vonarx.online
+    - '*.vonarx.online'
+    - '*.s3.vonarx.online'
+    - '*.web.vonarx.online'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: cloudflare-production
+  secretName: wildcard-vonarx-online-cert
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: 'true'
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: 'true'

@@ -1,0 +1,9 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: nyx-root-ca
+  namespace: cert-manager
+spec:
+  ca:
+    secretName: nyx-root-ca-cert

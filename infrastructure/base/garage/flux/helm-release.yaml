@@ -1,0 +1,75 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: script/helm/garage
+      sourceRef:
+        kind: GitRepository
+        name: garage
+      interval: 30m
+
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  values:
+
+    garage:
+
+        s3:
+          api:
+            region: nyx
+            rootDomain: '.s3.vonarx.online'
+          web:
+            rootDomain: '.web.vonarx.online'
+
+    persistence:
+      meta:
+        storageClass: longhorn-local-strict
+        size: 6Gi
+      data:
+        storageClass: longhorn-local-strict
+        size: 60Gi
+
+    ingress:
+      s3:
+        api:
+          enabled: true
+
+          annotations:
+            traefik.ingress.kubernetes.io/router.tls: 'true'
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-country-whitelist@kubernetescrd
+
+          hosts:
+            - host: &host_s3_root s3.vonarx.online
+              paths:
+                - path: /
+                  pathType: Prefix
+            - host: &host_s3_wildcard '*.s3.vonarx.online'
+              paths:
+                - path: /
+                  pathType: Prefix
+
+          tls:
+            - hosts:
+                - *host_s3_root
+                - *host_s3_wildcard
+              secretName: wildcard-vonarx-online-cert
+
+    monitoring:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true

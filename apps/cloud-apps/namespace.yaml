@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ${main_namespace}
-  labels:
-    vonarx.online/distribute-nyx-ca-cert-bundle: 'true'
-    vonarx.online/distribute-public-nyx-ca-cert-bundle: 'true'
-  annotations:
-    volsync.backube/privileged-movers: 'true'

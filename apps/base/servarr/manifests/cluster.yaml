@@ -1,0 +1,55 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: servarr-cnpg
+spec:
+  description: PostgreSQL Cluster for the Servarr family of apps
+  instances: 3
+  enableSuperuserAccess: true
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    name: postgresql
+    major: 16
+  storage:
+    size: 2Gi
+    storageClass: longhorn-local-strict
+  walStorage:
+    size: 2Gi
+    storageClass: longhorn-local-strict
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+
+  bootstrap:
+    recovery:
+      source: clusterBackup
+
+  backup:
+    retentionPolicy: 30d
+    barmanObjectStore:
+      serverName: servarr-cnpg
+      destinationPath: s3://k8s-cnpg-backup
+      endpointURL: https://gateway.storjshare.io
+      s3Credentials:
+        accessKeyId:
+          name: backup-s3-credentials
+          key: accessKey
+        secretAccessKey:
+          name: backup-s3-credentials
+          key: secretKey
+
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        serverName: servarr-cnpg-restored-5
+        destinationPath: s3://k8s-cnpg-backup
+        endpointURL: https://gateway.storjshare.io
+        s3Credentials:
+          accessKeyId:
+            name: backup-s3-credentials
+            key: accessKey
+          secretAccessKey:
+            name: backup-s3-credentials
+            key: secretKey

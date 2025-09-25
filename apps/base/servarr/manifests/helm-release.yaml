@@ -1,0 +1,66 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: servarr-postgres-operator
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ext-postgres-operator
+      version: 1.2.7
+      sourceRef:
+        kind: HelmRepository
+        name: postgres-operator
+        namespace: flux-system
+      interval: 5m
+
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  values:
+
+    # TODO Using this operator as a workaround for microservice db
+    # https://github.com/orgs/cloudnative-pg/projects/1?pane=issue&itemId=3828782
+    watchNamespace: servarr
+    existingSecret: dummy
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: servarr-postgres-operator-ext-postgres-operator
+                namespace: servarr
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: ext-postgres-operator
+                        envFrom: null
+                        env:
+                          - name: POSTGRES_HOST
+                            value: servarr-cnpg-rw
+                          - name: POSTGRES_USER
+                            valueFrom:
+                              secretKeyRef:
+                                name: servarr-cnpg-superuser
+                                key: username
+                          - name: POSTGRES_PASS
+                            valueFrom:
+                              secretKeyRef:
+                                name: servarr-cnpg-superuser
+                                key: password
+                          - name: POSTGRES_URI_ARGS
+                            value:
+                          - name: POSTGRES_DEFAULT_DATABASE
+                            value: postgres

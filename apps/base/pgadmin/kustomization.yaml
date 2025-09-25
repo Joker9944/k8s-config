@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pgadmin
+
+resources:
+  - manifests/namespace.yaml
+  - flux/helm-repository.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/common-middlewares
+
+secretGenerator:
+  - name: pgadmin-secret-values
+    files:
+      - values.yaml=values/secret-values.sops.yaml

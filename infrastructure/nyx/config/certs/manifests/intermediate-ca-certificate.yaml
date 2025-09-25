@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nyx-intermediate-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: Nyx Intermediate R1
+  duration: 6480h # 270 days
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: nyx-root-ca
+  secretName: nyx-intermediate-ca-cert

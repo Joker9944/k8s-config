@@ -1,0 +1,32 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: longhorn-system
+
+resources:
+  - manifests/namespace.yaml
+  - flux/git-repository.yaml
+  - flux/snapshot-sync.yaml
+  - flux/helm-repository.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/common-middlewares
+
+replacements:
+
+  - source:
+      kind: HelmRelease
+      name: longhorn
+      fieldPath: metadata.namespace
+    targets:
+      - select:
+          kind: HelmRelease
+          name: longhorn
+        fieldPaths:
+          - spec.values.ingress.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
+        options:
+          delimiter: '-'
+          index: 0

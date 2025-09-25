@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nyx-root-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: Nyx Root R1
+  duration: 19440h # 810 days
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: trust-manager
+  secretName: nyx-root-ca-cert

@@ -1,0 +1,130 @@
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-basic
+spec:
+  chain:
+    middlewares:
+      - name: basic-ratelimit
+      - name: basic-secure-headers
+      - name: compress
+
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-ratelimit
+spec:
+  rateLimit:
+    average: 600
+    burst: 400
+
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: basic-secure-headers
+spec:
+  headers:
+    accessControlAllowMethods:
+      - GET
+      - OPTIONS
+      - HEAD
+      - PUT
+    accessControlMaxAge: 100
+    browserXssFilter: true
+    contentTypeNosniff: true
+    customRequestHeaders:
+      X-Forwarded-Proto: https
+    customResponseHeaders:
+      server: ""
+    forceSTSHeader: true
+    referrerPolicy: same-origin
+    stsSeconds: 63072000
+
+---
+# Middleware ported from TrueCharts Traefik chart.
+# Keeping this so not to break compatibility with other TrueCharts charts.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+spec:
+  compress: {}
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: network-internal-whitelist
+spec:
+  ipAllowList:
+    ipStrategy:
+      depth: 0
+    sourceRange:
+        # link-local
+      - 192.168.1.0/23
+      - fe80::/10
+        # tailscale
+      - 100.0.0.0/8
+      - fd7a:115c:a1e0::/48
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-network-internal-whitelist
+spec:
+  chain:
+    middlewares:
+      - name: network-internal-whitelist
+      - name: basic-ratelimit
+      - name: basic-secure-headers
+      - name: compress
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: country-whitelist
+spec:
+  plugin:
+    geoblock:
+      silentStartUp: true
+      allowLocalRequests: true
+      allowUnknownCountries: false
+      api: https://get.geojs.io/v1/ip/country/{ip}
+      apiTimeoutMs: 500
+      blackListMode: false
+      cacheSize: 25
+      countries:
+        - CH
+        - DK
+      forceMonthlyUpdate: true
+      logAllowedRequests: false
+      logApiRequests: false
+      logLocalRequests: false
+      unknownCountryApiResponse: nil
+      allowedIPAddresses:
+        - 100.0.0.0/8
+        - fd7a:115c:a1e0::/48
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-country-whitelist
+spec:
+  chain:
+    middlewares:
+      - name: country-whitelist
+      - name: basic-ratelimit
+      - name: basic-secure-headers
+      - name: compress
