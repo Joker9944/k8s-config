@@ -13,10 +13,10 @@ spec:
     name: postgresql
     major: 16
   storage:
-    size: 2Gi
+    size: 3Gi
     storageClass: longhorn-local-strict
   walStorage:
-    size: 2Gi
+    size: 3Gi
     storageClass: longhorn-local-strict
   affinity:
     enablePodAntiAffinity: true
