@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: garage
+
+resources:
+  - manifests/namespace.yaml
+  - flux/git-repository.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/common-middlewares
+
+replacements:
+
+  - source:
+      kind: HelmRelease
+      name: garage
+      fieldPath: metadata.namespace
+    targets:
+      - select:
+          kind: HelmRelease
+          name: garage
+        fieldPaths:
+          - spec.values.ingress.s3.api.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
+        options:
+          delimiter: '-'
+          index: 0

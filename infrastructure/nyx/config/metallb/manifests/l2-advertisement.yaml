@@ -1,0 +1,12 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: internal
+  namespace: metallb
+spec:
+  ipAddressPools:
+    - internal
+  interfaces:
+    - enp2s0
+    - enp5s0

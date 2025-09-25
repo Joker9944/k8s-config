@@ -1,0 +1,10 @@
+# TODO This is dumb, find a way to DRY this.
+nameReference:
+  - kind: Secret
+    fieldSpecs:
+      - path: spec/valuesFrom/name
+        kind: HelmRelease
+  - kind: ConfigMap
+    fieldSpecs:
+      - path: spec/valuesFrom/name
+        kind: HelmRelease

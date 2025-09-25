@@ -1,0 +1,112 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+spec:
+  path: ./infrastructure/base/cert-manager
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: certs-config
+spec:
+  path: ./infrastructure/nyx/config/certs
+
+  healthChecks:
+    - apiVersion: cert-manager.io/v1
+      kind: Certificate
+      name: wildcard-vonarx-online
+      namespace: cert-manager
+
+    - apiVersion: cert-manager.io/v1
+      kind: Certificate
+      name: nyx-intermediate-ca
+      namespace: cert-manager
+
+    # TODO healthcheck for bundle
+
+  dependsOn:
+    - name: cert-manager
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: metallb
+spec:
+  path: ./infrastructure/base/metallb
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: metallb-config
+spec:
+  path: ./infrastructure/nyx/config/metallb
+  dependsOn:
+    - name: metallb
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: traefik
+spec:
+  path: ./infrastructure/base/traefik
+  dependsOn:
+    - name: certs-config
+    - name: metallb-config
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn
+spec:
+  path: ./infrastructure/base/longhorn
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: longhorn-config
+spec:
+  path: ./infrastructure/nyx/config/longhorn
+  dependsOn:
+    - name: longhorn
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg
+spec:
+  path: ./infrastructure/base/cnpg
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg-config
+spec:
+  path: ./infrastructure/nyx/config/cnpg
+  dependsOn:
+    - name: cnpg
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: reflector
+spec:
+  path: ./infrastructure/base/reflector
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: volsync
+spec:
+  path: ./infrastructure/base/volsync

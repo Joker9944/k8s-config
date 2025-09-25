@@ -1,0 +1,14 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: garage
+spec:
+  interval: 5m
+  url: https://git.deuxfleurs.fr/Deuxfleurs/garage
+  ref:
+    tag: v2.1.0
+  ignore: |-
+    # exclude all
+    /*
+    # include helm chart
+    !/script/helm/

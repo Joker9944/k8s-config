@@ -1,0 +1,235 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sonarr-standard
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.7.3
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  valuesFrom:
+    - kind: Secret
+      name: sonarr-standard-secret-values
+
+  values:
+
+    controllers:
+
+      sonarr:
+
+        pod:
+          securityContext:
+            runAsUser: &PUID 6006
+            runAsGroup: &GUID 6000
+            runAsNonRoot: true
+            fsGroup: *GUID
+            fsGroupChangePolicy: OnRootMismatch
+            supplementalGroups: [ 568 ]
+            seccompProfile:
+              type: RuntimeDefault
+
+        containers:
+
+          sonarr:
+            image:
+              repository: ghcr.io/onedr0p/sonarr
+              tag: 4.0.14.2938@sha256:f82e69b2d290877b89c2bcae9928df7ed74e05ab3cba905ecaeced85f4f1f2c6
+            env:
+              # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
+              COMPlus_EnableDiagnostics: "0"
+              UMASK: "0002"
+              SONARR__APP__INSTANCENAME: Sonarr Standard
+              SONARR__AUTH__APIKEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: sonarr-standard-api-key
+                    key: key
+              SONARR__AUTH__METHOD: Forms
+              SONARR__AUTH__REQUIRED: Enabled
+              SONARR__SERVER__PORT: &port_http 8989
+              SONARR__LOG__LEVEL: info
+              SONARR__POSTGRES__HOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-standard-user
+                    key: HOST
+              SONARR__POSTGRES__USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-standard-user
+                    key: ROLE
+              SONARR__POSTGRES__PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: cnpg-user-sonarr-standard-user
+                    key: PASSWORD
+              SONARR__POSTGRES__MAINDB: sonarr-standard-main
+              SONARR__POSTGRES__LOGDB: sonarr-standard-log
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *port_http
+                    path: /ping
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 40m
+                memory: 500Mi
+              limits:
+                memory: 700Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+
+          postgresql:
+            image:
+              repository: ghcr.io/joker9944/postgresql-client
+              tag: 3.22.1@sha256:2abc863c18410f993895afdc138cd9e19e36b5ff66fe1ce8eb95b93997fc2a83
+            env:
+              PGHOST:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: host
+              PGUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: user
+              PGPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: servarr-cnpg-superuser
+                    key: password
+              MAIN_DATABASE: sonarr-standard-main
+              LOG_DATABASE: sonarr-standard-log
+              DATABASE_ROLE: sonarr-standard-main-group
+            command: [ /bin/sh, -c ]
+            args:
+              - |
+                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+                until
+                  pg_isready --dbname="$MAIN_DATABASE"
+                  pg_isready --dbname="$LOG_DATABASE"
+                  do sleep 5
+                done
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
+                echo "Changing owner of the $LOG_DATABASE database on $HOST"
+                psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
+                psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+
+      sonarr:
+        controller: sonarr
+        ports:
+          http:
+            port: *port_http
+
+    ingress:
+
+      sonarr:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-network-internal-whitelist@kubernetescrd
+        hosts:
+          - host: &host sonarr-standard.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: sonarr
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online
+
+    persistence:
+
+      config:
+        type: emptyDir
+
+      tmp:
+        type: emptyDir
+
+      media-cover-overlay:
+        type: persistentVolumeClaim
+        retain: false
+        accessMode: ReadWriteMany
+        size: 500Mi
+        globalMounts:
+          - path: /config/MediaCover
+
+      media:
+        type: nfs
+        server: 192.168.0.10
+        path: /mnt/chronos/media-data
+        globalMounts:
+          - path: /mnt/media-data
+
+    rawResources:
+
+      main:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: Postgres
+        spec:
+          spec:
+            database: sonarr-standard-main
+            dropOnDelete: false
+
+      log:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: Postgres
+        spec:
+          spec:
+            database: sonarr-standard-log
+            dropOnDelete: false
+
+      user:
+        apiVersion: db.movetokube.com/v1alpha1
+        kind: PostgresUser
+        spec:
+          spec:
+            role: sonarr-standard
+            database: sonarr-standard-main
+            secretName: cnpg-user
+            privileges: OWNER

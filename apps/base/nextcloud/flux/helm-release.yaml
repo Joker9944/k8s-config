@@ -1,0 +1,171 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nextcloud
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: nextcloud
+      version: 6.6.10
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: nextcloud
+
+    # TODO:
+    #  - Monitoring
+    #  - Collabora
+    #  - redis
+    #  - backups
+
+  values:
+    #################
+    ### Nextcloud ###
+    #################
+    nextcloud:
+
+      host: &nextcloud_host cloud.vonarx.online
+
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-credentials
+
+      objectStore:
+        s3:
+          enabled: true
+
+          port: 3900
+          ssl: false
+          region: nyx
+          existingSecret: nextcloud-s3
+          usePathStyle: true
+
+          secretKeys:
+            host: host
+            accessKey: accessKey
+            secretKey: secretKey
+            bucket: bucket
+
+      configs:
+        oidc.config.php: |-
+          <?php
+          $CONFIG = [
+            'allow_local_remote_servers' => true,
+            'user_oidc' => [
+                'use_pkce' => true,
+            ],
+            'allow_user_to_change_display_name' => false,
+            'lost_password_link' => 'disabled',
+          ];
+        maintenance.config.php: |-
+          <?php
+          $CONFIG = [
+            'maintenance_window_start' => 1,
+          ];
+
+      extraEnv:
+        # Ingress
+        - name: TRUSTED_PROXIES
+          value: 10.244.0.0/16
+        - name: OVERWRITEPROTOCOL
+          value: https
+
+    persistence:
+      enabled: true
+
+      size: 2Gi
+
+      nextcloudData:
+        enabled: true
+
+    internalDatabase:
+      enabled: false
+
+    externalDatabase:
+      enabled: true
+
+      type: postgresql
+
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-cnpg-app
+
+        hostKey: host
+        usernameKey: username
+        passwordKey: password
+        databaseKey: dbname
+
+    ingress:
+      enabled: true
+
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
+        traefik.ingress.kubernetes.io/router.middlewares: nextcloud-chain-country-whitelist@kubernetescrd,nextcloud-caldav-carddav-redirect@kubernetescrd
+
+      tls:
+        - hosts:
+            - *nextcloud_host
+          secretName: wildcard-vonarx-online
+
+    cronjob:
+      enabled: true
+
+    #################
+    ### Collabora ###
+    #################
+    collabora:
+      enabled: true
+
+      collabora:
+
+        aliasgroups:
+          - host: https://cloud.vonarx.online:443
+
+        extra_params: '--o:ssl.enable=false --o:ssl.termination=true --o:remote_font_config.url=https://cloud.vonarx.online/apps/richdocuments/settings/fonts.json'
+
+        existingSecret:
+          enabled: true
+          secretName: nextcloud-collabora-credentials
+
+        env:
+          - name: dictionaries
+            value: "de_CH en_US"
+
+      ingress:
+        enabled: true
+
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
+          traefik.ingress.kubernetes.io/router.middlewares: nextcloud-chain-country-whitelist@kubernetescrd
+
+        hosts:
+          - host: &collabora_host office.vonarx.online
+            paths:
+              - path: /
+                pathType: Prefix
+
+        tls:
+          - hosts:
+              - *collabora_host
+            secretName: wildcard-vonarx-online
+
+    #############
+    ### Redis ###
+    #############
+    redis:
+      enabled: false
+
+      auth:
+        existingSecret: nextcloud-redis-credentials
+        existingSecretPasswordKey: password
+
+      architecture: standalone
+
+      master:
+        persistence:
+          enabled: false

@@ -1,0 +1,30 @@
+---
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - manifests/certificate.yaml
+
+replacements:
+  - source:
+      kind: Certificate
+      fieldPath: metadata.namespace
+    targets:
+      - select:
+          kind: Certificate
+          name: wildcard-PLACEHOLDER
+        fieldPaths:
+          - spec.dnsNames.0
+          - spec.dnsNames.1
+        options:
+          delimiter: .
+          index: 1
+      - select:
+          kind: Certificate
+          name: wildcard-PLACEHOLDER
+        fieldPaths:
+          - spec.secretName
+          - metadata.name
+        options:
+          delimiter: '-'
+          index: 1

@@ -1,0 +1,71 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: servarr
+
+resources:
+  - manifests/namespace.yaml
+  - manifests/secret.yaml
+  - manifests/cluster.yaml
+  - manifests/scheduled-backup.yaml
+  - manifests/helm-repository.yaml
+  - manifests/helm-release.yaml
+  - flaresolverr
+  - prowlarr
+  - radarr-standard
+  - recyclarr
+  - sonarr-anime
+  - sonarr-standard
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/common-middlewares
+  - ../../../components/bjw-s-helm-repository
+
+patches:
+
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployments
+      metadata:
+        name: PLACEHOLDER
+        labels:
+          app.kubernetes.io/part-of: servarr
+      spec:
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/part-of: servarr
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/part-of: servarr
+    target:
+      kind: Deployments
+
+  - patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: PLACEHOLDER
+        labels:
+          app.kubernetes.io/part-of: servarr
+      spec:
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/part-of: servarr
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/part-of: servarr
+    target:
+      kind: StatefulSet

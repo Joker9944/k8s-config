@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: nextcloud-cnpg
+spec:
+  description: PostgreSQL Cluster for Nextcloud
+  instances: 3
+  imageCatalogRef:
+    apiGroup: postgresql.cnpg.io
+    kind: ClusterImageCatalog
+    name: postgresql
+    major: 16
+  storage:
+    size: 1Gi
+    storageClass: longhorn-local-strict
+  walStorage:
+    size: 1Gi
+    storageClass: longhorn-local-strict
+  bootstrap:
+    initdb:
+      database: nextcloud
+      owner: nextcloud
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required

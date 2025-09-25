@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: jellyseerr
+
+resources:
+  - manifests/namespace.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/common-middlewares
+  - ../../../components/bjw-s-helm-repository
+
+secretGenerator:
+  - name: jellyseerr-secret-values
+    files:
+      - values.yaml=values/secret-values.sops.yaml
