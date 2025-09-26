@@ -16,3 +16,11 @@ spec:
         key: secretKey
     wal:
       compression: gzip
+  # s3 provider compat config
+  # https://github.com/cloudnative-pg/plugin-barman-cloud/issues/541
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: when_required
+      - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: when_required
