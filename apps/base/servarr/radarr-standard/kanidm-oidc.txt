@@ -1,0 +1,7 @@
+# OIDC Setup
+
+kanidm system oauth2 create radarr-standard "Radarr Standard" https://radarr-standard.vonarx.online/
+
+kanidm system oauth2 add-redirect-url radarr-standard https://radarr-standard.vonarx.online/oauth2/callback
+
+kanidm system oauth2 update-scope-map radarr-standard servarr_admins profile openid email groups offline_access

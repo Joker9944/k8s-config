@@ -55,7 +55,7 @@ spec:
                   secretKeyRef:
                     name: radarr-standard-api-key
                     key: key
-              RADARR__AUTH__METHOD: Forms
+              RADARR__AUTH__METHOD: External
               RADARR__AUTH__REQUIRED: Enabled
               RADARR__SERVER__PORT: &port_http 7878
               RADARR__LOG__LEVEL: info
@@ -161,7 +161,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-network-internal-whitelist@kubernetescrd,servarr-radarr-standard-oidc@kubernetescrd
         hosts:
           - host: &host radarr-standard.vonarx.online
             paths:
@@ -220,3 +220,25 @@ spec:
             cluster:
               name: servarr-cnpg
             databaseReclaimPolicy: retain
+
+      oidc:
+        apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        spec:
+          spec:
+            plugin:
+              oidc:
+                providerURL: https://idm.vonarx.online/oauth2/openid/radarr-standard
+                clientID: radarr-standard
+                clientSecret: urn:k8s:secret:radarr-standard-oidc:CLIENT_SECRET
+                sessionEncryptionKey: urn:k8s:secret:radarr-standard-oidc:SESSION_ENCRYPTION_KEY
+                callbackURL: /oauth2/callback
+                enablePKCE: true
+                scopes:
+                  - groups
+                allowedRolesAndGroups:
+                  - servarr_admins@idm.vonarx.online
+                allowedUserDomains:
+                  - vonarx.online
+                excludedURLs:
+                  - /favicon.ico
