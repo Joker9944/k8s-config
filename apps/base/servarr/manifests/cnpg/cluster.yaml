@@ -6,7 +6,6 @@ metadata:
 spec:
   description: PostgreSQL Cluster for the Servarr family of apps
   instances: 3
-  enableSuperuserAccess: true
 
   imageCatalogRef:
     apiGroup: postgresql.cnpg.io
@@ -47,6 +46,12 @@ spec:
 
   managed:
     roles:
+
+      - name: servarr
+        login: true
+        superuser: true
+        passwordSecret:
+          name: servarr-cnpg-user
 
       - name: prowlarr
         login: true
