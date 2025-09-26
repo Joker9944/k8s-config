@@ -15,10 +15,6 @@ spec:
         kind: HelmRepository
         name: bjw-s
 
-  valuesFrom:
-    - kind: Secret
-      name: prowlarr-secret-values
-
   values:
 
     global:

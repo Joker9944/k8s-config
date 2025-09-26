@@ -15,10 +15,6 @@ spec:
         kind: HelmRepository
         name: bjw-s
 
-  valuesFrom:
-    - kind: Secret
-      name: sonarr-standard-secret-values
-
   values:
 
     global:

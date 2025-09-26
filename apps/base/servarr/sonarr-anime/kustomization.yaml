@@ -7,8 +7,3 @@ resources:
 
 components:
   - ../../../../components/common-kustomizeconfig
-
-secretGenerator:
-  - name: sonarr-anime-secret-values
-    files:
-      - values.yaml=values/secret-values.sops.yaml
