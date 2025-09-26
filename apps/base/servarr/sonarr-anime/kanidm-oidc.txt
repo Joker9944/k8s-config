@@ -1,0 +1,7 @@
+# OIDC Setup
+
+kanidm system oauth2 create sonarr-anime "Sonarr Anime" https://sonarr-anime.vonarx.online/
+
+kanidm system oauth2 add-redirect-url sonarr-anime https://sonarr-anime.vonarx.online/oauth2/callback
+
+kanidm system oauth2 update-scope-map sonarr-anime servarr_admins profile openid email groups offline_access

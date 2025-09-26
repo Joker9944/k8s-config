@@ -1,0 +1,7 @@
+# OIDC Setup
+
+kanidm system oauth2 create sonarr-standard "Sonarr Standard" https://sonarr-standard.vonarx.online/
+
+kanidm system oauth2 add-redirect-url sonarr-standard https://sonarr-standard.vonarx.online/oauth2/callback
+
+kanidm system oauth2 update-scope-map sonarr-standard servarr_admins profile openid email groups offline_access
