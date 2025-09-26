@@ -195,7 +195,7 @@ spec:
         tls:
           - hosts:
               - *host
-            secretName: wildcard-vonarx-online
+            secretName: wildcard-vonarx-online-cert
 
     persistence:
 

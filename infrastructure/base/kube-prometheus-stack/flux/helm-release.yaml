@@ -42,7 +42,7 @@ spec:
         paths:
           - /
         tls:
-          - secretName: wildcard-vonarx-online
+          - secretName: wildcard-vonarx-online-cert
             hosts:
               - alertmanager.vonarx.online
 
@@ -101,7 +101,7 @@ spec:
         paths:
           - /
         tls:
-          - secretName: wildcard-vonarx-online
+          - secretName: wildcard-vonarx-online-cert
             hosts:
               - grafana.vonarx.online.vonarx.online
 
@@ -131,6 +131,6 @@ spec:
         paths:
           - /
         tls:
-          - secretName: wildcard-vonarx-online
+          - secretName: wildcard-vonarx-online-cert
             hosts:
               - prometheus.vonarx.online.vonarx.online

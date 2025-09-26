@@ -108,7 +108,7 @@ spec:
       tls:
         - hosts:
             - *nextcloud_host
-          secretName: wildcard-vonarx-online
+          secretName: wildcard-vonarx-online-cert
 
     cronjob:
       enabled: true
@@ -152,7 +152,7 @@ spec:
         tls:
           - hosts:
               - *collabora_host
-            secretName: wildcard-vonarx-online
+            secretName: wildcard-vonarx-online-cert
 
     #############
     ### Redis ###
