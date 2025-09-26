@@ -5,12 +5,10 @@ namespace: servarr
 
 resources:
   - manifests/namespace.yaml
-  - manifests/secret.yaml
-  - manifests/object-store.yaml
-  - manifests/cluster.yaml
-  - manifests/scheduled-backup.yaml
-  - manifests/helm-repository.yaml
-  - manifests/helm-release.yaml
+  - manifests/cnpg/secret.yaml
+  - manifests/cnpg/object-store.yaml
+  - manifests/cnpg/cluster.yaml
+  - manifests/cnpg/scheduled-backup.yaml
   - flaresolverr
   - prowlarr
   - radarr-standard

@@ -47,7 +47,23 @@ spec:
 
   managed:
     roles:
+
       - name: prowlarr
         login: true
         passwordSecret:
           name: prowlarr-cnpg-user
+
+      - name: radarr-standard
+        login: true
+        passwordSecret:
+          name: radarr-standard-cnpg-user
+
+      - name: sonarr-anime
+        login: true
+        passwordSecret:
+          name: sonarr-anime-cnpg-user
+
+      - name: sonarr-standard
+        login: true
+        passwordSecret:
+          name: sonarr-standard-cnpg-user

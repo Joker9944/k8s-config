@@ -130,13 +130,13 @@ spec:
             command: [/bin/sh, -c]
             args:
               - |
-                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $PGHOST"
                 until
                   pg_isready --dbname="$MAIN_DATABASE"
                   pg_isready --dbname="$LOG_DATABASE"
                   do sleep 5
                 done
-                echo "DB $MAIN_DATABASE and $LOG_DATABASE available on $HOST"
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE available on $PGHOST"
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -190,6 +190,7 @@ spec:
             owner: prowlarr
             cluster:
               name: servarr-cnpg
+            databaseReclaimPolicy: retain
 
       log:
         apiVersion: postgresql.cnpg.io/v1
@@ -200,6 +201,7 @@ spec:
             owner: prowlarr
             cluster:
               name: servarr-cnpg
+            databaseReclaimPolicy: retain
 
       oidc:
         apiVersion: traefik.io/v1alpha1

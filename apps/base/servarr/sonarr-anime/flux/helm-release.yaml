@@ -59,21 +59,17 @@ spec:
               SONARR__AUTH__REQUIRED: Enabled
               SONARR__SERVER__PORT: &port_http 8989
               SONARR__LOG__LEVEL: info
-              SONARR__POSTGRES__HOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: cnpg-user-sonarr-anime-user
-                    key: HOST
+              SONARR__POSTGRES__HOST: servarr-cnpg-rw
               SONARR__POSTGRES__USER:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-sonarr-anime-user
-                    key: ROLE
+                    name: sonarr-anime-cnpg-user
+                    key: username
               SONARR__POSTGRES__PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: cnpg-user-sonarr-anime-user
-                    key: PASSWORD
+                    name: sonarr-anime-cnpg-user
+                    key: password
               SONARR__POSTGRES__MAINDB: sonarr-anime-main
               SONARR__POSTGRES__LOGDB: sonarr-anime-log
             probes:
@@ -121,37 +117,29 @@ spec:
               repository: ghcr.io/joker9944/postgresql-client
               tag: 3.22.1@sha256:2abc863c18410f993895afdc138cd9e19e36b5ff66fe1ce8eb95b93997fc2a83
             env:
-              PGHOST:
-                valueFrom:
-                  secretKeyRef:
-                    name: servarr-cnpg-superuser
-                    key: host
+              PGHOST: servarr-cnpg-r
               PGUSER:
                 valueFrom:
                   secretKeyRef:
-                    name: servarr-cnpg-superuser
-                    key: user
+                    name: sonarr-anime-cnpg-user
+                    key: username
               PGPASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: servarr-cnpg-superuser
+                    name: sonarr-anime-cnpg-user
                     key: password
               MAIN_DATABASE: sonarr-anime-main
               LOG_DATABASE: sonarr-anime-log
-              DATABASE_ROLE: sonarr-anime-main-group
             command: [ /bin/sh, -c ]
             args:
               - |
-                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $HOST"
+                echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $PGHOST"
                 until
                   pg_isready --dbname="$MAIN_DATABASE"
                   pg_isready --dbname="$LOG_DATABASE"
                   do sleep 5
                 done
-                echo "DB $MAIN_DATABASE and $LOG_DATABASE avilable on $HOST"
-                echo "Changing owner of the $LOG_DATABASE database on $HOST"
-                psql --command="ALTER DATABASE \"$LOG_DATABASE\" OWNER TO \"$DATABASE_ROLE\";"
-                psql --command="GRANT ALL ON DATABASE \"$LOG_DATABASE\" TO \"$DATABASE_ROLE\";"
+                echo "DB $MAIN_DATABASE and $LOG_DATABASE available on $PGHOST"
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -212,27 +200,23 @@ spec:
     rawResources:
 
       main:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: Postgres
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Database
         spec:
           spec:
-            database: sonarr-anime-main
-            dropOnDelete: false
+            name: sonarr-anime-main
+            owner: sonarr-anime
+            cluster:
+              name: servarr-cnpg
+            databaseReclaimPolicy: retain
 
       log:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: Postgres
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Database
         spec:
           spec:
-            database: sonarr-anime-log
-            dropOnDelete: false
-
-      user:
-        apiVersion: db.movetokube.com/v1alpha1
-        kind: PostgresUser
-        spec:
-          spec:
-            role: sonarr-anime
-            database: sonarr-anime-main
-            secretName: cnpg-user
-            privileges: OWNER
+            name: sonarr-anime-log
+            owner: sonarr-anime
+            cluster:
+              name: servarr-cnpg
+            databaseReclaimPolicy: retain
