@@ -43,8 +43,8 @@ spec:
 
           radarr:
             image:
-              repository: ghcr.io/onedr0p/radarr
-              tag: 5.20.1.9773@sha256:4fa8fc7dcf3b38dbed279125330a8b9bd7be6e68e317e685089d3b03774aeeab
+              repository: ghcr.io/home-operations/radarr
+              tag: 5.28.0.10205@sha256:80dec94f1eea0715471853011efdf2c49cf92f8fe3b17b722ad8f8a637e3fead
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
