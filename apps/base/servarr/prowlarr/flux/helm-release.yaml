@@ -215,15 +215,11 @@ spec:
                 clientSecret: urn:k8s:secret:prowlarr-oidc:CLIENT_SECRET
                 sessionEncryptionKey: urn:k8s:secret:prowlarr-oidc:SESSION_ENCRYPTION_KEY
                 callbackURL: /oauth2/callback
-                logoutURL: /oauth2/logout
-                forceHTTPS: true
                 enablePKCE: true
                 scopes:
-                  - openid
-                  - email
                   - groups
                 allowedRolesAndGroups:
-                  - prowlarr_admins@idm.vonarx.online
+                  - servarr_admins@idm.vonarx.online
                 allowedUserDomains:
                   - vonarx.online
                 excludedURLs:
