@@ -167,7 +167,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-network-internal-whitelist@kubernetescrd,servarr-prowlarr-oidc@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-country-whitelist@kubernetescrd,servarr-prowlarr-oidc@kubernetescrd
         hosts:
           - host: &host prowlarr.vonarx.online
             paths:
