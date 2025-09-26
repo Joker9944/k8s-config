@@ -3,10 +3,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  labels:
-    app.kubernetes.io/name: qbittorrent
-    app.kubernetes.io/instance: qbittorrent
-    app.kubernetes.io/part-of: servarr
   name: qbittorrent
 spec:
   interval: 30m
