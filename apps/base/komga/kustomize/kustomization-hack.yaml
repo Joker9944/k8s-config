@@ -1,0 +1,6 @@
+# TODO find a way to replace this ugly hack
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - path: spec/values/persistence/config-overlay/name
+        kind: HelmRelease

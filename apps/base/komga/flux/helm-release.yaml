@@ -53,8 +53,15 @@ spec:
             env:
               UMASK: 0002
               SERVER_PORT: &port_http 25600
-              KOMGA_OAUTH2_ACCOUNT_CREATION: 'true'
-              KOMGA_OIDC_EMAIL_VERIFICATION: 'false'
+              KOMGA_CORS_ALLOWEDORIGINS: https://komga.vonarx.online
+              KOMGA_OAUTH2ACCOUNTCREATION: 'true'
+              KOMGA_OIDCEMAILVERIFICATION: 'false'
+              SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: komga-oidc
+                    key: client-secret
+              LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
             # TODO Probes
             # TODO Resources
             securityContext:
@@ -78,7 +85,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: komga-chain-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: komga-chain-country-whitelist@kubernetescrd
         hosts:
           - host: &host komga.vonarx.online
             paths:
@@ -98,6 +105,17 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
+        #dataSourceRef:
+        #  apiGroup: volsync.backube
+        #  kind: ReplicationDestination
+        #  name: komga-dest-config
+
+      config-overlay:
+        type: configMap
+        name: komga-config-overlay
+        globalMounts:
+          - path: /config/application.yml
+            subPath: application.yml
 
       data:
         type: nfs
@@ -115,7 +133,7 @@ spec:
             trigger:
               manual: restore-once
             restic:
-              repository: konga-restic-config
+              repository: komga-restic-config
               accessModes: [ ReadWriteOnce ]
               capacity: *pvc_config_size
               copyMethod: Snapshot
@@ -127,16 +145,16 @@ spec:
               volumeSnapshotClassName: longhorn
 
       source-config:
-        enabled: false
+        enabled: true
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationSource
         spec:
           spec:
-            sourcePVC: konga-config
+            sourcePVC: komga-config
             trigger:
               schedule: '@daily'
             restic:
-              repository: konga-restic-config
+              repository: komga-restic-config
               pruneIntervalDays: 7
               retain:
                 daily: 7
