@@ -53,8 +53,12 @@ spec:
             env:
               UMASK: 0002
               SERVER_PORT: &port_http 25600
-              KOMGA_OAUTH2_ACCOUNT_CREATION: 'true'
-              KOMGA_OIDC_EMAIL_VERIFICATION: 'false'
+              KOMGA_CORS_ALLOWEDORIGINS: https://komga.vonarx.online
+              KOMGA_OAUTH2ACCOUNTCREATION: 'true'
+              KOMGA_OIDCEMAILVERIFICATION: 'false'
+            envFrom:
+              - secretRef:
+                  name: komga-oidc
             # TODO Probes
             # TODO Resources
             securityContext:
@@ -98,6 +102,13 @@ spec:
         accessMode: ReadWriteOnce
         retain: true
         size: &pvc_config_size 1Gi
+
+      config-overlay:
+        type: configMap
+        name: komga-config-overlay
+        globalMounts:
+          - path: /config/application.yml
+            subPath: application.yml
 
       data:
         type: nfs

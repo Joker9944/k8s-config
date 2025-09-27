@@ -5,9 +5,18 @@ namespace: komga
 
 resources:
   - manifests/namespace.yaml
+  - manifests/secret.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
   - ../../../components/common-middlewares
   - ../../../components/bjw-s-helm-repository
+
+configMapGenerator:
+  - name: komga-config-overlay
+    files:
+      - application.yml=files/application.yml
+
+configurations:
+  - kustomize/kustomization-hack.yaml

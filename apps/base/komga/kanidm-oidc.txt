@@ -1,0 +1,14 @@
+# group setup
+
+kanidm group create komga_users
+kanidm group add-members komga_users media_users
+
+# oidc web client setup
+
+kanidm system oauth2 create komga "Komga" https://komga.vonarx.online/
+
+kanidm system oauth2 prefer-short-username komga
+
+kanidm system oauth2 add-redirect-url komga https://cloud.vonarx.online/apps/user_oidc/code
+
+kanidm system oauth2 update-scope-map komga komga_users openid profile email
