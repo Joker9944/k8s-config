@@ -108,8 +108,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
-          traefik.ingress.kubernetes.io/router.middlewares: audiobookshelf-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=audiobookshelf}-chain-basic@kubernetescrd,${namespace:=audiobookshelf}-country-whitelist@kubernetescrd
         hosts:
           - host: &host audiobookshelf.vonarx.online
             paths:

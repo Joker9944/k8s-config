@@ -36,7 +36,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: 'true'
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=kube-prometheus-stack}-chain-basic@kubernetescrd,${namespace:=kube-prometheus-stack}-network-internal-whitelist@kubernetescrd
         hosts:
           - alertmanager.vonarx.online
         paths:
@@ -95,7 +95,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: 'true'
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=kube-prometheus-stack}-chain-basic@kubernetescrd,${namespace:=kube-prometheus-stack}-country-whitelist@kubernetescrd
         hosts:
           - grafana.vonarx.online
         paths:
@@ -125,7 +125,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: 'true'
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=kube-prometheus-stack}-chain-basic@kubernetescrd,${namespace:=kube-prometheus-stack}-network-internal-whitelist@kubernetescrd
         hosts:
           - prometheus.vonarx.online
         paths:

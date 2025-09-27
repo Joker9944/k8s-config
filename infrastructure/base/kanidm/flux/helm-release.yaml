@@ -95,7 +95,7 @@ spec:
         controller: kanidm
         primary: true
         annotations:
-          traefik.ingress.kubernetes.io/service.serverstransport: PLACEHOLDER-kanidm-transport@kubernetescrd
+          traefik.ingress.kubernetes.io/service.serverstransport: ${namespace:=kanidm}-kanidm-transport@kubernetescrd
         ports:
           https:
             primary: true
@@ -116,7 +116,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=kanidm}-chain-basic@kubernetescrd,${namespace:=kanidm}-country-whitelist@kubernetescrd
         hosts:
           - host: &host idm.vonarx.online
             paths:
@@ -143,7 +143,7 @@ spec:
 
       data-overlay-tls:
         type: secret
-        name: wildcard-PLACEHOLDER-cert
+        name: wildcard-${namespace:=kanidm}-cert
         globalMounts:
           - path: *path_tls_crt
             subPath: tls.crt
@@ -157,7 +157,7 @@ spec:
         kind: ServersTransport
         spec:
           spec:
-            serverName: kanidm.PLACEHOLDER
+            serverName: kanidm.${namespace:=kanidm}
             rootCAsSecrets:
               - nyx-ca-cert-bundle
 

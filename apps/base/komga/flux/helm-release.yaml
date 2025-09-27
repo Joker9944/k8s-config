@@ -78,7 +78,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: komga-chain-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=komga}-chain-basic@kubernetescrd,${namespace:=komga}-network-internal-whitelist@kubernetescrd
         hosts:
           - host: &host komga.vonarx.online
             paths:

@@ -170,7 +170,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: servarr-chain-country-whitelist@kubernetescrd,servarr-sonarr-anime-oidc@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=servarr}-chain-basic@kubernetescrd,${namespace:=servarr}-country-whitelist@kubernetescrd,${namespace:=servarr}-sonarr-anime-oidc@kubernetescrd
         hosts:
           - host: &host sonarr-anime.vonarx.online
             paths:

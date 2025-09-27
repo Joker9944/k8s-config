@@ -102,8 +102,7 @@ spec:
       annotations:
         traefik.ingress.kubernetes.io/router.tls: "true"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
-        traefik.ingress.kubernetes.io/router.middlewares: nextcloud-chain-country-whitelist@kubernetescrd,nextcloud-caldav-carddav-redirect@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=nextcloud}-chain-basic@kubernetescrd,${namespace:=nextcloud}-country-whitelist@kubernetescrd,${namespace:=nextcloud}-caldav-carddav-redirect@kubernetescrd
 
       tls:
         - hosts:
@@ -140,8 +139,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
-          traefik.ingress.kubernetes.io/router.middlewares: nextcloud-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=nextcloud}-chain-basic@kubernetescrd,${namespace:=nextcloud}-country-whitelist@kubernetescrd
 
         hosts:
           - host: &collabora_host office.vonarx.online

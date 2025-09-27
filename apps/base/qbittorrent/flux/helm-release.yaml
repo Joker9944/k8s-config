@@ -179,8 +179,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
-          traefik.ingress.kubernetes.io/router.middlewares: qbittorrent-network-internal-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=qbittorrent}-chain-basic@kubernetescrd,${namespace:=qbittorrent}-network-internal-whitelist@kubernetescrd
         hosts:
           - host: &host downloader.vonarx.online
             paths:

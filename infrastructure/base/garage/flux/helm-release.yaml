@@ -50,7 +50,7 @@ spec:
           annotations:
             traefik.ingress.kubernetes.io/router.tls: 'true'
             traefik.ingress.kubernetes.io/router.entrypoints: websecure
-            traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-country-whitelist@kubernetescrd
+            traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=garage}-chain-basic@kubernetescrd,${namespace:=garage}-country-whitelist@kubernetescrd
 
           hosts:
             - host: &host_s3_root s3.vonarx.online

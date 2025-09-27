@@ -126,8 +126,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
-          traefik.ingress.kubernetes.io/router.middlewares: jellyfin-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=jellyfin}-chain-basic@kubernetescrd,${namespace:=jellyfin}-country-whitelist@kubernetescrd
         hosts:
           - host: &host jellyfin.vonarx.online
             paths:

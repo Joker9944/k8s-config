@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: kanidm
+namespace: ${namespace:=kanidm}
 
 resources:
   - manifests/namespace.yaml
@@ -17,39 +17,3 @@ secretGenerator:
   - name: kanidm-secret-values
     files:
       - values.yaml=values/secret-values.sops.yaml # TODO extract secret from helm
-
-replacements:
-
-  - source:
-      kind: HelmRelease
-      name: kanidm
-      fieldPath: metadata.namespace
-    targets:
-
-      - select:
-          kind: HelmRelease
-          name: kanidm
-        fieldPaths:
-          - spec.values.service.kanidm.annotations.[traefik.ingress.kubernetes.io/service.serverstransport]
-          - spec.values.ingress.kanidm.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
-        options:
-          delimiter: '-'
-          index: 0
-
-      - select:
-          kind: HelmRelease
-          name: kanidm
-        fieldPaths:
-          - spec.values.persistence.data-overlay-tls.name
-        options:
-          delimiter: '-'
-          index: 1
-
-      - select:
-          kind: HelmRelease
-          name: kanidm
-        fieldPaths:
-          - spec.values.rawResources.transport.spec.spec.serverName
-        options:
-          delimiter: '.'
-          index: 1

@@ -96,7 +96,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: jellyseerr-chain-country-whitelist@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: ${namespace:=jellyseerr}-chain-basic@kubernetescrd,${namespace:=jellyseerr}-country-whitelist@kubernetescrd
         hosts:
           - host: &host jellyseerr.vonarx.online
             paths:
