@@ -1,104 +1,102 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    "config:recommended",
-    ":dependencyDashboard",
-    "schedule:weekends",
+    'config:recommended',
+    ':dependencyDashboard',
+    'schedule:weekends',
   ],
   flux: {
-    fileMatch: [
-      "(?:^|/)helm-release\\.ya?ml$",
-      "(?:^|/)kustomization\\.ya?ml$",
-      "(?:^|/)(?:helm|git|oci)-repository\\.ya?ml$",
+    managerFilePatterns: [
+      '/(?:^|/)helm-release\\.ya?ml$/',
+      '/(?:^|/)kustomization\\.ya?ml$/',
+      '/(?:^|/)(?:helm|git|oci)-repository\\.ya?ml$/',
     ],
   },
-  "helm-values": {
-    fileMatch: [
-      "(?:^|/)helm-release\\.ya?ml$",
-      "(^|/).+\\.values\\.ya?ml$",
+  'helm-values': {
+    managerFilePatterns: [
+      '/(?:^|/)helm-release\\.ya?ml$/',
+      '/(^|/).+\\.values\\.ya?ml$/',
     ],
   },
-  "pre-commit": {
-    enabled: true
+  'pre-commit': {
+    enabled: true,
   },
   customManagers: [
     {
-      customType: "regex",
-      description: "Update versions in yaml files marked by comment",
-      fileMatch: [
-        "(?:^|/)talconfig\\.ya?ml$",
-        "(?:^|/)docker-publish\\.ya?ml$",
-        "(?:^|/)helm-release\\.ya?ml$",
+      customType: 'regex',
+      description: 'Update versions in yaml files marked by comment',
+      managerFilePatterns: [
+        '/(?:^|/)talconfig\\.ya?ml$/',
+        '/(?:^|/)docker-publish\\.ya?ml$/',
+        '/(?:^|/)helm-release\\.ya?ml$/',
       ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)",
+        '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)',
       ],
     },
     {
-      customType: "regex",
-      description: "Update versions in Dockerfile ARG statements marked by comment",
-      fileMatch: [
-        "(?:^|/)Dockerfile$",
+      customType: 'regex',
+      description: 'Update versions in Dockerfile ARG statements marked by comment',
+      managerFilePatterns: [
+        '/(?:^|/)Dockerfile$/',
       ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\sARG [\\w_]+=(?<currentValue>.+?)(?:\\s|$)",
+        '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\sARG [\\w_]+=(?<currentValue>.+?)(?:\\s|$)',
       ],
     },
   ],
   assignees: [
-    "Joker9944",
+    'Joker9944',
   ],
   packageRules: [
     {
       matchUpdateTypes: [
-        "major",
+        'major',
       ],
       automerge: false,
       dependencyDashboardApproval: true,
     },
     {
       matchUpdateTypes: [
-        "minor",
-        "patch",
-        "pin",
-        "digest",
+        'minor',
+        'patch',
+        'pin',
+        'digest',
       ],
       automerge: true,
       ignoreTests: true,
     },
     {
       matchDatasources: [
-        "docker",
+        'docker',
       ],
       matchDepNames: [
-        "talos",
-        "kubelet",
+        'talos',
+        'kubelet',
       ],
       automerge: false,
       dependencyDashboardApproval: true,
     },
     {
       matchDatasources: [
-        "helm-values",
+        'helm-values',
       ],
       matchDepNames: [
-        "ghcr.io/joker9944/postgresql-client",
-        "ghcr.io/joker9944/jinja-cli",
+        'ghcr.io/joker9944/postgresql-client',
+        'ghcr.io/joker9944/jinja-cli',
       ],
       automerge: true,
       ignoreTests: true,
       schedule: [
-        "at any time",
+        'at any time',
       ],
     },
     {
-      // TODO Temporarily disabling due to DNS issues in v3.40.0, remove once resolved.
-      // https://github.com/qdm12/gluetun/issues/2630
       matchDatasources: [
-        "docker",
+        'docker',
       ],
       matchDepNames: [
-        "ghcr.io/qdm12/gluetun",
+        'ghcr.io/qdm12/gluetun',
       ],
       enabled: false,
     },
