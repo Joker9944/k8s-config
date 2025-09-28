@@ -1,0 +1,9 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: opencloud
+spec:
+  interval: 5m
+  url: https://github.com/opencloud-eu/helm
+  ref:
+    branch: main
