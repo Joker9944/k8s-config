@@ -235,7 +235,7 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 22.0.7
+      version: 23.2.1
       interval: 30m
       sourceRef:
         kind: HelmRepository
