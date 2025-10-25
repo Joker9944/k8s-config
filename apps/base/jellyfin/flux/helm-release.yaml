@@ -112,7 +112,7 @@ spec:
         controller: jellyfin
         type: LoadBalancer
         annotations:
-          metallb.universe.tf/loadBalancerIPs: 192.168.0.129
+          metallb.universe.tf/loadBalancerIPs: 192.168.0.130
         ports:
           service-discovery:
             port: 1900
