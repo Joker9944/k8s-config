@@ -75,6 +75,8 @@ spec:
         # tailscale
       - 100.0.0.0/8
       - fd7a:115c:a1e0::/48
+        # kubernetes
+      - 10.244.0.0/16
 
 ---
 apiVersion: traefik.io/v1alpha1
