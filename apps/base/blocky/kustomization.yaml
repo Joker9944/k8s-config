@@ -5,11 +5,11 @@ namespace: blocky
 
 resources:
   - manifests/namespace.yaml
-  - flux/helm-repository.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
+  - ../../../components/bitnami-helm-repository
   - ../../../components/bjw-s-helm-repository
 
 configMapGenerator:
