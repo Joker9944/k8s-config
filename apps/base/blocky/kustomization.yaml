@@ -10,6 +10,7 @@ resources:
 
 components:
   - ../../../components/common-kustomizeconfig
+  - ../../../components/bitnami-helm-repository
   - ../../../components/bjw-s-helm-repository
 
 configMapGenerator:
