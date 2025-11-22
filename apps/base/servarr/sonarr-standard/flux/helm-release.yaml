@@ -252,3 +252,9 @@ spec:
                   - vonarx.online
                 excludedURLs:
                   - /favicon.ico
+                redis:
+                  enabled: true
+                  address: traefik-oidc-redis-master.traefik-system.svc.cluster.local:6379
+                  password: urn:k8s:secret:traefik-oidc-redis:redis-password
+                # WORKAROUND remove once updating plugin to v0.8.0
+                disableReplayDetection: true
