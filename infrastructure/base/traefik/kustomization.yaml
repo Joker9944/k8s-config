@@ -11,3 +11,4 @@ resources:
 
 components:
   - ../../../components/common-kustomizeconfig
+  - ../../.,/components/bitnami-repository

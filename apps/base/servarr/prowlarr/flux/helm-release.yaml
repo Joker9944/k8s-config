@@ -233,3 +233,7 @@ spec:
                   - vonarx.online
                 excludedURLs:
                   - /favicon.ico
+                redis:
+                  enabled: true
+                  address: traefik-oidc-redis-master.traefik-system.svc.cluster.local:6379
+                  password: urn:k8s:secret:traefik-oidc-redis:redis-password
