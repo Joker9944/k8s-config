@@ -4,52 +4,6 @@ loki.write "default" {
   }
 }
 
-// Talos logs
-
-loki.source.syslog "talos_kernel_logs" {
-  forward_to = [ loki.write.default.receiver ]
-
-  listener {
-    address  = "127.0.0.1:6050"
-    protocol = "udp"
-
-    labels = {
-      job     = "talos/kernel",
-      node    = constants.hostname,
-      cluster = "nyx",
-    }
-  }
-}
-
-loki.source.syslog "talos_service_logs" {
-  forward_to = [ loki.write.default.receiver ]
-
-  listener {
-    address  = "127.0.0.1:6051"
-    protocol = "udp"
-
-    labels = {
-      job     = "talos/service",
-      node    = constants.hostname,
-      cluster = "nyx",
-    }
-  }
-}
-
-local.file_match "talos_audit_logs" {
-  path_targets = [{
-    __path__ = "/var/log/audit/kube/*.log",
-    job      = "talos/audit",
-    node     = constants.hostname,
-    cluster  = "nyx",
-  }]
-}
-
-loki.source.file "talos_audit_logs" {
-  targets    = local.file_match.talos_audit_logs.targets
-  forward_to = [ loki.write.default.receiver ]
-}
-
 // Pod logs
 
 discovery.kubernetes "k8s_pod" {
