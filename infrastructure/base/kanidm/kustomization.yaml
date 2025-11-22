@@ -18,14 +18,22 @@ secretGenerator:
     files:
       - values.yaml=values/secret-values.sops.yaml # TODO extract secret from helm
 
-replacements:
+configMapGenerator:
+  - name: kanidm-dashboards
+    options:
+      labels:
+        grafana_dashboard: "1"
+        app.kubernetes.io/name: kanidm
+        app.kubernetes.io/instance: kanidm
+    files:
+      - kanidm-logs.json=files/kanidm-logs.json
 
+replacements:
   - source:
       kind: HelmRelease
       name: kanidm
       fieldPath: metadata.namespace
     targets:
-
       - select:
           kind: HelmRelease
           name: kanidm
@@ -33,7 +41,7 @@ replacements:
           - spec.values.service.kanidm.annotations.[traefik.ingress.kubernetes.io/service.serverstransport]
           - spec.values.ingress.kanidm.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 0
 
       - select:
@@ -42,7 +50,7 @@ replacements:
         fieldPaths:
           - spec.values.persistence.data-overlay-tls.name
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 1
 
       - select:
@@ -51,5 +59,5 @@ replacements:
         fieldPaths:
           - spec.values.rawResources.transport.spec.spec.serverName
         options:
-          delimiter: '.'
+          delimiter: "."
           index: 1
