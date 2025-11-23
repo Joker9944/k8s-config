@@ -1,0 +1,244 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gotify
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.4.0
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  values:
+    global:
+      alwaysAppendIdentifierToResourceName: true
+
+    defaultPodOptions:
+      securityContext:
+        runAsUser: &PUID 568
+        runAsGroup: &GUID 568
+        runAsNonRoot: true
+        fsGroup: *GUID
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    controllers:
+      gotify:
+        type: deployment
+
+        containers:
+          gotify:
+            image:
+              repository: ghcr.io/gotify/server
+              tag: 2.7.3@sha256:2ae0e4e689f183137c8247884382fcb174d5a72253ce1897e7e5267090093fc8
+            env:
+              GOTIFY_SERVER_PORT: &port_http 8080
+              GOTIFY_SERVER_KEEPALIVEPERIODSECONDS: 0
+              GOTIFY_SERVER_LISTENADDR:
+              GOTIFY_SERVER_SSL_ENABLED: false
+              GOTIFY_SERVER_TRUSTEDPROXIES: "[10.244.0.0/16]"
+              GOTIFY_SERVER_CORS_ALLOWORIGINS: "[gotify.vonarx.online]"
+              GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
+              GOTIFY_DATABASE_DIALECT: postgres
+              GOTIFY_UPLOADEDIMAGESDIR: /data/images
+              GOTIFY_PLUGINSDIR: /data/plugins
+            envFrom:
+              - secretRef:
+                  name: gotify-default-user
+              - secretRef:
+                  name: gotify-custom-cnpg-connection
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port_http
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 50m
+                memory: 1Gi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+          postgresql:
+            image:
+              repository: ghcr.io/joker9944/postgresql-client
+              tag: 3.22.2@sha256:013054591d2ad2c56cbecaba2d5f699ec7cb6383d483aa3b04760ba9db26af4c
+            env:
+              PGHOST: gotify-cnpg-rw
+              PGUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: gotify-custom-cnpg-user
+                    key: username
+              PGPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: gotify-custom-cnpg-user
+                    key: password
+              PGDATABASE: gotify
+            command: [/bin/sh, -c]
+            args:
+              - |
+                echo "Testing connection for DB $PGDATABASE on $PGHOST"
+                until
+                  pg_isready
+                  do sleep 5
+                done
+                echo "DB $PGDATABASE available on $PGHOST"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      gotify:
+        controller: gotify
+        primary: true
+        ports:
+          http:
+            primary: true
+            port: 80
+            targetPort: *port_http
+
+    ingress:
+      gotify:
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          # TODO hardcoding the namespace until a solutions is found on how to do this with replacements
+          traefik.ingress.kubernetes.io/router.middlewares: gotify-chain-country-whitelist@kubernetescrd
+        hosts:
+          - host: &host gotify.vonarx.online
+            paths:
+              - path: /
+                service:
+                  identifier: gotify
+                  port: http
+        tls:
+          - hosts:
+              - *host
+            secretName: wildcard-vonarx-online-cert
+
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteMany
+        retain: true
+        size: &pvc_config_size 1Gi
+        #dataSourceRef:
+        #  apiGroup: volsync.backube
+        #  kind: ReplicationDestination
+        #  name: gotify-dest-data
+
+    rawResources:
+      dest-data:
+        enabled: false
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        spec:
+          spec:
+            trigger:
+              manual: restore-once
+            restic:
+              repository: gotify-restic-data
+              accessModes: [ReadWriteMany]
+              capacity: *pvc_config_size
+              copyMethod: Snapshot
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+              storageClassName: longhorn
+              volumeSnapshotClassName: longhorn
+
+      source-data:
+        enabled: false
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: gotify-data
+            trigger:
+              schedule: "@daily"
+            restic:
+              repository: gotify-restic-data
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              copyMethod: Clone
+              storageClassName: longhorn-local-lax
+              cacheStorageClassName: longhorn
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
+
+      cnpg:
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        spec:
+          spec:
+            description: PostgreSQL Cluster for gotify
+            instances: 3
+
+            imageCatalogRef:
+              apiGroup: postgresql.cnpg.io
+              kind: ClusterImageCatalog
+              name: postgresql-standard-trixie
+              major: 18
+
+            storage:
+              size: 1Gi
+              storageClass: longhorn-local-strict
+
+            walStorage:
+              size: 1Gi
+              storageClass: longhorn-local-strict
+
+            bootstrap:
+              initdb:
+                database: gotify
+                owner: gotify
+                secret:
+                  name: gotify-custom-cnpg-user
+
+            affinity:
+              enablePodAntiAffinity: true
+              podAntiAffinityType: required
