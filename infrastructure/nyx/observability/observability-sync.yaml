@@ -33,3 +33,5 @@ metadata:
   name: gotify
 spec:
   path: ./infrastructure/base/gotify
+  dependsOn:
+    - name: kube-prometheus-stack

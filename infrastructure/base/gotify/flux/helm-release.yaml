@@ -242,3 +242,113 @@ spec:
             affinity:
               enablePodAntiAffinity: true
               podAntiAffinityType: required
+
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gotify-alertmanager-bridge
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.4.0
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  values:
+    global:
+      alwaysAppendIdentifierToResourceName: true
+
+    defaultPodOptions:
+      securityContext:
+        runAsUser: &PUID 568
+        runAsGroup: &GUID 568
+        runAsNonRoot: true
+        fsGroup: *GUID
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    controllers:
+      gotify-alertmanager-bridge:
+        type: deployment
+
+        containers:
+          bridge:
+            image:
+              repository: ghcr.io/druggeri/alertmanager_gotify_bridge
+              tag: 2.3.2@sha256:242441023c6a7956fc7bcdd30350a8fed38f791e703d670aa286fc0465f88b41
+            env:
+              GOTIFY_ENDPOINT: http://gotify/message
+              PORT: &port_http 8080
+              WEBHOOK_PATH: &webhook_bridge /webhook
+              PRIORITY_ANNOTATION: severity
+            envFrom:
+              - secretRef:
+                  name: gotify-alertmanager-bridge-default-token
+            probes:
+              liveness:
+                enabled: true
+                port: *port_http
+                spec:
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                port: *port_http
+              startup:
+                enabled: true
+                port: *port_http
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 50m
+                memory: 1Gi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      gotify-alertmanager-bridge:
+        controller: gotify-alertmanager-bridge
+        primary: true
+        ports:
+          http:
+            primary: true
+            port: 80
+            targetPort: *port_http
+
+    rawResources:
+      alertmanager-config:
+        apiVersion: monitoring.coreos.com/v1alpha1
+        kind: AlertmanagerConfig
+        spec:
+          spec:
+            route:
+              receiver: gotify-joker9944
+              groupBy:
+                - namespace
+                - alertname
+                - severity
+              groupWait: 30s
+              groupInterval: 5m
+              repeatInterval: 3h
+
+            receivers:
+              - name: gotify-joker9944
+                sendResolved: false
+                webhookConfigs:
+                  - urlSecret:
+                      name: alertmanager-gotify-joker9944
+                      key: url
