@@ -79,6 +79,16 @@
     },
     {
       matchDatasources: [
+        'github-releases',
+      ],
+      matchDepNames: [
+        'gotify-slack-webhook',
+      ],
+      automerge: false,
+      dependencyDashboardApproval: true,
+    },
+    {
+      matchDatasources: [
         'helm-values',
       ],
       matchDepNames: [

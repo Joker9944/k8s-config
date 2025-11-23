@@ -1,0 +1,22 @@
+name: gotify-custom
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - images/gotify-custom/Dockerfile
+    branches:
+      - main
+
+jobs:
+  call-workflow-passing-data:
+    uses: Joker9944/k8s-config/.github/workflows/docker-publish.yml@main
+    with:
+      image_name: joker9944/gotify-custom
+      upstream_image_name: ghcr.io\/gotify\/server
+      context: images/gotify-custom
+    secrets: inherit
+    permissions:
+      packages: write
+      id-token: write
+      contents: read
