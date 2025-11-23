@@ -36,8 +36,8 @@ spec:
         containers:
           gotify:
             image:
-              repository: ghcr.io/gotify/server
-              tag: 2.7.3@sha256:2ae0e4e689f183137c8247884382fcb174d5a72253ce1897e7e5267090093fc8
+              repository: ghcr.io/joker9944/gotify-custom
+              tag: 2.7.3@sha256:e737831e4631701f36665792dbb195c9356fba7e04f646ee55967d847a814355
             env:
               GOTIFY_SERVER_PORT: &port_http 8080
               GOTIFY_SERVER_KEEPALIVEPERIODSECONDS: 0
@@ -48,7 +48,7 @@ spec:
               GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
               GOTIFY_DATABASE_DIALECT: postgres
               GOTIFY_UPLOADEDIMAGESDIR: /data/images
-              GOTIFY_PLUGINSDIR: /data/plugins
+              GOTIFY_PLUGINSDIR: /plugins
             envFrom:
               - secretRef:
                   name: gotify-default-user
