@@ -162,7 +162,7 @@ spec:
                 fsGroup: *GUID
                 runAsGroup: *GUID
               storageClassName: longhorn
-              volumeSnapshotClassName: &snapshot_class longhorn
+              volumeSnapshotClassName: longhorn
 
       source-config:
         enabled: true
@@ -184,5 +184,6 @@ spec:
               cacheStorageClassName: longhorn
               moverSecurityContext:
                 runAsUser: *PUID
-                fsGroup: *GUID
                 runAsGroup: *GUID
+                fsGroup: *GUID
+                fsGroupChangePolicy: OnRootMismatch
