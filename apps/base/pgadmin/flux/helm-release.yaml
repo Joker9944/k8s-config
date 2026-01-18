@@ -7,7 +7,7 @@ spec:
   chart:
     spec:
       chart: pgadmin4
-      version: 1.50.0
+      version: 1.57.0
       interval: 5m
       sourceRef:
         kind: HelmRepository
