@@ -168,6 +168,7 @@
                 enable = true;
                 args = [ "--no-must-find-files" ];
               };
+              prettier.enable = true;
 
               # Nix
               deadnix.enable = true;

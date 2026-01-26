@@ -15,7 +15,6 @@
 # https://recyclarr.dev/wiki/yaml/config-reference/
 
 sonarr:
-
   sonarr_standard:
     base_url: http://sonarr-standard:8989
 
@@ -34,7 +33,6 @@ sonarr:
         daily: default
 
     quality_profiles:
-
       - name: HD-1080p
         reset_unmatched_scores:
           enabled: true
@@ -100,7 +98,6 @@ sonarr:
           - name: HDTV-1080p
 
     custom_formats: # recyclarr list custom-formats sonarr
-
       - trash_ids: # Unwanted
           - 85c61753df5da1fb2aab6f2a47426b09 # BD-DISK - This is a custom format to help Sonarr recognize & ignore BR-DISK (ISO's and Blu-ray folder structure) in addition to the standard BR-DISK quality.
           - 9c11cd3f07101cdba90a2d81cf0e56b4 # LQ - A collection of known low-quality groups that are often banned from the top trackers due to their releases' lack of quality or other reasons.
@@ -154,7 +151,6 @@ sonarr:
           - name: HD-1080p / Ultra-HD
 
   sonarr_anime:
-
     base_url: http://sonarr-anime:8989
 
     quality_definition:
@@ -171,7 +167,6 @@ sonarr:
         anime: default
 
     quality_profiles:
-
       - name: HD-1080p
         reset_unmatched_scores:
           enabled: true
@@ -194,7 +189,6 @@ sonarr:
               - HDTV-1080p
 
     custom_formats:
-
       - trash_ids: # Unwanted
           - b4a1b3d705159cdca36d71e57ca86871 # Anime Raws
           - e3515e519f3b1360cbfc17651944354c # Anime LQ Groups
@@ -262,9 +256,7 @@ sonarr:
           - name: HD-1080p
 
 radarr:
-
   radarr_standard:
-
     base_url: http://radarr-standard:7878
 
     quality_definition:
@@ -280,7 +272,6 @@ radarr:
         standard: jellyfin
 
     quality_profiles:
-
       - name: HD-1080p (Standard)
         reset_unmatched_scores:
           enabled: true
@@ -431,7 +422,6 @@ radarr:
               - HDTV-1080p
 
     custom_formats:
-
       - trash_ids: # Unwanted
           - ed38b889b31be83fda192888e2286d83 # BR-DISK - This is a custom format to help Radarr recognize & ignore BR-DISK (ISO's and Blu-ray folder structure) in addition to the standard BR-DISK quality.
           - 90a6f9a284dff5103f6346090e6280c8 # LQ Groups - A collection of known low-quality groups that are often banned from the top trackers due to their releases' lack of quality or other reasons.

@@ -69,7 +69,7 @@ spec:
     ipStrategy:
       depth: 0
     sourceRange:
-        # link-local
+      # link-local
       - 192.168.1.0/23
       - fe80::/10
         # tailscale

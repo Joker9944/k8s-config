@@ -25,7 +25,6 @@ spec:
       retries: 3
 
   values:
-
     crds:
       enabled: true
 
@@ -46,7 +45,6 @@ spec:
       interval: 30m
 
   values:
-
     secretTargets:
       enabled: true
 

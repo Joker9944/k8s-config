@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -34,9 +33,7 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
-
       sonarr:
-
         pod:
           securityContext:
             runAsUser: &PUID 6006
@@ -44,12 +41,11 @@ spec:
             runAsNonRoot: true
             fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups: [ 568 ]
+            supplementalGroups: [568]
             seccompProfile:
               type: RuntimeDefault
 
         containers:
-
           sonarr:
             image:
               repository: ghcr.io/home-operations/sonarr
@@ -120,7 +116,6 @@ spec:
                   - ALL
 
         initContainers:
-
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
@@ -140,7 +135,7 @@ spec:
               MAIN_DATABASE: sonarr-standard-main
               LOG_DATABASE: sonarr-standard-log
               DATABASE_ROLE: sonarr-standard-main-group
-            command: [ /bin/sh, -c ]
+            command: [/bin/sh, -c]
             args:
               - |
                 echo "Testing connection for DB $MAIN_DATABASE and $LOG_DATABASE on $PGHOST"
@@ -158,7 +153,6 @@ spec:
                   - ALL
 
     service:
-
       sonarr:
         controller: sonarr
         ports:
@@ -166,7 +160,6 @@ spec:
             port: *port_http
 
     ingress:
-
       sonarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -185,7 +178,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       config:
         type: emptyDir
 
@@ -208,7 +200,6 @@ spec:
           - path: /mnt/media-data
 
     rawResources:
-
       main:
         apiVersion: postgresql.cnpg.io/v1
         kind: Database

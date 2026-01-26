@@ -13,7 +13,6 @@ upstreams:
       - https://1.0.0.1/dns-query
 
 blocking:
-
   denylists:
     advertisement:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts

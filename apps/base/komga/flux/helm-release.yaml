@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
 
@@ -45,7 +44,6 @@ spec:
                         operator: Exists
 
         containers:
-
           komga:
             image:
               repository: gotson/komga # cSpell:ignore gotson
@@ -54,8 +52,8 @@ spec:
               UMASK: 0002
               SERVER_PORT: &port_http 25600
               KOMGA_CORS_ALLOWEDORIGINS: https://komga.vonarx.online # cSpell:ignore CORS_ALLOWEDORIGINS
-              KOMGA_OAUTH2ACCOUNTCREATION: 'true' # cSpell:ignore OAUTH2ACCOUNTCREATION
-              KOMGA_OIDCEMAILVERIFICATION: 'false' # cSpell:ignore OIDCEMAILVERIFICATION
+              KOMGA_OAUTH2ACCOUNTCREATION: "true" # cSpell:ignore OAUTH2ACCOUNTCREATION
+              KOMGA_OIDCEMAILVERIFICATION: "false" # cSpell:ignore OIDCEMAILVERIFICATION
               SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET: # cSpell:ignore CLIENTSECRET
                 valueFrom:
                   secretKeyRef:
@@ -72,7 +70,6 @@ spec:
                   - ALL
 
     service:
-
       komga:
         controller: komga
         ports:
@@ -80,7 +77,6 @@ spec:
             port: *port_http
 
     ingress:
-
       komga:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -99,7 +95,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -123,7 +118,6 @@ spec:
         path: /mnt/chronos/media-data
 
     rawResources:
-
       dest-config:
         enabled: false
         apiVersion: volsync.backube/v1alpha1
@@ -134,7 +128,7 @@ spec:
               manual: restore-once
             restic:
               repository: komga-restic-config
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -152,7 +146,7 @@ spec:
           spec:
             sourcePVC: komga-config
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: komga-restic-config
               pruneIntervalDays: 7

@@ -16,7 +16,7 @@ spec:
       key: ca.crt
     namespaceSelector:
       matchLabels:
-        vonarx.online/distribute-nyx-ca-cert-bundle: 'true'
+        vonarx.online/distribute-nyx-ca-cert-bundle: "true"
 
 ---
 apiVersion: trust.cert-manager.io/v1alpha1
@@ -37,4 +37,4 @@ spec:
       key: ca.crt
     namespaceSelector:
       matchLabels:
-        vonarx.online/distribute-public-nyx-ca-cert-bundle: 'true'
+        vonarx.online/distribute-public-nyx-ca-cert-bundle: "true"

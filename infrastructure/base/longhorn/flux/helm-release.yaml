@@ -15,11 +15,10 @@ spec:
       interval: 30m
 
   values:
-
     longhornManager:
       tolerations:
         - key: vonarx.online/weak-node
-          value: 'true'
+          value: "true"
           effect: "PreferNoSchedule"
           operator: "Equal"
 

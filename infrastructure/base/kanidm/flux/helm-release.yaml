@@ -20,12 +20,10 @@ spec:
       name: kanidm-secret-values
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
 
     controllers:
-
       kanidm:
         type: statefulset
 
@@ -39,14 +37,13 @@ spec:
               type: RuntimeDefault
 
         containers:
-
           kanidm:
             image:
               repository: kanidm/server
               tag: 1.8.5@sha256:55af50cf02909ff8f62d3a083870e697a47658c2dac94598dc5dbeb7de5955f3
             env:
-              KANIDM_BINDADDRESS: '[::]:8443' # cSpell:ignore BINDADDRESS
-              KANIDM_LDAPBINDADDRESS: '[::]:3636' # cSpell:ignore LDAPBINDADDRESS
+              KANIDM_BINDADDRESS: "[::]:8443" # cSpell:ignore BINDADDRESS
+              KANIDM_LDAPBINDADDRESS: "[::]:3636" # cSpell:ignore LDAPBINDADDRESS
               KANIDM_TRUST_X_FORWARD_FOR: true
               KANIDM_DB_PATH: /data/kanidm.db
               KANIDM_TLS_CHAIN: &path_tls_crt /data/tls.crt
@@ -90,7 +87,6 @@ spec:
                   - ALL
 
     service:
-
       kanidm:
         controller: kanidm
         primary: true
@@ -111,7 +107,6 @@ spec:
             protocol: TCP
 
     ingress:
-
       kanidm:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -130,7 +125,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       data:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -151,7 +145,6 @@ spec:
             subPath: tls.key
 
     rawResources:
-
       transport:
         apiVersion: traefik.io/v1alpha1
         kind: ServersTransport
@@ -171,7 +164,7 @@ spec:
               manual: restore-once
             restic:
               repository: kanidm-restic-data
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -189,7 +182,7 @@ spec:
           spec:
             sourcePVC: kanidm-data
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: kanidm-restic-data
               pruneIntervalDays: 7

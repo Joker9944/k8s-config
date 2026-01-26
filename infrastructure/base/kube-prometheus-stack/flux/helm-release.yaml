@@ -25,16 +25,14 @@ spec:
       retries: 3
 
   values:
-
     # TODO Pull this stack chart apart and use the individual app charts
     # create a monitoring-apps ns for Grafana
 
     alertmanager:
-
       ingress:
         enabled: true
         annotations:
-          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-network-internal-whitelist@kubernetescrd
         hosts:
@@ -47,14 +45,12 @@ spec:
               - alertmanager.vonarx.online
 
     grafana:
-
       admin:
         existingSecret: grafana-admin
         userKey: username
         passwordKey: password
 
       grafana.ini:
-
         server:
           root_url: https://grafana.vonarx.online/
 
@@ -84,7 +80,6 @@ spec:
 
       # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
       additionalDataSources:
-
         - name: loki
           type: loki
           access: proxy
@@ -93,7 +88,7 @@ spec:
       ingress:
         enabled: true
         annotations:
-          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-country-whitelist@kubernetescrd
         hosts:
@@ -106,7 +101,6 @@ spec:
               - grafana.vonarx.online.vonarx.online
 
     prometheus:
-
       prometheusSpec:
         retention: 14d
         retentionSize: 30GB
@@ -115,7 +109,7 @@ spec:
           volumeClaimTemplate:
             spec:
               storageClassName: longhorn
-              accessModes: [ "ReadWriteOnce" ]
+              accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
                   storage: 30Gi
@@ -123,7 +117,7 @@ spec:
       ingress:
         enabled: true
         annotations:
-          traefik.ingress.kubernetes.io/router.tls: 'true'
+          traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: PLACEHOLDER-chain-network-internal-whitelist@kubernetescrd
         hosts:

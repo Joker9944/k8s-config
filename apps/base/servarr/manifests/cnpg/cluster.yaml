@@ -46,7 +46,6 @@ spec:
 
   managed:
     roles:
-
       - name: servarr
         login: true
         superuser: true

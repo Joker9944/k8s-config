@@ -15,7 +15,6 @@ components:
   - ../../../components/common-middlewares
 
 replacements:
-
   - source:
       kind: HelmRelease
       name: kube-prometheus-stack
@@ -29,5 +28,5 @@ replacements:
           - spec.values.grafana.ingress.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
           - spec.values.prometheus.ingress.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 0

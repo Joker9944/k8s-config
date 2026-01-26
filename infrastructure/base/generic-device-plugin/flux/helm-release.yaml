@@ -16,12 +16,10 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
 
     controllers:
-
       generic-device-plugin:
         type: daemonset
 
@@ -38,7 +36,6 @@ spec:
           priorityClassName: system-node-critical
 
         containers:
-
           generic-device-plugin:
             image:
               repository: squat/generic-device-plugin
@@ -66,7 +63,6 @@ spec:
                   - ALL
 
     persistence:
-
       device-plugin:
         type: hostPath
         hostPath: /var/lib/kubelet/device-plugins

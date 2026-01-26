@@ -20,7 +20,6 @@ spec:
       name: jellyfin-secret-values
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
 
@@ -34,7 +33,7 @@ spec:
             runAsGroup: &GUID 6000
             runAsNonRoot: true
             fsGroup: *GUID
-            supplementalGroups: [ 44, 107, 568 ]
+            supplementalGroups: [44, 107, 568]
             seccompProfile:
               type: RuntimeDefault
 
@@ -178,7 +177,6 @@ spec:
         type: emptyDir
 
     rawResources:
-
       dest-config:
         enabled: false
         apiVersion: volsync.backube/v1alpha1
@@ -189,7 +187,7 @@ spec:
               manual: restore-once
             restic:
               repository: jellyfin-restic-config
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -207,7 +205,7 @@ spec:
           spec:
             sourcePVC: jellyfin-config
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: jellyfin-restic-config
               pruneIntervalDays: 7

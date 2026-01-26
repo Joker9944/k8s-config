@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -34,9 +33,7 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
-
       radarr:
-
         pod:
           securityContext:
             runAsUser: &PUID 6005
@@ -44,12 +41,11 @@ spec:
             runAsNonRoot: true
             fsGroup: *GUID
             fsGroupChangePolicy: OnRootMismatch
-            supplementalGroups: [ 568 ]
+            supplementalGroups: [568]
             seccompProfile:
               type: RuntimeDefault
 
         containers:
-
           radarr:
             image:
               repository: ghcr.io/home-operations/radarr
@@ -120,7 +116,6 @@ spec:
                   - ALL
 
         initContainers:
-
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
@@ -157,7 +152,6 @@ spec:
                   - ALL
 
     service:
-
       radarr:
         controller: radarr
         ports:
@@ -165,7 +159,6 @@ spec:
             port: *port_http
 
     ingress:
-
       radarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -184,7 +177,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       config:
         type: emptyDir
 
@@ -207,7 +199,6 @@ spec:
           - path: /mnt/media-data
 
     rawResources:
-
       main:
         apiVersion: postgresql.cnpg.io/v1
         kind: Database

@@ -16,7 +16,6 @@ components:
   - ../../../components/common-middlewares
 
 replacements:
-
   - source:
       kind: HelmRelease
       name: longhorn
@@ -28,5 +27,5 @@ replacements:
         fieldPaths:
           - spec.values.ingress.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 0

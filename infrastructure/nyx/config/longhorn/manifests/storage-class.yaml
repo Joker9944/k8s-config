@@ -7,7 +7,7 @@ provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
   dataLocality: strict-local
-  numberOfReplicas: '1'
+  numberOfReplicas: "1"
 
 ---
 apiVersion: storage.k8s.io/v1
@@ -18,4 +18,4 @@ provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
   dataLocality: best-effort
-  numberOfReplicas: '1'
+  numberOfReplicas: "1"

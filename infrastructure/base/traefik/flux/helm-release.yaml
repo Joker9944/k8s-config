@@ -25,7 +25,6 @@ spec:
       retries: 3
 
   values:
-
     deployment:
       # Switched to DaemonSet since it allows node local routing with externalTrafficPolicy set to Local
       kind: DaemonSet
@@ -102,7 +101,6 @@ spec:
         name: bitnami
 
   values:
-
     architecture: standalone
 
     master:
@@ -110,6 +108,6 @@ spec:
         enabled: false
 
     secretAnnotations:
-      reflector.v1.k8s.emberstack.com/reflection-allowed: 'true'
-      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: 'true'
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
       reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: servarr

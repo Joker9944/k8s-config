@@ -18,11 +18,9 @@ spec:
       name: pgadmin-secret-values
 
   values:
-
     serverDefinitions:
       enabled: true
       servers:
-
         blocky:
           Name: Blocky
           Group: Servers

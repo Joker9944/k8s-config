@@ -13,7 +13,6 @@ components:
   - ../../../components/common-kustomizeconfig
 
 configMapGenerator:
-
   - name: alloy-config
     files:
       - config.alloy=files/config.alloy

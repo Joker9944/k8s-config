@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
 
@@ -31,14 +30,12 @@ spec:
           type: RuntimeDefault
 
     controllers:
-
       blocky:
         type: deployment
         replicas: 2
         strategy: RollingUpdate
 
         containers:
-
           blocky:
             image:
               repository: ghcr.io/0xerr0r/blocky #cSpell:ignore 0xerr0r
@@ -76,7 +73,7 @@ spec:
                 memory: 100Mi
               limits:
                 memory: 500Mi
-            args: ['--config', '/config/']
+            args: ["--config", "/config/"]
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -87,7 +84,6 @@ spec:
                   - ALL
 
         initContainers:
-
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
@@ -242,7 +238,6 @@ spec:
         name: bitnami
 
   values:
-
     architecture: standalone
     master:
       persistence:

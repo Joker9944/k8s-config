@@ -1,6 +1,6 @@
 ---
 $schema: https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json
-version: '0.2'
+version: "0.2"
 caseSensitive: false
 import:
   - cspell-dicts/cspell.yaml
@@ -14,10 +14,10 @@ ignorePaths:
   - /.sops.yaml
   - .gitignore
   - flake.lock
-  - '*.sops.yaml'
-  - '*.sops.yml'
+  - "*.sops.yaml"
+  - "*.sops.yml"
   - secret.yaml
-  - '*.json'
+  - "*.json"
   - /**/flux-system/*.yaml
 dictionaries:
   - project

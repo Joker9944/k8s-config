@@ -14,7 +14,6 @@ components:
   - ../../../components/common-middlewares
 
 replacements:
-
   - source:
       kind: HelmRelease
       name: garage
@@ -26,5 +25,5 @@ replacements:
         fieldPaths:
           - spec.values.ingress.s3.api.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 0

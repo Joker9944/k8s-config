@@ -20,7 +20,6 @@ spec:
       name: jellyseerr-secret-values
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -133,7 +132,6 @@ spec:
         type: emptyDir
 
     rawResources:
-
       dest-config:
         enabled: false
         apiVersion: volsync.backube/v1alpha1
@@ -144,7 +142,7 @@ spec:
               manual: restore-once
             restic:
               repository: jellyseerr-restic-config
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -162,7 +160,7 @@ spec:
           spec:
             sourcePVC: jellyseerr-config
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: jellyseerr-restic-config
               pruneIntervalDays: 7

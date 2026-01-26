@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -35,7 +34,6 @@ spec:
 
     controllers:
       flaresolverr:
-
         pod:
           securityContext:
             runAsNonRoot: false

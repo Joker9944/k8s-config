@@ -17,7 +17,6 @@ spec:
   # crds are already installed by the loki helm release
 
   values:
-
     alloy:
       configMap:
         create: false

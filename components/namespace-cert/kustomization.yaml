@@ -26,5 +26,5 @@ replacements:
           - spec.secretName
           - metadata.name
         options:
-          delimiter: '-'
+          delimiter: "-"
           index: 1

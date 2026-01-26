@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: PLACEHOLDER
   labels:
-    vonarx.online/distribute-nyx-ca-cert-bundle: 'true'
+    vonarx.online/distribute-nyx-ca-cert-bundle: "true"

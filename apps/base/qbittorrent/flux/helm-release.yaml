@@ -20,7 +20,6 @@ spec:
       name: qbittorrent-secret-values
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -53,7 +52,6 @@ spec:
               type: RuntimeDefault
 
         containers:
-
           qbittorrent:
             image:
               repository: ghcr.io/home-operations/qbittorrent
@@ -80,20 +78,35 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
+                    command:
+                      [
+                        /bin/sh,
+                        -c,
+                        'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1',
+                      ]
                   failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
+                    command:
+                      [
+                        /bin/sh,
+                        -c,
+                        'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1',
+                      ]
               startup:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/bin/sh, -c, 'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1']
+                    command:
+                      [
+                        /bin/sh,
+                        -c,
+                        'curl --fail "http://localhost:$QBITTORRENT__PORT/api/v2/app/version" || exit 1',
+                      ]
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
@@ -119,7 +132,7 @@ spec:
               FIREWALL_INPUT_PORTS: *port_http
               VPN_INTERFACE: *vpn_interface
               FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12
-              BLOCK_MALICIOUS: 'off'
+              BLOCK_MALICIOUS: "off"
             probes:
               liveness:
                 enabled: true
@@ -166,7 +179,6 @@ spec:
                   - ALL
 
     service:
-
       qbittorrent:
         controller: qbittorrent
         ports:
@@ -174,7 +186,6 @@ spec:
             port: *port_http
 
     ingress:
-
       qbittorrent:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -194,7 +205,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
@@ -219,7 +229,6 @@ spec:
               - path: /mnt/media-data
 
     rawResources:
-
       dest-config:
         enabled: false
         apiVersion: volsync.backube/v1alpha1
@@ -230,7 +239,7 @@ spec:
               manual: restore-once
             restic:
               repository: qbittorrent-restic-config
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -248,7 +257,7 @@ spec:
           spec:
             sourcePVC: qbittorrent-config
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: qbittorrent-restic-config
               pruneIntervalDays: 7

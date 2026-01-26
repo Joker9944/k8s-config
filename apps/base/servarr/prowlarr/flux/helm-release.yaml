@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -34,9 +33,7 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
-
       prowlarr:
-
         pod:
           securityContext:
             runAsUser: &PUID 568
@@ -47,7 +44,6 @@ spec:
               type: RuntimeDefault
 
         containers:
-
           prowlarr:
             image:
               repository: ghcr.io/home-operations/prowlarr
@@ -117,7 +113,6 @@ spec:
                   - ALL
 
         initContainers:
-
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
@@ -154,7 +149,6 @@ spec:
                   - ALL
 
     service:
-
       prowlarr:
         controller: prowlarr
         ports:
@@ -162,7 +156,6 @@ spec:
             port: *port_http
 
     ingress:
-
       prowlarr:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
@@ -181,7 +174,6 @@ spec:
             secretName: wildcard-vonarx-online-cert
 
     persistence:
-
       config:
         type: emptyDir
 
@@ -189,7 +181,6 @@ spec:
         type: emptyDir
 
     rawResources:
-
       main:
         apiVersion: postgresql.cnpg.io/v1
         kind: Database

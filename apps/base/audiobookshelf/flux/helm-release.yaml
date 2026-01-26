@@ -20,9 +20,8 @@ spec:
       name: audiobookshelf-secret-values
 
   values:
-
     global:
-     alwaysAppendIdentifierToResourceName: true
+      alwaysAppendIdentifierToResourceName: true
 
     controllers:
       audiobookshelf:
@@ -155,7 +154,6 @@ spec:
         type: emptyDir
 
     rawResources:
-
       dest-config:
         enabled: false
         apiVersion: volsync.backube/v1alpha1
@@ -166,7 +164,7 @@ spec:
               manual: restore-once
             restic:
               repository: audiobookshelf-restic-config
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_config_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -184,7 +182,7 @@ spec:
           spec:
             sourcePVC: audiobookshelf-config
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: audiobookshelf-restic-config
               pruneIntervalDays: 7
@@ -209,7 +207,7 @@ spec:
               manual: restore-once
             restic:
               repository: audiobookshelf-restic-metadata
-              accessModes: [ ReadWriteOnce ]
+              accessModes: [ReadWriteOnce]
               capacity: *pvc_metadata_size
               copyMethod: Snapshot
               moverSecurityContext:
@@ -227,7 +225,7 @@ spec:
           spec:
             sourcePVC: audiobookshelf-metadata
             trigger:
-              schedule: '@daily'
+              schedule: "@daily"
             restic:
               repository: audiobookshelf-restic-metadata
               pruneIntervalDays: 7

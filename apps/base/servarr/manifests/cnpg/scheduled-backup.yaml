@@ -4,7 +4,7 @@ metadata:
   name: servarr-cnpg-daily
 spec:
   immediate: true
-  schedule: '@daily'
+  schedule: "@daily"
   cluster:
     name: servarr-cnpg
   backupOwnerReference: self

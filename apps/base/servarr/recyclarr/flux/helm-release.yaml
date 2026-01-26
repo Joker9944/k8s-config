@@ -16,7 +16,6 @@ spec:
         name: bjw-s
 
   values:
-
     global:
       alwaysAppendIdentifierToResourceName: true
       labels:
@@ -34,7 +33,6 @@ spec:
               app.kubernetes.io/part-of: servarr
 
     controllers:
-
       recyclarr:
         type: cronjob
 
@@ -58,7 +56,6 @@ spec:
               type: RuntimeDefault
 
         containers:
-
           recyclarr:
             image:
               repository: ghcr.io/recyclarr/recyclarr
@@ -72,7 +69,6 @@ spec:
                   - ALL
 
     persistence:
-
       config:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
