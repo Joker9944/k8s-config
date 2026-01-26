@@ -1,6 +1,7 @@
 FROM alpine:3.23.2@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 AS downloader
 
 ARG TARGETARCH
+# cSpell:ignore LukasKnuth
 # renovate: datasource=github-releases depName=gotify-slack-webhook packageName=LukasKnuth/gotify-slack-webhook versioning=semver-coerced
 ARG GOTIFY_SLACK_WEBHOOK_VERSION=2025.11.1
 ARG GOTIFY_SLACK_WEBHOOK_SHA256_AMD64="c139acfddfa9190156f2fd644c3b4069262ad53e65c2bca80e3ff3a37bfbc248"

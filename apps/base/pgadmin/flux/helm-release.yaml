@@ -11,7 +11,7 @@ spec:
       interval: 5m
       sourceRef:
         kind: HelmRepository
-        name: runix
+        name: runix # cSpell:ignore runix
 
   valuesFrom:
     - kind: Secret

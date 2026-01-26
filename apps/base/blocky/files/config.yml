@@ -57,18 +57,18 @@ blocking:
       - | # Android TV
         redirector.gvt1.com
 
-      - | # MS Teams
+      - | # MS Teams cSpell:ignore giphy
         *.giphy.com
 
     social:
-      - | # Instagram
+      - | # Instagram cSpell:ignore cdninstagram fzrh3 fbcdn scontent
         www.instagram.com
         static.cdninstagram.com
         instagram.fzrh3-1.fna.fbcdn.net
         graphql.instagram.com
         scontent.cdninstagram.com
 
-      - | # Reddit
+      - | # Reddit cSpell:ignore redditstatic redditmedia fastly
         reddit.com
         www.reddit.com
         www.redditstatic.com
@@ -76,7 +76,7 @@ blocking:
         *.redd.it
         reddit.map.fastly.net
 
-      - | # LinkedIn
+      - | # LinkedIn cSpell:ignore licdn
         www.linkedin.com
         brand.linkedin.com
         content.linkedin.com
@@ -88,7 +88,7 @@ blocking:
         www.tiktok.com
         vm.tiktok.com
 
-      - | # Twitter
+      - | # Twitter cSpell:ignore twimg
         twitter.com
         x.com
         *.twimg.com

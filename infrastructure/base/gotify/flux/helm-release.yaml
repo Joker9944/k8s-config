@@ -40,15 +40,15 @@ spec:
               tag: 2.8.0@sha256:9cfab7e072b4c745a4533fa25bdb09d379845a73fd06e2a877ce2a614601b921
             env:
               GOTIFY_SERVER_PORT: &port_http 8080
-              GOTIFY_SERVER_KEEPALIVEPERIODSECONDS: 0
-              GOTIFY_SERVER_LISTENADDR:
+              GOTIFY_SERVER_KEEPALIVEPERIODSECONDS: 0 # cSpell:ignore KEEPALIVEPERIODSECONDS
+              GOTIFY_SERVER_LISTENADDR: # cSpell:ignore LISTENADDR
               GOTIFY_SERVER_SSL_ENABLED: false
-              GOTIFY_SERVER_TRUSTEDPROXIES: "[10.244.0.0/16]"
-              GOTIFY_SERVER_CORS_ALLOWORIGINS: "[gotify.vonarx.online]"
-              GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
+              GOTIFY_SERVER_TRUSTEDPROXIES: "[10.244.0.0/16]" # cSpell:ignore TRUSTEDPROXIES
+              GOTIFY_SERVER_CORS_ALLOWORIGINS: "[gotify.vonarx.online]" # cSpell:ignore ALLOWORIGINS
+              GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45 # cSpell:ignore PINGPERIODSECONDS
               GOTIFY_DATABASE_DIALECT: postgres
-              GOTIFY_UPLOADEDIMAGESDIR: /data/images
-              GOTIFY_PLUGINSDIR: /plugins
+              GOTIFY_UPLOADEDIMAGESDIR: /data/images # cSpell:ignore UPLOADEDIMAGESDIR
+              GOTIFY_PLUGINSDIR: /plugins # cSpell:ignore PLUGINSDIR
             envFrom:
               - secretRef:
                   name: gotify-default-user
@@ -281,7 +281,7 @@ spec:
         containers:
           bridge:
             image:
-              repository: ghcr.io/druggeri/alertmanager_gotify_bridge
+              repository: ghcr.io/druggeri/alertmanager_gotify_bridge # cSpell:ignore druggeri
               tag: 2.3.2@sha256:242441023c6a7956fc7bcdd30350a8fed38f791e703d670aa286fc0465f88b41
             env:
               GOTIFY_ENDPOINT: http://gotify/message

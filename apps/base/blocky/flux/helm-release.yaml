@@ -41,7 +41,7 @@ spec:
 
           blocky:
             image:
-              repository: ghcr.io/0xerr0r/blocky
+              repository: ghcr.io/0xerr0r/blocky #cSpell:ignore 0xerr0r
               tag: v0.26@sha256:b259ada3f943e73283f1fc5e84ac39a791afec7de86515d1aeccc03d2c39e595
             probes:
               liveness:
@@ -66,7 +66,7 @@ spec:
                   exec:
                     command: [/app/blocky, healthcheck]
                   timeoutSeconds: 3
-                  # High threshold since initial download of all blocklists can take quite some time.
+                  # High threshold since initial download of all block lists can take quite some time.
                   # Estimate = 120 * 5s = 600s = 10m
                   failureThreshold: 120
                   periodSeconds: 5

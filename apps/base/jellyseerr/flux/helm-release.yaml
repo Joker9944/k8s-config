@@ -54,7 +54,7 @@ spec:
         containers:
           jellyseerr:
             image:
-              repository: fallenbagel/jellyseerr
+              repository: fallenbagel/jellyseerr # cSpell:ignore fallenbagel
               tag: 2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764
             env:
               PORT: &port_http 5055

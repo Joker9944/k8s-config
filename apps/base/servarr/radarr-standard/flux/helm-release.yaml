@@ -58,8 +58,8 @@ spec:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
               UMASK: "0002"
-              RADARR__APP__INSTANCENAME: Radarr Standard
-              RADARR__AUTH__APIKEY:
+              RADARR__APP__INSTANCENAME: Radarr Standard # cSpell:ignore INSTANCENAME
+              RADARR__AUTH__APIKEY: # cSpell:ignore APIKEY
                 valueFrom:
                   secretKeyRef:
                     name: radarr-standard-api-key
@@ -79,8 +79,8 @@ spec:
                   secretKeyRef:
                     name: radarr-standard-cnpg-user
                     key: password
-              RADARR__POSTGRES__MAINDB: radarr-standard-main
-              RADARR__POSTGRES__LOGDB: radarr-standard-log
+              RADARR__POSTGRES__MAINDB: radarr-standard-main # cSpell:ignore MAINDB
+              RADARR__POSTGRES__LOGDB: radarr-standard-log # cSpell:ignore LOGDB
             probes:
               liveness:
                 enabled: true

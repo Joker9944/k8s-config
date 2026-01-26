@@ -1,0 +1,3 @@
+[submodule ".config/cspell-dicts"]
+	path = .config/cspell-dicts
+	url = https://github.com/Joker9944/cspell-dicts.git

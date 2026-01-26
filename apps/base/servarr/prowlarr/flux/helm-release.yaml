@@ -55,8 +55,8 @@ spec:
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: 0
-              PROWLARR__APP__INSTANCENAME: Prowlarr
-              PROWLARR__AUTH__APIKEY:
+              PROWLARR__APP__INSTANCENAME: Prowlarr # cSpell:ignore INSTANCENAME
+              PROWLARR__AUTH__APIKEY: # cSpell:ignore APIKEY
                 valueFrom:
                   secretKeyRef:
                     name: prowlarr-api-key
@@ -76,8 +76,8 @@ spec:
                   secretKeyRef:
                     name: prowlarr-cnpg-user
                     key: password
-              PROWLARR__POSTGRES__MAINDB: prowlarr-main
-              PROWLARR__POSTGRES__LOGDB: prowlarr-log
+              PROWLARR__POSTGRES__MAINDB: prowlarr-main # cSpell:ignore MAINDB
+              PROWLARR__POSTGRES__LOGDB: prowlarr-log # cSpell:ignore LOGDB
             probes:
               liveness:
                 enabled: true

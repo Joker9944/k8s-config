@@ -80,7 +80,7 @@ spec:
       envFromSecret: grafana-environment
 
       plugins:
-        - grafana-lokiexplore-app
+        - grafana-lokiexplore-app # cSpell:words lokiexplore
 
       # https://github.com/prometheus-community/helm-charts/blob/c6c8375e78d9d0a17bca956f146ed1bfc4f2689c/charts/kube-prometheus-stack/values.yaml#L1156-L1171
       additionalDataSources:

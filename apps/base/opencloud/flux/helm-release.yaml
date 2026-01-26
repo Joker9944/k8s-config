@@ -18,7 +18,7 @@ spec:
 
       domain:
         opencloud: cloud-eval.vonarx.online
-        wopi: wopiserver.vonarx.online
+        wopi: wopiserver.vonarx.online # cSpell:words wopiserver
         collabora: office-eval.vonarx.online
 
       tls:

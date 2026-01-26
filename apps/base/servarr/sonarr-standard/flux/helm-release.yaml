@@ -58,8 +58,8 @@ spec:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
               UMASK: "0002"
-              SONARR__APP__INSTANCENAME: Sonarr Standard
-              SONARR__AUTH__APIKEY:
+              SONARR__APP__INSTANCENAME: Sonarr Standard # cSpell:ignore INSTANCENAME
+              SONARR__AUTH__APIKEY: # cSpell:ignore APIKEY
                 valueFrom:
                   secretKeyRef:
                     name: sonarr-standard-api-key
@@ -79,8 +79,8 @@ spec:
                   secretKeyRef:
                     name: sonarr-standard-cnpg-user
                     key: password
-              SONARR__POSTGRES__MAINDB: sonarr-standard-main
-              SONARR__POSTGRES__LOGDB: sonarr-standard-log
+              SONARR__POSTGRES__MAINDB: sonarr-standard-main # cSpell:ignore MAINDB
+              SONARR__POSTGRES__LOGDB: sonarr-standard-log # cSPell:ignore LOGDB
             probes:
               liveness:
                 enabled: true

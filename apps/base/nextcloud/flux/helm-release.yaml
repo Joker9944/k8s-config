@@ -68,7 +68,7 @@ spec:
         # Ingress
         - name: TRUSTED_PROXIES
           value: 10.244.0.0/16
-        - name: OVERWRITEPROTOCOL
+        - name: OVERWRITEPROTOCOL # cSpell:ignore OVERWRITEPROTOCOL
           value: https
 
     persistence:
@@ -121,7 +121,7 @@ spec:
 
       collabora:
 
-        aliasgroups:
+        aliasgroups: # cSpell:ignore aliasgroups
           - host: https://cloud.vonarx.online:443
 
         extra_params: '--o:ssl.enable=false --o:ssl.termination=true --o:remote_font_config.url=https://cloud.vonarx.online/apps/richdocuments/settings/fonts.json'

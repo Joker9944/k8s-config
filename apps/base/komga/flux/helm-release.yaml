@@ -48,20 +48,20 @@ spec:
 
           komga:
             image:
-              repository: gotson/komga
+              repository: gotson/komga # cSpell:ignore gotson
               tag: 1.23.6@sha256:09129eae6eff50337f039bd6e99d995126cb03226950c80e9864cbc05f10a661
             env:
               UMASK: 0002
               SERVER_PORT: &port_http 25600
-              KOMGA_CORS_ALLOWEDORIGINS: https://komga.vonarx.online
-              KOMGA_OAUTH2ACCOUNTCREATION: 'true'
-              KOMGA_OIDCEMAILVERIFICATION: 'false'
-              SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET:
+              KOMGA_CORS_ALLOWEDORIGINS: https://komga.vonarx.online # cSpell:ignore CORS_ALLOWEDORIGINS
+              KOMGA_OAUTH2ACCOUNTCREATION: 'true' # cSpell:ignore OAUTH2ACCOUNTCREATION
+              KOMGA_OIDCEMAILVERIFICATION: 'false' # cSpell:ignore OIDCEMAILVERIFICATION
+              SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET: # cSpell:ignore CLIENTSECRET
                 valueFrom:
                   secretKeyRef:
                     name: komga-oidc
                     key: client-secret
-              LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+              LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO # cSpell:ignore SPRINGFRAMEWORK
             # TODO Probes
             # TODO Resources
             securityContext:
