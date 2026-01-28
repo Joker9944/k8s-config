@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   REGISTRY: ghcr.io
@@ -51,27 +52,69 @@ jobs:
 
         run: nix profile add nixpkgs#jq
 
+      - name: Install cosign
+        id: cosign-install
+        shell: bash
+
+        run: nix profile add nixpkgs#cosign
+
       - name: Build image tarball
         id: nix-build
         shell: bash
 
         run: nix build -L ${{ matrix.attr }}
 
+      - name: Extract image metadata
+        id: image-metadata
+        shell: bash
+
+        run: |
+          IMAGE=$(tar -xOf ./result manifest.json | jq -r '.[0].RepoTags[0]')
+
+          IMAGE_NAME="${IMAGE%%:*}"
+
+          IMAGE_TAG_PATCH="${IMAGE#*:}"
+          IMAGE_TAG_MINOR="${IMAGE_TAG_PATCH%.*}"
+          IMAGE_TAG_MAJOR="${IMAGE_TAG_PATCH%%.*}"
+
+          echo "image-name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "image-tags=latest $IMAGE_TAG_MAJOR $IMAGE_TAG_MINOR $IMAGE_TAG_PATCH" >> "$GITHUB_OUTPUT"
+
       - name: Publish image tarball
         id: skopeo-copy
         shell: bash
 
         run: |
-          IMAGE=$(skopeo list-tags "docker-archive:./result" | jq --raw-output '.Tags.[0]')
+          DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${{ steps.image-metadata.outputs.image-name }}"
 
-          DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${IMAGE%%:*}"
+          for IMAGE_TAG in ${{ steps.image-metadata.outputs.image-tags }}; do
+            if [[ ! -n ${DIGEST:-} ]]; then
+              skopeo copy \
+                --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+                --digestfile digest.txt \
+                "docker-archive:./result" \
+                "docker://$DEST:$IMAGE_TAG"
 
-          skopeo copy \
-            --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
-            "docker-archive:./result" \
-            "docker://$DEST:${IMAGE#*:}"
+              DIGEST="$(tr -d '\r\n' < digest.txt)"
+              echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+            else
+              skopeo copy \
+                --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+                "docker://$DEST@$DIGEST" \
+                "docker://$DEST:$IMAGE_TAG"
+            fi
+          done
 
-          skopeo copy \
-            --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
-            "docker-archive:./result" \
-            "docker://$DEST:latest"
+      - name: Sign tags
+        id: cosign-sign
+        shell: bash
+
+        run: |
+          DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${{ steps.image-metadata.outputs.image-name }}"
+
+          for IMAGE_TAG in ${{ steps.image-metadata.outputs.image-tags }}; do
+            cosign sign \
+              --registry-username "${{ github.actor }}" \
+              --registry-password "${{ secrets.GITHUB_TOKEN }}" \
+              --yes "$DEST:$IMAGE_TAG@${{ steps.skopeo-copy.outputs.digest }}"
+          done
