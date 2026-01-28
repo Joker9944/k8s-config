@@ -1,0 +1,77 @@
+name: docker-publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - flake.lock
+      - images/**
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - attr: .#abiotic-factor-server
+          - attr: .#steamcmd
+          - attr: .#gotify-custom
+          - attr: .#jinja-cli
+          - attr: .#postgresql-client
+
+    steps:
+      - name: Repository checkout
+        id: git-checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+        # cSpell:ignore cachix
+      - name: Install nix
+        id: nix-install
+        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
+
+      - name: Install skopeo
+        id: skopeo-install
+        shell: bash
+
+        run: nix profile add nixpkgs#skopeo
+
+      - name: Install jq
+        id: jq-install
+        shell: bash
+
+        run: nix profile add nixpkgs#jq
+
+      - name: Build image tarball
+        id: nix-build
+        shell: bash
+
+        run: nix build -L ${{ matrix.attr }}
+
+      - name: Publish image tarball
+        id: skopeo-copy
+        shell: bash
+
+        run: |
+          IMAGE=$(skopeo list-tags "docker-archive:./result" | jq --raw-output '.Tags.[0]')
+
+          DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${IMAGE%%:*}"
+
+          skopeo copy \
+            --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            "docker-archive:./result" \
+            "docker://$DEST:${IMAGE#*:}"
+
+          skopeo copy \
+            --dest-creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            "docker-archive:./result" \
+            "docker://$DEST:latest"

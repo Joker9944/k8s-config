@@ -25,7 +25,10 @@
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfreePredicate = pkg: lib.elem (lib.getName pkg) [ "steamcmd" ];
+        };
 
         envParts = [
           {
@@ -78,7 +81,18 @@
       in
       {
         packages = {
+          # programs
+          gomod-cap = pkgs.callPackage ./pkgs/gomod-cap.nix { flake = self; };
+          gotify-slack-webhook = pkgs.callPackage ./pkgs/gotify-slack-webhook.nix { flake = self; };
           sops-pre-commit = pkgs.callPackage ./pkgs/sops-pre-commit.nix { flake = self; };
+
+          # images
+          abiotic-factor-server = pkgs.callPackage ./images/abiotic-factor-server { flake = self; };
+          steamcmd = pkgs.callPackage ./images/steamcmd { flake = self; };
+          base = pkgs.callPackage ./images/base.nix { flake = self; };
+          gotify-custom = pkgs.callPackage ./images/gotify-custom.nix { flake = self; };
+          jinja-cli = pkgs.callPackage ./images/jinja-cli.nix { flake = self; };
+          postgresql-client = pkgs.callPackage ./images/postgresql-client.nix { flake = self; };
         };
 
         apps = lib.pipe envParts [
