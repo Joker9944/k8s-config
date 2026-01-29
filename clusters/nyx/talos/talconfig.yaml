@@ -1,6 +1,6 @@
 clusterName: nyx
 # renovate: datasource=docker depName=talos packageName=ghcr.io/siderolabs/installer
-talosVersion: v1.10.5
+talosVersion: v1.12.2
 # renovate: datasource=docker depName=kubelet packageName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.32.6
 endpoint: https://${VIP}:6443
