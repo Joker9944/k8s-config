@@ -21,6 +21,7 @@ kustomization
 kustomizeconfig
 metallb
 opencloud
+pkgs
 serverstransport
 sigstore
 TAILNET

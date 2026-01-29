@@ -1,0 +1,19 @@
+name: nix-flake-check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - flake.nix
+      - flake.lock
+      - images/**
+      - pkgs/**
+
+permissions:
+  contents: read
+
+jobs:
+  nix-flake-check:
+    uses: Joker9944/nix-config/.github/workflows/nix-flake-check.yaml@main
