@@ -142,9 +142,9 @@ controlPlane:
     - ${GATEWAY_IP}
     - ${NS_1_IP}
     - ${NS_2_IP}
+    - ${NS_TAILSCALE_IP}
   patches:
     - "@patches/ntp.yaml"
-    - "@patches/logging.yaml"
     - "@patches/kube-proxy-metrics.yaml"
     - "@patches/tailscale.yaml"
     - "@patches/control-plane-tailscale.yaml"
@@ -159,9 +159,9 @@ worker:
     - ${GATEWAY_IP}
     - ${NS_1_IP}
     - ${NS_2_IP}
+    - ${NS_TAILSCALE_IP}
   patches:
     - "@patches/ntp.yaml"
-    - "@patches/logging.yaml"
     - "@patches/kube-proxy-metrics.yaml"
     - "@patches/tailscale.yaml"
   extensionServices:

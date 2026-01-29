@@ -6,7 +6,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     # third party packages
     talhelper = {
-      url = "github:budimanjojo/talhelper/v3.0.30"; # cSpell:ignore budimanjojo talhelper
+      url = "github:budimanjojo/talhelper/v3.1.3"; # cSpell:ignore budimanjojo talhelper
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # helpers
