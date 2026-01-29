@@ -1,0 +1,17 @@
+name: nix-flake-update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * SAT"
+
+permissions:
+  contents: write
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  nix-flake-update:
+    uses: Joker9944/nix-config/.github/workflows/nix-flake-update.yaml@main
+    secrets: inherit
