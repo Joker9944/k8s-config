@@ -160,6 +160,16 @@
               inherit shellHook;
               buildInputs = enabledPackages;
             };
+
+          ci = pkgs.mkShell {
+            name = "ci";
+
+            packages = with pkgs; [
+              skopeo
+              jq
+              cosign
+            ];
+          };
         };
 
         checks = {

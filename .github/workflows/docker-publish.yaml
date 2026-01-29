@@ -6,8 +6,10 @@ on:
     branches:
       - main
     paths:
+      - flake.nix
       - flake.lock
       - images/**
+      - pkgs/**
 
 permissions:
   contents: read
@@ -39,24 +41,6 @@ jobs:
         id: nix-setup
         uses: Joker9944/nix-config/.github/composites/nix-setup@main
 
-      - name: Install skopeo
-        id: skopeo-install
-        shell: bash
-
-        run: nix profile add nixpkgs#skopeo
-
-      - name: Install jq
-        id: jq-install
-        shell: bash
-
-        run: nix profile add nixpkgs#jq
-
-      - name: Install cosign
-        id: cosign-install
-        shell: bash
-
-        run: nix profile add nixpkgs#cosign
-
       - name: Build image tarball
         id: nix-build
         shell: bash
@@ -81,7 +65,7 @@ jobs:
 
       - name: Publish image tarball
         id: skopeo-copy
-        shell: bash
+        shell: nix develop .#ci --command bash {0}
 
         run: |
           DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${{ steps.image-metadata.outputs.image-name }}"
@@ -106,7 +90,7 @@ jobs:
 
       - name: Sign tags
         id: cosign-sign
-        shell: bash
+        shell: nix develop .#ci --command bash {0}
 
         run: |
           DEST="${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/${{ steps.image-metadata.outputs.image-name }}"
