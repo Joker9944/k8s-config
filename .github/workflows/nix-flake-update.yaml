@@ -3,7 +3,7 @@ name: nix-flake-update
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 3 * * SAT"
+    - cron: "0 3 * * TUE,SAT"
 
 permissions:
   contents: write
