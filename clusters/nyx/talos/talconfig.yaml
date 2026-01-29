@@ -1,6 +1,6 @@
 clusterName: nyx
 # renovate: datasource=docker depName=talos packageName=ghcr.io/siderolabs/installer
-talosVersion: v1.10.5
+talosVersion: v1.12.2
 # renovate: datasource=docker depName=kubelet packageName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.32.6
 endpoint: https://${VIP}:6443
@@ -142,9 +142,9 @@ controlPlane:
     - ${GATEWAY_IP}
     - ${NS_1_IP}
     - ${NS_2_IP}
+    - ${NS_TAILSCALE_IP}
   patches:
     - "@patches/ntp.yaml"
-    - "@patches/logging.yaml"
     - "@patches/kube-proxy-metrics.yaml"
     - "@patches/tailscale.yaml"
     - "@patches/control-plane-tailscale.yaml"
@@ -159,9 +159,9 @@ worker:
     - ${GATEWAY_IP}
     - ${NS_1_IP}
     - ${NS_2_IP}
+    - ${NS_TAILSCALE_IP}
   patches:
     - "@patches/ntp.yaml"
-    - "@patches/logging.yaml"
     - "@patches/kube-proxy-metrics.yaml"
     - "@patches/tailscale.yaml"
   extensionServices:
