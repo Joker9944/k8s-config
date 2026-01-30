@@ -1,0 +1,149 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dedicated-server-abiotic-factor
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.6.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  values:
+    global:
+      alwaysAppendIdentifierToResourceName: true
+
+    controllers:
+      dedicated-server-abiotic-factor:
+        type: statefulset
+
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            supplementalGroups: [568]
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: vonarx.online/cpu-capacity
+                        operator: Gt
+                        values:
+                          - "5"
+                      - key: vonarx.online/memory-capacity
+                        operator: Gt
+                        values:
+                          - "10240"
+
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/cpu-performance
+                        operator: In
+                        values:
+                          - high
+                - weight: 10
+                  preference:
+                    matchExpressions:
+                      - key: vonarx.online/memory-performance
+                        operator: In
+                        values:
+                          - high
+
+        containers:
+          satisfactory-dedicated-server:
+            image:
+              repository: ghcr.io/joker9944/abiotic-factor-server
+              tag: 1.0.2@sha256:07e0cbc723b368d3fabe0c21a34c0ce5ab3b1d1af469d49e7757f27e883a6246
+            probes:
+              liveness:
+                enabled: false
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/bash, /healthcheck.sh]
+                  failureThreshold: 6
+              readiness:
+                enabled: false
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/bash, /healthcheck.sh]
+              startup:
+                enabled: false
+                custom: true
+                spec:
+                  exec:
+                    command: [/bin/bash, /healthcheck.sh]
+                  failureThreshold: 30
+                  periodSeconds: 5
+            envFrom:
+              - secretRef:
+                  name: dedicated-server-abiotic-factor
+            resources:
+              requests:
+                cpu: 200m
+                memory: 4Gi
+              limits:
+                cpu: 5
+                memory: 10Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                drop:
+                  - ALL
+
+        initContainers:
+          steamcmd:
+            image:
+              repository: ghcr.io/joker9944/steamcmd
+              tag: 1.0.0@sha256:ea8c2c77866092cd708770606676555cf80235b5ea3173442a1ebeea184dcea0
+            args:
+              - +@sSteamCmdForcePlatformType windows
+              - +login anonymous
+              - +app_update 2857200 validate
+              - +quit
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      dedicated-server-abiotic-factor:
+        controller: dedicated-server-abiotic-factor
+        type: LoadBalancer
+        annotations:
+          metallb.universe.tf/loadBalancerIPs: 192.168.0.131
+        ports:
+          server:
+            port: 7777
+          game:
+            port: 7777
+            protocol: UDP
+
+    persistence:
+      steam:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 20Gi
+        globalMounts:
+          - path: /home/steam
+
+      tmp:
+        type: emptyDir

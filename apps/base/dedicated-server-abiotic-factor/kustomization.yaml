@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dedicated-server-abiotic-factor
+
+resources:
+  - manifests/namespace.yaml
+  - manifests/secret.yaml
+  - flux/helm-release.yaml
+
+components:
+  - ../../../components/common-kustomizeconfig
+  - ../../../components/bjw-s-helm-repository
