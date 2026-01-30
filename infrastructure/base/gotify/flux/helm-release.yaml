@@ -286,7 +286,7 @@ spec:
             env:
               GOTIFY_ENDPOINT: http://gotify/message
               PORT: &port_http 8080
-              WEBHOOK_PATH: &webhook_bridge /webhook
+              WEBHOOK_PATH: /webhook
               PRIORITY_ANNOTATION: severity
             envFrom:
               - secretRef:
@@ -328,27 +328,3 @@ spec:
             primary: true
             port: 80
             targetPort: *port_http
-
-    rawResources:
-      alertmanager-config:
-        apiVersion: monitoring.coreos.com/v1alpha1
-        kind: AlertmanagerConfig
-        spec:
-          spec:
-            route:
-              receiver: gotify-joker9944
-              groupBy:
-                - namespace
-                - alertname
-                - severity
-              groupWait: 30s
-              groupInterval: 5m
-              repeatInterval: 3h
-
-            receivers:
-              - name: gotify-joker9944
-                sendResolved: false
-                webhookConfigs:
-                  - urlSecret:
-                      name: alertmanager-gotify-joker9944
-                      key: url

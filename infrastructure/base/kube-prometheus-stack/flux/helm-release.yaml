@@ -29,6 +29,17 @@ spec:
     # create a monitoring-apps ns for Grafana
 
     alertmanager:
+      config:
+        route:
+          receiver: gotify-joker9944
+
+        receivers:
+          - name: "null"
+          - name: gotify-joker9944
+            webhook_configs:
+              - send_resolved: false
+                url: http://gotify-alertmanager-bridge.gotify.svc.cluster.local/webhook
+
       ingress:
         enabled: true
         annotations:
