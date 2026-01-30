@@ -150,5 +150,15 @@ spec:
         globalMounts:
           - path: /home/steam
 
+      saved:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        retain: true
+        size: 2Gi
+        advancedMounts:
+          dedicated-server-abiotic-factor:
+            dedicated-server-abiotic-factor:
+              - path: /home/steam/.steam/steam/steamapps/common/Abiotic Factor Dedicated Server/AbioticFactor/Saved
+
       tmp:
         type: emptyDir
