@@ -56,12 +56,5 @@
       automerge: false,
       dependencyDashboardApproval: true,
     },
-    {
-      // TODO Temporarily disabling due to DNS issues in v3.40.0, remove once resolved.
-      // https://github.com/qdm12/gluetun/issues/2630
-      matchDatasources: ["docker"],
-      matchDepNames: ["ghcr.io/qdm12/gluetun"],
-      enabled: false,
-    },
   ],
 }
