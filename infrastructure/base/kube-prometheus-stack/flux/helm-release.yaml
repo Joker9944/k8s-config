@@ -139,3 +139,11 @@ spec:
           - secretName: wildcard-vonarx-online-cert
             hosts:
               - prometheus.vonarx.online.vonarx.online
+
+    # WORKAROUND Disabled since security prohibits these endpoints being scrapped directly
+    kubeScheduler:
+      enabled: false
+
+    # WORKAROUND Disabled since security prohibits these endpoints being scrapped directly
+    kubeControllerManager:
+      enabled: false
