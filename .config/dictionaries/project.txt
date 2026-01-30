@@ -22,6 +22,7 @@ kustomizeconfig
 metallb
 opencloud
 pkgs
+selkies
 serverstransport
 sigstore
 TAILNET

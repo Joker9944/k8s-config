@@ -59,7 +59,7 @@ spec:
                       [
                         /bin/sh,
                         -c,
-                        "/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true",
+                        "/usr/bin/s6-svstat -o up /run/service/svc-selkies | grep --quiet true",
                       ]
                   failureThreshold: 6
               readiness:
@@ -71,7 +71,7 @@ spec:
                       [
                         /bin/sh,
                         -c,
-                        "/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true",
+                        "/usr/bin/s6-svstat -o up /run/service/svc-selkies | grep --quiet true",
                       ]
               startup:
                 enabled: true
@@ -82,7 +82,7 @@ spec:
                       [
                         /bin/sh,
                         -c,
-                        "/usr/bin/s6-svstat -o up /run/service/svc-kclient | grep --quiet true",
+                        "/usr/bin/s6-svstat -o up /run/service/svc-selkies | grep --quiet true",
                       ]
                   failureThreshold: 30
                   periodSeconds: 5
