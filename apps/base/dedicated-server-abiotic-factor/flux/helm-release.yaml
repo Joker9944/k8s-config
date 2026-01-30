@@ -68,28 +68,6 @@ spec:
             image:
               repository: ghcr.io/joker9944/abiotic-factor-server
               tag: 1.0.2@sha256:c8e8f386c09504e50ac481aac4d25a43621a60be5d66909f1467aebb0d4c1e05
-            probes:
-              liveness:
-                enabled: false
-                custom: true
-                spec:
-                  exec:
-                    command: [/bin/bash, /healthcheck.sh]
-                  failureThreshold: 6
-              readiness:
-                enabled: false
-                custom: true
-                spec:
-                  exec:
-                    command: [/bin/bash, /healthcheck.sh]
-              startup:
-                enabled: false
-                custom: true
-                spec:
-                  exec:
-                    command: [/bin/bash, /healthcheck.sh]
-                  failureThreshold: 30
-                  periodSeconds: 5
             envFrom:
               - secretRef:
                   name: dedicated-server-abiotic-factor
@@ -102,7 +80,7 @@ spec:
                 memory: 10Gi
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
+              readOnlyRootFilesystem: true
               capabilities:
                 drop:
                   - ALL
@@ -119,7 +97,7 @@ spec:
               - +quit
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
+              readOnlyRootFilesystem: true
               capabilities:
                 drop:
                   - ALL
@@ -129,11 +107,9 @@ spec:
         controller: dedicated-server-abiotic-factor
         type: LoadBalancer
         annotations:
-          metallb.universe.tf/loadBalancerIPs: 192.168.0.131
+          metallb.io/loadBalancerIPs: 192.168.0.131
         ports:
-          game-tcp:
-            port: 7777
-          game-udp:
+          game:
             port: 7777
             protocol: UDP
           query-tcp:
