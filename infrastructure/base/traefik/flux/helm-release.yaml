@@ -61,29 +61,6 @@ spec:
       spec:
         externalTrafficPolicy: Local
 
-    ports:
-      # DNS over TCP
-      dot:
-        port: 8853
-        expose:
-          default: true
-        exposedPort: 853
-        protocol: TCP
-      # Satisfactory dedicated server
-      dss-tcp:
-        port: 7777
-        expose:
-          default: true
-        exposedPort: 7777
-        protocol: TCP
-      # Satisfactory dedicated server
-      dss-udp:
-        port: 7777
-        expose:
-          default: true
-        exposedPort: 7777
-        protocol: UDP
-
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
