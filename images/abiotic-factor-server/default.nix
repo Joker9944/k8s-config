@@ -13,7 +13,7 @@ let
 in
 dockerTools.buildLayeredImage {
   name = "abiotic-factor-server";
-  tag = "1.0.0";
+  tag = "1.0.1";
 
   fromImage = flake.packages.${stdenv.hostPlatform.system}.base;
 
@@ -42,6 +42,7 @@ dockerTools.buildLayeredImage {
 
     Env = [
       "HOME=/home/steam"
+      "WINEPREFIX=$HOME/wine/.wine"
       "MAX_PLAYERS=6"
       "PORT=${toString port}"
       "QUERY_PORT=${toString queryPort}"
