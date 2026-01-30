@@ -49,29 +49,12 @@
     {
       matchUpdateTypes: ["minor", "patch", "pin", "digest"],
       automerge: true,
-      ignoreTests: true,
     },
     {
       matchDatasources: ["docker"],
       matchDepNames: ["talos", "kubelet"],
       automerge: false,
       dependencyDashboardApproval: true,
-    },
-    {
-      matchDatasources: ["github-releases"],
-      matchDepNames: ["gotify-slack-webhook"],
-      automerge: false,
-      dependencyDashboardApproval: true,
-    },
-    {
-      matchDatasources: ["helm-values"],
-      matchDepNames: [
-        "ghcr.io/joker9944/postgresql-client",
-        "ghcr.io/joker9944/jinja-cli",
-      ],
-      automerge: true,
-      ignoreTests: true,
-      schedule: ["at any time"],
     },
     {
       // TODO Temporarily disabling due to DNS issues in v3.40.0, remove once resolved.
