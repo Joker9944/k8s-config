@@ -13,7 +13,7 @@ let
 in
 dockerTools.buildLayeredImage {
   name = "abiotic-factor-server";
-  tag = "1.0.2";
+  tag = "1.0.3";
 
   fromImage = flake.packages.${stdenv.hostPlatform.system}.base;
 
@@ -43,6 +43,7 @@ dockerTools.buildLayeredImage {
     Env = [
       "HOME=/home/steam"
       "WINEPREFIX=/home/steam/wine/.wine"
+      "WINEDEBUG=fixme-all" # Disable all FIXME messages since they just pollute the log output
       "MAX_PLAYERS=6"
       "PORT=${toString port}"
       "QUERY_PORT=${toString queryPort}"
