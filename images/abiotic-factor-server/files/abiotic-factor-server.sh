@@ -12,6 +12,13 @@ if [[ ! -e $SERVER_BIN ]]; then
 	exit 1
 fi
 
+# --- Setup wine env ---
+
+# WORKAROUND wine refuses to create a prefix if the containing dir is not owned by the user.
+# In kubernetes volumes are owner by root and have group ownership so wine refuses.
+# So let's set the WINEPREFIX somewhere else and create it here.
+mkdir -p "$WINEPREFIX"
+
 # --- Setup server args ---
 
 args=()
