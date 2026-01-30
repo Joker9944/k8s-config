@@ -67,7 +67,7 @@ spec:
           satisfactory-dedicated-server:
             image:
               repository: ghcr.io/joker9944/abiotic-factor-server
-              tag: 1.0.0@sha256:aed1b69ee0970619205d021cc11f31e0dba20386848db41e6abbf83fa617fcb6
+              tag: 1.0.1@sha256:d2c6f0b92b342a6e88ed637ef1f584408aef00ba159eb371f61e4eca02786b80
             probes:
               liveness:
                 enabled: false
