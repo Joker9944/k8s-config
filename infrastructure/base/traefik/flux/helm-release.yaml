@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: traefik
-      version: 37.4.0
+      version: 39.0.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -60,29 +60,6 @@ spec:
         metallb.universe.tf/loadBalancerIPs: 192.168.0.128
       spec:
         externalTrafficPolicy: Local
-
-    ports:
-      # DNS over TCP
-      dot:
-        port: 8853
-        expose:
-          default: true
-        exposedPort: 853
-        protocol: TCP
-      # Satisfactory dedicated server
-      dss-tcp:
-        port: 7777
-        expose:
-          default: true
-        exposedPort: 7777
-        protocol: TCP
-      # Satisfactory dedicated server
-      dss-udp:
-        port: 7777
-        expose:
-          default: true
-        exposedPort: 7777
-        protocol: UDP
 
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
