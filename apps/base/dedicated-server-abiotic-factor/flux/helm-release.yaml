@@ -64,7 +64,7 @@ spec:
                           - high
 
         containers:
-          satisfactory-dedicated-server:
+          dedicated-server-abiotic-factor:
             image:
               repository: ghcr.io/joker9944/abiotic-factor-server
               tag: 1.0.2@sha256:c8e8f386c09504e50ac481aac4d25a43621a60be5d66909f1467aebb0d4c1e05
@@ -131,10 +131,15 @@ spec:
         annotations:
           metallb.universe.tf/loadBalancerIPs: 192.168.0.131
         ports:
-          server:
+          game-tcp:
             port: 7777
-          game:
+          game-udp:
             port: 7777
+            protocol: UDP
+          query-tcp:
+            port: 27015
+          query-udp:
+            port: 27015
             protocol: UDP
 
     persistence:
