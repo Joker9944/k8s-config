@@ -26,10 +26,10 @@ spec:
         pod:
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
+            runAsUser: &PUID 1000
+            runAsGroup: &GUID 1000
             supplementalGroups: [568]
-            fsGroup: 1000
+            fsGroup: *GUID
             seccompProfile:
               type: RuntimeDefault
 
@@ -138,3 +138,27 @@ spec:
 
       tmp:
         type: emptyDir
+
+    rawResources:
+      source-saved:
+        enabled: true
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationSource
+        spec:
+          spec:
+            sourcePVC: dedicated-server-abiotic-factor-saved
+            trigger:
+              schedule: "@daily"
+            restic:
+              repository: dedicated-server-abiotic-factor-restic-saved
+              pruneIntervalDays: 7
+              retain:
+                daily: 7
+                weekly: 4
+              copyMethod: Clone
+              storageClassName: longhorn-local-lax
+              cacheStorageClassName: longhorn
+              moverSecurityContext:
+                runAsUser: *PUID
+                fsGroup: *GUID
+                runAsGroup: *GUID
