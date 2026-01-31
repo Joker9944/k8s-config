@@ -227,7 +227,7 @@ spec:
         spec:
           spec:
             plugin:
-              oidc:
+              traefikoidc:
                 providerURL: https://idm.vonarx.online/oauth2/openid/radarr-standard
                 clientID: radarr-standard
                 clientSecret: urn:k8s:secret:radarr-standard-oidc:CLIENT_SECRET
@@ -246,3 +246,4 @@ spec:
                   enabled: true
                   address: traefik-oidc-redis-master.traefik-system.svc.cluster.local:6379
                   password: urn:k8s:secret:traefik-oidc-redis:password
+                logLevel: info

@@ -28,4 +28,5 @@ sigstore
 TAILNET
 talconfig
 TALOSCONFIG
+traefikoidc
 volsync
