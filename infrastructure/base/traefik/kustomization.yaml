@@ -12,4 +12,5 @@ resources:
 
 components:
   - ../../../components/common-kustomizeconfig
+  - ../../../components/bjw-s-helm-repository
   - ../../../components/ot-helm-helm-repository

@@ -65,6 +65,96 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
+  name: traefik-geo-lookup
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.6.2
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+
+  values:
+    controllers:
+      traefik-geo-lookup:
+        type: deployment
+        strategy: RollingUpdate
+
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: &GUID 1000
+            supplementalGroups: [568]
+            fsGroup: *GUID
+            seccompProfile:
+              type: RuntimeDefault
+
+        containers:
+          country:
+            image:
+              repository: lineofflight/country # cSpell:ignore lineofflight
+              tag: latest@sha256:b82354b185cd721eba4e40fc82fc96af45eb6d4171eb24f0fbe0ee0f88bf1a69
+            env:
+              PORT: &port_http 3000
+            envFrom:
+              - secretRef:
+                  name: traefik-geo-lookup
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /info
+                    port: *port_http
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /info
+                    port: *port_http
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /info
+                    port: *port_http
+                  failureThreshold: 30
+                  periodSeconds: 5
+            # TODO resources
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+    service:
+      traefik-geo-lookup:
+        controller: traefik-geo-lookup
+        ports:
+          http:
+            port: *port_http
+
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: /app/data
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
   name: traefik-oidc-redis
 spec:
   interval: 30m
