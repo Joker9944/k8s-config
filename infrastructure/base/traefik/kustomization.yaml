@@ -6,9 +6,10 @@ namespace: traefik-system
 
 resources:
   - manifests/namespace.yaml
+  - manifests/secret.yaml
   - flux/helm-repository.yaml
   - flux/helm-release.yaml
 
 components:
   - ../../../components/common-kustomizeconfig
-  - ../../../components/bitnami-helm-repository
+  - ../../../components/ot-helm-helm-repository

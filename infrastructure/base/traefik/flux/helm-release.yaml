@@ -70,21 +70,15 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: redis
-      version: 23.2.12
+      chart: redis-replication
+      version: 0.16.13
       interval: 30m
       sourceRef:
         kind: HelmRepository
-        name: bitnami
+        name: ot-helm
 
   values:
-    architecture: standalone
-
-    master:
-      persistence:
-        enabled: false
-
-    secretAnnotations:
-      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: servarr
+    redisReplication:
+      redisSecret:
+        secretName: traefik-oidc-redis
+        secretKey: password

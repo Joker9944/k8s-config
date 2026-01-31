@@ -58,6 +58,7 @@ spec:
   dependsOn:
     - name: certs-config
     - name: metallb-config
+    - name: redis-operator
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
