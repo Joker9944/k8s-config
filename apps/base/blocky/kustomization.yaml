@@ -9,8 +9,8 @@ resources:
 
 components:
   - ../../../components/common-kustomizeconfig
-  - ../../../components/bitnami-helm-repository
   - ../../../components/bjw-s-helm-repository
+  - ../../../components/ot-helm-helm-repository
 
 configMapGenerator:
   - name: blocky-config-templates

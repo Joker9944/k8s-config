@@ -94,11 +94,6 @@ spec:
                   secretKeyRef:
                     name: blocky-cnpg-app
                     key: uri
-              REDIS_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: blocky-redis
-                    key: redis-password
               KUBERNETES_NAMESPACE:
                 valueFrom:
                   fieldRef:
@@ -231,14 +226,8 @@ spec:
   chart:
     spec:
       chart: redis
-      version: 23.2.12
+      version: 0.16.9
       interval: 30m
       sourceRef:
         kind: HelmRepository
-        name: bitnami
-
-  values:
-    architecture: standalone
-    master:
-      persistence:
-        enabled: false
+        name: ot-helm

@@ -107,8 +107,7 @@ caching:
   prefetchExpires: 12h
 
 redis:
-  address: "blocky-redis-master.{{ environ('KUBERNETES_NAMESPACE') }}:6379"
-  password: "{{ environ('REDIS_PASSWORD') }}"
+  address: "blocky-redis.{{ environ('KUBERNETES_NAMESPACE') }}:6379"
   required: true
   connectionAttempts: 10
   connectionCooldown: 3s
