@@ -72,12 +72,13 @@ spec:
               - secretRef:
                   name: dedicated-server-abiotic-factor
             resources:
+              # requests = limits for Guaranteed QoS
               requests:
-                cpu: 200m
+                cpu: 2
                 memory: 4Gi
               limits:
-                cpu: 5
-                memory: 10Gi
+                cpu: 2
+                memory: 4Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -95,6 +96,14 @@ spec:
               - +login anonymous
               - +app_update 2857200 validate
               - +quit
+            resources:
+              # requests = limits for Guaranteed QoS
+              requests:
+                cpu: 1
+                memory: 2Gi
+              limits:
+                cpu: 1
+                memory: 2Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
