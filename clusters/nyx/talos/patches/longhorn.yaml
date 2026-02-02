@@ -7,6 +7,6 @@ machine:
         type: bind
         source: /var/lib/longhorn
         options:
-          - rbind
+          - bind
           - rshared
           - rw

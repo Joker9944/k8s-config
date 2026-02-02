@@ -148,6 +148,7 @@ controlPlane:
     - "@patches/kube-proxy-metrics.yaml"
     - "@patches/tailscale.yaml"
     - "@patches/control-plane-tailscale.yaml"
+    - "@patches/cpu-manager.yaml"
   extensionServices:
     - name: tailscale
       environment:
