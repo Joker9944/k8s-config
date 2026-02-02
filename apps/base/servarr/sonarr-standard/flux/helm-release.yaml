@@ -187,8 +187,8 @@ spec:
       media-cover-overlay:
         type: persistentVolumeClaim
         retain: false
-        accessMode: ReadWriteMany
-        size: 500Mi
+        accessMode: ReadWriteOnce
+        size: 1Gi
         globalMounts:
           - path: /config/MediaCover
 
