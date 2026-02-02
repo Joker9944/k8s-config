@@ -76,10 +76,10 @@ spec:
             resources:
               # requests = limits for Guaranteed QoS
               requests:
-                cpu: 2
+                cpu: 4
                 memory: 4Gi
               limits:
-                cpu: 2
+                cpu: 4
                 memory: 4Gi
             securityContext:
               allowPrivilegeEscalation: false
