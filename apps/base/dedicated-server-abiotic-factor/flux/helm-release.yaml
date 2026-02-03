@@ -6,6 +6,7 @@ metadata:
   name: dedicated-server-abiotic-factor
 spec:
   interval: 30m
+  suspend: true
   chart:
     spec:
       chart: app-template
