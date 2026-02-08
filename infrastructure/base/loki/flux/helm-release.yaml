@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/grafana/loki/refs/heads/main/production/helm/loki/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -64,6 +65,14 @@ spec:
           s3ForcePathStyle: true
           insecure: true
           http_config: {}
+
+    chunksCache:
+      resources:
+        requests:
+          memory: 983Mi
+          cpu: 500m
+        limits:
+          memory: 9830Mi
 
     deploymentMode: SimpleScalable
 
