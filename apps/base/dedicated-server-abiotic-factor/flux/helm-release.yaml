@@ -68,7 +68,7 @@ spec:
           dedicated-server-abiotic-factor:
             image:
               repository: ghcr.io/joker9944/abiotic-factor-server
-              tag: 1.0.3@sha256:e9271eee8f66d13ad397ad4646012b7cc51ff73877bbcbdaca43180b3d051e3f
+              tag: 1.0.3@sha256:438f16677db10f130445e1a6da50bdaa31cc01b3d92c48db03cd5d396bbee4bf
             envFrom:
               - secretRef:
                   name: dedicated-server-abiotic-factor
