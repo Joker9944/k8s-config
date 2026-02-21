@@ -109,6 +109,7 @@ spec:
       countries:
         - CH
         - DK
+        - FR
       forceMonthlyUpdate: true
       logAllowedRequests: false
       logApiRequests: false
