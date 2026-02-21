@@ -37,7 +37,7 @@ spec:
           gotify:
             image:
               repository: ghcr.io/joker9944/gotify-custom
-              tag: 3.0.0@sha256:32d2113483aad02861fdd40d4a4dcb46797268d4adf9284099854a41654e3744
+              tag: 3.0.0@sha256:d1f02a54d91ed3252a0c54caf21b8149921cb81fed80a851a5f51539abe76bdf
             env:
               GOTIFY_SERVER_PORT: &port_http 8080
               GOTIFY_SERVER_KEEPALIVEPERIODSECONDS: 0 # cSpell:ignore KEEPALIVEPERIODSECONDS
