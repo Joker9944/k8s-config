@@ -57,20 +57,20 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck]
+                    command: [/sbin/kanidmd, scripting, healthcheck]
                   failureThreshold: 6
               readiness:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck]
+                    command: [/sbin/kanidmd, scripting, healthcheck]
               startup:
                 enabled: true
                 custom: true
                 spec:
                   exec:
-                    command: [/sbin/kanidmd, healthcheck]
+                    command: [/sbin/kanidmd, scripting, healthcheck]
                   failureThreshold: 30
                   periodSeconds: 5
             resources:
