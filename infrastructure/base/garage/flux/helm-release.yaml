@@ -38,7 +38,7 @@ spec:
         size: 6Gi
       data:
         storageClass: longhorn-local-strict
-        size: 60Gi
+        size: 120Gi
 
     ingress:
       s3:
