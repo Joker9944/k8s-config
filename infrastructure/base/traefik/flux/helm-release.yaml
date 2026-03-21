@@ -161,7 +161,7 @@ spec:
   chart:
     spec:
       chart: redis-replication
-      version: 0.16.13
+      version: 0.17.0
       interval: 30m
       sourceRef:
         kind: HelmRepository
