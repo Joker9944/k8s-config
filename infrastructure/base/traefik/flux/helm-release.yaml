@@ -97,7 +97,7 @@ spec:
           country:
             image:
               repository: lineofflight/country # cSpell:ignore lineofflight
-              tag: latest@sha256:5ab851b73445d3b9cedb4e98ef0b20e6b27846f4dff1c09ff5e2baf4f8beefef
+              tag: latest@sha256:b17bae16b436c513387632d4dad73c7c427023acd16197b80ad4f3ad588d9584
             env:
               PORT: &port_http 3000
             envFrom:
