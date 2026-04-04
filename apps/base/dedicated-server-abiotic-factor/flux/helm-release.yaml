@@ -91,7 +91,7 @@ spec:
           steamcmd:
             image:
               repository: ghcr.io/joker9944/steamcmd
-              tag: 1.0.0@sha256:ae7c754aba5f40d77c4f1602aa6cf121e214a8a0f0cad855846e12a433e17743
+              tag: 1.0.0@sha256:fad53e8d311e2b5e2f969855761b1748c1fa8c1131c25d1d934d0e57144c8227
             args:
               - +@sSteamCmdForcePlatformType windows
               - +login anonymous
