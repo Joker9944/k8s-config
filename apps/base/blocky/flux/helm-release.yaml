@@ -87,7 +87,7 @@ spec:
           jinja:
             image:
               repository: ghcr.io/joker9944/jinja-cli
-              tag: 4.0.0@sha256:cc40f2a17993f9d6f24002fb1ad86ab07aa79d9561d9ace6303f8307f9cbe5ec
+              tag: 4.0.0@sha256:e005a57bb794ac2b80b3a5c8783b520ec989ed1882ea1a105da82b2a12f4078e
             env:
               PGURI:
                 valueFrom:
