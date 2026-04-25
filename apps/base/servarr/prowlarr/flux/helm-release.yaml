@@ -116,7 +116,7 @@ spec:
           postgresql:
             image:
               repository: ghcr.io/joker9944/postgresql-client
-              tag: 4.0.0@sha256:8d085de4fa39c5fc87ec2b261a563b0c34e9dfdd892111b4e26e5d34d7633e81
+              tag: 4.0.0@sha256:2409e07a8d6cc0a50fa2790216515ba3146385e30cb5874ce3cf3d812325dd9b
             env:
               PGHOST: servarr-cnpg-r
               PGUSER:
