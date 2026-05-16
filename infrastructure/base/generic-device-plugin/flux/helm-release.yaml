@@ -39,7 +39,7 @@ spec:
           generic-device-plugin:
             image:
               repository: squat/generic-device-plugin
-              tag: latest@sha256:7bc1ecec8472be1e5cf1ce534f0438a1d48cc3e2b4997cee924dac4d3dbfc3d3
+              tag: latest@sha256:dc192e164c69b03f156765793a1be62ca437709ae477b27ca7d8f3dcf5021576
             resources:
               requests:
                 cpu: 50m
