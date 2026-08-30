@@ -49,7 +49,7 @@ spec:
           sonarr:
             image:
               repository: ghcr.io/home-operations/sonarr
-              tag: 4.0.19.2991@sha256:f9dec0cf69a45b16c698ef2a25fe6c70ff4ec8d0b2315897c0d48b3b5a456c87
+              tag: 4.0.19.3009@sha256:67815effd2ea18398ffc2011d974b8b1cd3939eec5aa74688ffbf371ff65dd84
             env:
               # https://techcommunity.microsoft.com/t5/microsoft-developer-community/hardening-an-asp-net-container-running-on-kubernetes/ba-p/2542224
               COMPlus_EnableDiagnostics: "0"
