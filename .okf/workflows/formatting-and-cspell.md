@@ -4,7 +4,7 @@ title: Formatting and cspell
 description: The pre-commit suite declared in flake.nix, the generated config symlink that must not be edited, and how the spellchecker's dictionaries are assembled.
 tags: [pre-commit, formatting, cspell, nix]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-05T22:06:36Z }
 ---
 
 # Where the config lives
@@ -20,14 +20,18 @@ Run everything with `nix fmt`, which the flake's `formatter` output maps to `pre
 | Group   | Hooks                                                                                                   |
 | ------- | ------------------------------------------------------------------------------------------------------- |
 | Files   | `trim-trailing-whitespace`, `end-of-file-fixer`, `fix-byte-order-marker`, `mixed-line-endings --fix=lf` |
-| General | `cspell --no-must-find-files`, `prettier`                                                               |
+| General | `prettier`                                                                                              |
 | Nix     | `deadnix`, `nil`, `nixfmt`, `statix`                                                                    |
 | Shell   | `shellcheck`, `shfmt`                                                                                   |
+| CUE     | `cue-fmt`                                                                                               |
 | Custom  | `sops-pre-commit` — see [secrets and SOPS](/workflows/secrets-sops.md)                                  |
+| Git     | `conform` — see [commit conventions](/workflows/commit-conventions.md)                                  |
 
 Prettier owns YAML formatting, which is most of this repository. `.editorconfig` fixes LF endings, a final newline, UTF-8, and 2-space indentation for YAML.
 
 # cspell
+
+The hook is not currently declared in `flake.nix`, but the configuration below is still checked in and still consumed when it is run by hand.
 
 `.config/cspell.yaml` layers two dictionary sources:
 

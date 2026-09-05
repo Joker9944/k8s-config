@@ -188,21 +188,22 @@
               };
 
               # General
-              cspell = {
-                enable = true;
-                args = [ "--no-must-find-files" ];
-              };
               prettier.enable = true;
 
               # Nix
               deadnix.enable = true;
-              nil.enable = true;
               nixfmt.enable = true;
               statix.enable = true;
 
               # Shell
-              shellcheck.enable = true;
+              shellcheck = {
+                enable = true;
+                excludes = [ ".envrc" ];
+              };
               shfmt.enable = true;
+
+              # CUE
+              cue-fmt.enable = true;
 
               # Custom
               sops-pre-commit = {
@@ -212,6 +213,9 @@
                 entry = lib.getExe self.packages.${system}.sops-pre-commit;
                 files = "((^|/)*.(ya?ml)$)";
               };
+
+              # Git
+              conform.enable = true;
             };
           };
         };

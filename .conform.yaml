@@ -1,0 +1,28 @@
+policies:
+  - type: commit
+    spec:
+      conventional:
+        types:
+          - build
+          - chore
+          - ci
+          - docs
+          - feat
+          - fix
+          - perf
+          - refactor
+          - revert
+          - style
+          - test
+        scopes:
+          - cluster # clusters/nyx/
+          - infra # infrastructure/
+          - apps # apps/
+          - components # components/
+          - images # images/
+          - pkgs # pkgs/
+          - experiments # experiments/
+          - okf # .okf/
+          - flake # flake.nix, flake.lock, devShell, pre-commit
+          - deps # renovate, lockfile
+        descriptionLength: 72

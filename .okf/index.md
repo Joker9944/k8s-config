@@ -33,4 +33,5 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 - [Development environment](workflows/dev-environment.md) - what the Nix flake provides.
 - [Secrets and SOPS](workflows/secrets-sops.md) - how a filename decides its encryption rule.
 - [Formatting and cspell](workflows/formatting-and-cspell.md) - the pre-commit suite and the dictionary submodule.
+- [Commit conventions](workflows/commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](workflows/images-and-ci.md) - Nix-built OCI images, signing, and renovate.
