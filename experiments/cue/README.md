@@ -9,7 +9,8 @@ a LoadBalancer service, an ingress with a namespace-qualified middleware, and
 SOPS values. **servarr** exercises composition: six releases in one namespace, a
 shared Postgres cluster, and four near-identical `*arr` apps.
 
-Nothing here is deployed. `apps/base/*` remains the source of truth.
+Nothing here is deployed. `apps/base/*` remains the source of truth. The
+conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`.
 
 ## Running it
 

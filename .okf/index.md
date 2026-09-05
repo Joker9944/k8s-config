@@ -23,6 +23,10 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 - [Backup and restore](platform/backup-and-restore.md) - volsync/restic for PVCs, CNPG/barman-cloud for Postgres.
 - [Observability](platform/observability.md) - Prometheus, Loki, Alloy, and the Gotify alerting path.
 
+# Decisions
+
+- [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.
+
 # Workflows
 
 - [Adding an app](workflows/adding-an-app.md) - the end-to-end sequence, including what Flux cannot do for you.

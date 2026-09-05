@@ -2,6 +2,8 @@
 
 ## 2026-09-05
 
+- Replace kustomize with CUE, with delivery and secret handling — [decision](/decisions/replace-kustomize-with-cue.md)
+- Link to the CUE decision from the layer it replaces — [kustomize components](/architecture/kustomize-components.md)
 - Why the generated Secret's hash suffix matters, not just that it propagates — [app-template pattern](/architecture/app-template-pattern.md)
 - `experiments/` added to the tree listing — [repo layout](/architecture/repo-layout.md)
 - Initial bundle: repo layout, Flux topology, kustomize components, app-template pattern — [architecture](/architecture/index.md)

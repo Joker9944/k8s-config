@@ -5,7 +5,7 @@ description: The shared components/ tree, what each component injects, and the t
 tags: [kustomize, dry, components]
 resource: components
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-05T21:40:00Z }
 ---
 
 # Components
@@ -41,6 +41,9 @@ replacements:
           - spec.values.ingress.s3.api.annotations.[traefik.ingress.kubernetes.io/router.middlewares]
         options: { delimiter: "-", index: 0 }
 ```
+
+A decision to [replace this layer with CUE](/decisions/replace-kustomize-with-cue.md)
+is recorded; the traps below are what motivated it.
 
 # Traps
 
