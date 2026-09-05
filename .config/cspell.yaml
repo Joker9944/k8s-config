@@ -14,6 +14,7 @@ ignorePaths:
   - /.sops.yaml
   - .gitignore
   - flake.lock
+  - "**/cue.mod/gen/**"
   - "*.sops.yaml"
   - "*.sops.yml"
   - secret.yaml
@@ -21,3 +22,8 @@ ignorePaths:
   - /**/flux-system/*.yaml
 dictionaries:
   - project
+overrides:
+  # cspell has no languageId for .cue, so none of the per-language dictionaries
+  # apply and Kubernetes vocabulary is flagged. Treat it as yaml.
+  - filename: "**/*.cue"
+    languageId: yaml

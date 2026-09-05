@@ -4,7 +4,7 @@ title: App-template pattern
 description: The directory shape, HelmRelease idioms and secret shapes every workload under apps/base and infrastructure/base follows.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-05T20:40:00Z }
 ---
 
 # Directory shape
@@ -41,7 +41,7 @@ Almost every workload uses the bjw-s `app-template` chart, pinned by version, wi
 | Manifest | `manifests/secret.yaml`          | `data`/`stringData` only | applied directly, decrypted by Flux                      |
 | Values   | `values/secret-values.sops.yaml` | whole file               | `secretGenerator` → `spec.valuesFrom` on the HelmRelease |
 
-The values shape depends on [`common-kustomizeconfig`](/architecture/kustomize-components.md) so the generated Secret's hash suffix propagates into `valuesFrom`; without it the release references a name that no longer exists. Details of which rule encrypts what are in [secrets and SOPS](/workflows/secrets-sops.md).
+The values shape depends on [`common-kustomizeconfig`](/architecture/kustomize-components.md) so the generated Secret's hash suffix propagates into `valuesFrom`; without it the release references a name that no longer exists. The suffix is also what makes a ciphertext edit reach the workload: the Secret is renamed on every content change, so the HelmRelease changes and Helm upgrades. A stable Secret name would leave that upgrade depending on helm-controller noticing the source change by itself. Details of which rule encrypts what are in [secrets and SOPS](/workflows/secrets-sops.md).
 
 # Chart sources
 

@@ -4,7 +4,7 @@ title: Repository layout
 description: The top-level trees of k8s-config and the base/overlay split that separates a deployable unit from the cluster that selects it.
 tags: [gitops, layout]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-05T20:40:00Z }
 ---
 
 # Trees
@@ -17,6 +17,7 @@ generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
 | `components/`      | Reusable kustomize `Component`s shared by both trees.                                                                                      |
 | `images/`, `pkgs/` | Nix derivations for the OCI images and helper programs this repo publishes.                                                                |
 | `.config/`         | cspell configuration and the `cspell-dicts` submodule.                                                                                     |
+| `experiments/`     | Evaluations that are not deployed and not reconciled by Flux. Each carries its own README.                                                 |
 
 # The base/overlay split
 
