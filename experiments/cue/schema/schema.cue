@@ -23,7 +23,8 @@ import "list"
 #HardenedBase: {
 	securityContext: {
 		allowPrivilegeEscalation: false
-		capabilities: drop: ["ALL"]
+		// open: a container may add back a capability it genuinely needs
+		capabilities: {drop: ["ALL"], ...}
 		...
 	}
 	image: {
@@ -90,11 +91,21 @@ import "list"
 #VolsyncRestic: {
 	app: string, vol: string, size: string
 	uid: int, gid:    int
+
+	// Mover fields the source side sets and the destination does not. openaudible
+	// is the only user; the asymmetry is reproduced rather than harmonized while
+	// the fidelity gate is the arbiter.
+	sourceMoverExtra: {...} | *{}
+
+	// The disabled ReplicationDestination a restore is switched on from.
+	// dedicated-server-abiotic-factor is the only volume without one.
+	restore: bool | *true
+
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
 	_repo: "\(app)-restic-\(vol)"
 
 	out: {
-		"dest-\(vol)": {
+		if restore {"dest-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationDestination"
 			enabled:    false // restore is deliberate; see the runbook
@@ -110,7 +121,7 @@ import "list"
 					volumeSnapshotClassName: "longhorn"
 				}
 			}
-		}
+		}}
 		"source-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationSource"
@@ -125,9 +136,27 @@ import "list"
 					copyMethod:            "Clone"
 					storageClassName:      "longhorn-local-lax"
 					cacheStorageClassName: "longhorn"
-					moverSecurityContext:  _mover
+					moverSecurityContext:  _mover & sourceMoverExtra
 				}
 			}
 		}
+	}
+}
+
+// ----------------------------------------------------------------- config maps
+// Replaces configMapGenerator together with the nameReference `configurations`
+// hack each user carries: the name is stable, so nothing has to chase a content
+// hash into spec.values.
+
+#ConfigMapFiles: {
+	name: string
+	ns:   string
+	files: [string]: string
+
+	out: {
+		apiVersion: "v1"
+		kind:       "ConfigMap"
+		metadata: {"name": name, namespace: ns}
+		data: files
 	}
 }

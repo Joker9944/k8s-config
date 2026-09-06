@@ -7,3 +7,4 @@ How the repository is organized and how a directory of YAML becomes a reconciled
 - [Kustomize components](kustomize-components.md) - the shared `components/` tree and the PLACEHOLDER conventions.
 - [App-template pattern](app-template-pattern.md) - the shape every workload directory takes.
 - [CUE layout](cue-layout.md) - the target CUE tree: a package per workload, a collector per tier.
+- [Known configuration drift](config-drift.md) - six manifests that diverge from the fleet's own conventions.

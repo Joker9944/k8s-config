@@ -170,7 +170,7 @@ def check(name, bundle, pkg, work, allowed, used):
     golden = load_docs(sh(["kustomize", "build", str(work / bundle["source"])]))
 
     rendered = load_docs(
-        sh(["cue", "export", "-e", f"tier.rendered.{name}", "--out", "text", pkg], cwd=HERE)
+        sh(["cue", "export", "-e", f'tier.rendered["{name}"]', "--out", "text", pkg], cwd=HERE)
     )
     for rel in bundle["secretFiles"]:
         rendered += load_docs(decrypt((HERE / rel).read_text()))

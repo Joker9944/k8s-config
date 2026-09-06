@@ -1,0 +1,17 @@
+spring:
+  # https://docs.spring.io/spring-security/reference/servlet/oauth2/index.html#oauth2-client-log-users-in
+  security:
+    oauth2:
+      client:
+        registration:
+          kanidm:
+            provider: kanidm
+            client-id: komga
+            client-name: Kanidm
+            scope: openid,email,profile
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+        provider:
+          kanidm:
+            user-name-attribute: preferred_username
+            issuer-uri: https://idm.vonarx.online/oauth2/openid/komga

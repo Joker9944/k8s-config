@@ -59,7 +59,7 @@ _cnpgSecretRef: {
 		spec: httpGet: {"port": port, path: "/ping"}
 	}
 
-	release: schema.#Release & {
+	release: schema.#AppRelease & {
 		"name":     name
 		namespace:  "servarr"
 		host:       "\(name).vonarx.online"
@@ -259,7 +259,7 @@ _arrs: [
 _recyclarrConfig:   _ @embed(file="files/recyclarr.yml", type=text)
 _recyclarrSettings: _ @embed(file="files/settings.yml", type=text)
 
-_flaresolverr: schema.#Release & {
+_flaresolverr: schema.#AppRelease & {
 	name:      "flaresolverr"
 	namespace: "servarr"
 	values: _servarrPod & {
@@ -298,7 +298,7 @@ _flaresolverr: schema.#Release & {
 	}
 }
 
-_recyclarr: schema.#Release & {
+_recyclarr: schema.#AppRelease & {
 	name:      "recyclarr"
 	namespace: "servarr"
 	values: _servarrPod & {

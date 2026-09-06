@@ -2,6 +2,11 @@
 
 ## 2026-09-06
 
+- Six manifests that diverge from the fleet's own conventions, registered — [known configuration drift](/architecture/config-drift.md)
+
+- `#Release` split from `#AppRelease`, and `#Bundle` parameterized on middlewares, repositories and namespace labels — [CUE layout](/architecture/cue-layout.md)
+- Two more CUE mechanics that decide the layout: bracket selectors and reference resolution — [CUE layout](/architecture/cue-layout.md)
+- `#ConfigMapFiles` supersedes the per-app `nameReference` hack — [kustomize components](/architecture/kustomize-components.md)
 - sops's YAML indent pinned to 2, which its default of 4 was breaking — [secrets and SOPS](/workflows/secrets-sops.md)
 - The CUE tree reads nothing outside itself, so every whole-file secret must convert — [CUE layout](/architecture/cue-layout.md)
 - Whole-file secrets are on their way out with kustomize — [secrets and SOPS](/workflows/secrets-sops.md)

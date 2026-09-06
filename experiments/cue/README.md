@@ -3,11 +3,13 @@
 An evaluation of replacing kustomize with CUE as the composition layer, keeping
 Flux, HelmReleases and the bjw-s `app-template` chart unchanged.
 
-Two apps are ported. **jellyfin** exercises the single-release cases: a volsync
-source/destination pair, NFS and PVC and emptyDir persistence, a GPU toleration,
-a LoadBalancer service, an ingress with a namespace-qualified middleware, and
-SOPS values. **servarr** exercises composition: six releases in one namespace, a
-shared Postgres cluster, and four near-identical `*arr` apps.
+All twelve of `apps/` are ported, across the `media`, `cloud` and `utility`
+tiers. Between them they exercise every shape the tree has: single and multiple
+releases per namespace, the bjw-s app-template and four foreign charts, a chart
+from a `GitRepository`, volsync pairs, generated ConfigMaps, CNPG clusters,
+LoadBalancer services, namespace-local middlewares, Pod Security labels, and
+SOPS secrets in both the whole-file and manifest shapes. `infrastructure/` is
+not started.
 
 Nothing here is deployed. `apps/base/*` remains the source of truth. The
 conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`,
@@ -35,21 +37,21 @@ into `envParts` in `flake.nix`.
 
 ## Files
 
-| Path                   | Contents                                                                                                |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| `schema/schema.cue`    | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic` — the constraint and generator layer |
-| `schema/bundle.cue`    | `#Release`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, per-tier rendering       |
-| `apps/media/media.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
-| `apps/media/*/`        | One package per workload, with its own `files/` and `secrets/`.                                         |
-| `gate.sh` / `gate.py`  | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
-| `allowlist.txt`        | Resources permitted to differ. Currently empty.                                                         |
-| `verify.sh`            | Constraint checks                                                                                       |
-| `generate.sh`          | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
+| Path                     | Contents                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `schema/schema.cue`      | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic` — the constraint and generator layer |
+| `schema/bundle.cue`      | `#Release`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, per-tier rendering       |
+| `apps/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
+| `apps/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                  |
+| `gate.sh` / `gate.py`    | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
+| `allowlist.txt`          | Resources permitted to differ. Currently empty.                                                         |
+| `verify.sh`              | Constraint checks                                                                                       |
+| `generate.sh`            | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
 
 ## Results
 
-**Fidelity.** Every resource matches, with nothing excluded: jellyfin **12 of
-12**, servarr **35 of 35**, including all 15 SOPS Secrets. The allowlist is
+**Fidelity.** Every resource matches, with nothing excluded: **162 of 162**
+across the twelve workloads, including all 31 SOPS Secrets. The allowlist is
 empty.
 
 **Both sides are decrypted before comparison**, the way kustomize-controller
@@ -114,11 +116,15 @@ Go types. Neither are durations: `metav1.Duration` generates to the top type, so
 
 **Size.**
 
-|                          | YAML today            | CUE |
-| ------------------------ | --------------------- | --- |
-| jellyfin                 | 243                   | 114 |
-| servarr (excluding SOPS) | 1972                  | 442 |
-| shared layer             | ~1300 across the repo | 235 |
+|                                 | YAML today | CUE  |
+| ------------------------------- | ---------- | ---- |
+| all of `apps/` (excluding SOPS) | 4394       | 1840 |
+| shared layer                    | ~1600      | 397  |
+
+The workloads that collapse hardest are the ones that were most repetitive:
+servarr 1972 → 459, blocky 233 → 180, jellyfin 243 → 122. opencloud barely moves
+(66 → 67) because its values are all chart-specific and there was nothing to
+share.
 
 ## Open questions
 
@@ -128,9 +134,9 @@ name. The HelmRelease v2 CRD carries `lastAttemptedConfigDigest`, which is
 helm-controller digesting the resolved config including `valuesFrom` — so the
 upgrade should still happen. Worth confirming empirically once.
 
-Both `secretGenerator` secrets here have since been converted to SOPS
-`secret.yaml` manifests, which is what makes this moot for jellyfin and
-recyclarr: the name is stable by construction. The conversion was not optional.
+All seven `secretGenerator` secrets have since been converted to SOPS
+`secret.yaml` manifests, which is what makes this moot: the name is stable by
+construction. The conversion was not optional.
 CUE has no successor to `secretGenerator`, so a whole-file secret that stays
 whole-file is a resource nothing renders. Two fields kustomize used to supply
 have to be written by hand — `metadata.namespace` and `type: Opaque` — and both
@@ -156,7 +162,21 @@ sigil, so `# renovate:` comments are impossible** — the annotation must be `//
   default (`host: string | *""`). This only surfaced with servarr, because
   jellyfin always had an ingress.
 - Definitions close recursively, so a nested struct meant to be extended needs an
-  explicit `...`.
+  explicit `...`. `#HardenedBase` needed one inside `capabilities` before a
+  container could add back `NET_BIND_SERVICE`.
+- **An unquoted label shadows a field of the same name.** `chart: spec: {"chart":
+chart}` resolves the inner `chart` to the field being declared, not to the
+  parameter. Quoting the outer label fixes it, and the error surfaces as a type
+  conflict several levels away.
+- **A defaulted struct disjunction read from another field drops comprehension
+  results.** `values: {...} | *{}` still evaluated correctly as `values`, but
+  `out.spec.values` — which reads it — silently lost every field produced by an
+  `if` inside it. This is the only trap so far that produced _wrong output_
+  rather than an error; the gate caught it. An explicit boolean (`hasValues`)
+  replaced the disjunction.
+- **Two defaults for one field do not merge.** `string | *""` unified with
+  `string | *"4.6.2"` is an unresolved disjunction, so a derived definition
+  cannot re-default a field the base already defaulted.
 
 The mechanics that decide how the tree is _organized_ — package boundaries,
 `@tag` propagation, `@embed` path rules — are in
@@ -178,6 +198,13 @@ The fix was **not** to soften `#Hardened` into an overridable default — that
 would silently permit the same thing everywhere. Instead there is a second,
 named definition, `#HardenedWritableRoot`. Exceptions are now easy to find with `grep`, and each
 one is a deliberate decision.
+
+The same pattern recurred with `#Chain`. qbittorrent's ingress names
+`network-internal-whitelist` rather than `chain-network-internal-whitelist`, so
+it skips the rate limit, the secure headers and compression that every other
+ingress gets. `#Chain` refused it. Rather than widen the type, `bareMiddleware`
+names the exception — one `grep` finds it, and whether it was intended is now a
+question someone can answer instead of a string nobody reads.
 
 ## Not yet evaluated
 

@@ -9,7 +9,7 @@ bundle: schema.#Bundle & {
 	releases: [_jellyfin]
 }
 
-_jellyfin: schema.#Release & {
+_jellyfin: schema.#AppRelease & {
 	name:      "jellyfin"
 	namespace: "jellyfin"
 

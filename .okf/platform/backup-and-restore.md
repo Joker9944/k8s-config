@@ -24,7 +24,7 @@ A backed-up app declares two objects in its HelmRelease `rawResources`, followin
 
 The PVC references the destination through `dataSourceRef`, and the mover runs under the app's `&PUID`/`&GUID` anchors so restored files keep their ownership.
 
-**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for.
+**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for. Two volumes depart from this shape — see [known drift](/architecture/config-drift.md).
 
 Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`, delivered by either [secret shape](/architecture/app-template-pattern.md).
 

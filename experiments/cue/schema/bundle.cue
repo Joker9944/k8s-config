@@ -8,54 +8,124 @@ import (
 	fluxSource "github.com/fluxcd/source-controller/api/v1"
 )
 
-// One HelmRelease from the bjw-s app-template chart. Typed against
-// helm-controller's own Go API, so the whole Flux surface is available and
-// anything outside it is a build error.
+// The Traefik annotations an ingress carries. The middleware reference is
+// computed from the namespace it is given, which is what stops an ingress from
+// naming another namespace's middleware. A chart with more than one ingress
+// (nextcloud) builds a second instance rather than writing the string.
+#IngressAnnotations: {
+	ns:    string
+	chain: #Chain | *"chain-country-whitelist"
+	extra: [...string] | *[]
+	bare: string | *""
+
+	// opencloud's chart writes the tls and entrypoint annotations itself, from
+	// its own `annotationsPreset: traefik`, and duplicating them is a conflict.
+	preset: bool | *false
+
+	_first: [if bare != "" {bare}, chain][0]
+
+	out: {
+		if !preset {
+			"traefik.ingress.kubernetes.io/router.tls":         "true"
+			"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
+		}
+		"traefik.ingress.kubernetes.io/router.middlewares": strings.Join([
+			for m in list.Concat([[_first], extra]) {"\(ns)-\(m)@kubernetescrd"},
+		], ",")
+	}
+}
+
+// One HelmRelease. Typed against helm-controller's own Go API, so the whole
+// Flux surface is available and anything outside it is a build error. Chart
+// coordinates are parameters, because most of the fleet outside apps/ runs a
+// foreign chart. For the bjw-s app-template use #AppRelease.
 #Release: {
 	name:      string
 	namespace: string
-	version:   string | *"4.6.2"
+
+	chart:      string
+	version:    string // "" for a source that carries no chart version
+	sourceKind: "HelmRepository" | "GitRepository" | *"HelmRepository"
+	sourceName: string
+	interval:   string | *"30m"
 
 	// Ingress wiring. The middleware reference is computed, never written by
 	// the caller, so a release cannot name another namespace's middleware.
+	// Where the annotations land is the chart's business: #AppRelease places
+	// them, a foreign chart splices `ingressAnnotations` at its own path.
 	host:       string | *"" // "" means no ingress
 	ingressKey: string | *name
 	chain:      #Chain | *"chain-country-whitelist"
 	extraMiddlewares: [...string] | *[]
 
+	// The sanctioned exception, for a release that sits behind a single
+	// middleware instead of a chain and so skips the rate limit, the secure
+	// headers and compression. Naming it here rather than widening #Chain keeps
+	// every such release findable with grep. qbittorrent is the only user.
+	bareMiddleware: string | *""
+
 	secretValuesName: string | *""
 	values: {...}
 
-	_middlewareRef: strings.Join([
-		for m in list.Concat([[chain], extraMiddlewares]) {"\(namespace)-\(m)@kubernetescrd"},
-	], ",")
+	// blocky-redis is the only release in the fleet that ships no values at all,
+	// and CUE cannot tell an unset struct from an empty one.
+	hasValues: bool | *true
+
+	ingressPreset: bool | *false
+	ingressAnnotations: (#IngressAnnotations & {
+		ns:      namespace
+		"chain": chain
+		extra:   extraMiddlewares
+		bare:    bareMiddleware
+		preset:  ingressPreset
+	}).out
 
 	out: fluxHelm.#HelmRelease & {
 		apiVersion: "helm.toolkit.fluxcd.io/v2"
 		kind:       "HelmRelease"
 		metadata: {"name": name, "namespace": namespace}
 		spec: {
-			interval: "30m"
-			chart: spec: {
-				chart:     "app-template"
-				interval:  "30m"
-				"version": version
-				sourceRef: {kind: "HelmRepository", name: "bjw-s", "namespace": namespace}
+			"interval": interval
+			// quoted so the label does not bind `chart` and shadow the field above
+			"chart": spec: {
+				"chart":    chart
+				"interval": interval
+				if version != "" {"version": version}
+				sourceRef: {kind: sourceKind, name: sourceName, "namespace": namespace}
 			}
 			if secretValuesName != "" {
 				valuesFrom: [{kind: "Secret", name: secretValuesName}]
 			}
-			"values": values & {
-				global: alwaysAppendIdentifierToResourceName: true
-				if host != "" {
-					ingress: (ingressKey): annotations: {
-						"traefik.ingress.kubernetes.io/router.tls":         "true"
-						"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
-						"traefik.ingress.kubernetes.io/router.middlewares": _middlewareRef
-					}
-				}
-			}
+			if hasValues {"values": values}
 		}
+	}
+}
+
+// A release from the bjw-s app-template chart, which is what every workload in
+// apps/ runs. Adds the chart's own conventions: the identifier suffix and the
+// keyed ingress the middleware annotations are placed into.
+#AppRelease: {
+	#Release
+
+	chart:      "app-template"
+	version:    string | *"4.6.2"
+	sourceName: "bjw-s"
+
+	// Brought into lexical scope so the values block can read them; CUE resolves
+	// references by declaration, not by embedding, so the constraints still come
+	// from #Release above.
+	host:               _
+	ingressKey:         _
+	ingressAnnotations: _
+
+	// open at every level a constraint is added: a definition closes what it
+	// touches, and these are the chart's conventions, not its whole schema
+	values: {
+		global: {alwaysAppendIdentifierToResourceName: true, ...}
+		if host != "" {
+			ingress: (ingressKey): {annotations: ingressAnnotations, ...}
+		}
+		...
 	}
 }
 
@@ -63,9 +133,49 @@ import (
 // Traefik middleware set, installed once regardless of how many releases live
 // there. Replaces manifests/namespace.yaml, kustomization.yaml, and the
 // bjw-s-helm-repository / common-middlewares / common-kustomizeconfig components.
+// A chart source. The namespace is supplied by the bundle, so a call site names
+// only the repository.
+#HelmRepo: {
+	name:     string
+	ns:       string | *"" // supplied by #Bundle
+	url:      string
+	interval: string | *"5m"
+
+	out: fluxSource.#HelmRepository & {
+		apiVersion: "source.toolkit.fluxcd.io/v1"
+		kind:       "HelmRepository"
+		metadata: {"name": name, namespace: ns}
+		spec: {"interval": interval, "url": url}
+	}
+}
+
+#GitRepo: {
+	name:     string
+	ns:       string | *"" // supplied by #Bundle
+	url:      string
+	branch:   string
+	interval: string | *"5m"
+
+	out: fluxSource.#GitRepository & {
+		apiVersion: "source.toolkit.fluxcd.io/v1"
+		kind:       "GitRepository"
+		metadata: {"name": name, namespace: ns}
+		spec: {"interval": interval, "url": url, ref: "branch": branch}
+	}
+}
+
 #Bundle: {
 	namespace: string
 	releases: [...#Release]
+
+	// The Traefik middleware set. A bundle with no ingress does not install it.
+	middlewares: bool | *true
+
+	// Chart sources, defaulting to the bjw-s repository every app-template
+	// release needs. A bundle on a foreign chart replaces the list.
+	repositories: [...{ns?: string, ...}] | *[#HelmRepo & {
+		name: "bjw-s", url: "https://bjw-s-labs.github.io/helm-charts"
+	}]
 	before: [...] | *[] // emitted between the namespace and the releases
 	after: [...] | *[]  // emitted after the releases
 
@@ -78,14 +188,20 @@ import (
 	// by gate.py. "" means not yet ported. Goes away with apps/base/.
 	source: string | *""
 
-	_ns: {apiVersion: "v1", kind: "Namespace", metadata: name: namespace}
+	// Pod Security admission levels and the like. Seven namespaces in the fleet
+	// carry one; the rest render a bare Namespace.
+	namespaceLabels: [string]: string
 
-	_repo: fluxSource.#HelmRepository & {
-		apiVersion: "source.toolkit.fluxcd.io/v1"
-		kind:       "HelmRepository"
-		metadata: {name: "bjw-s", "namespace": namespace}
-		spec: {interval: "5m", url: "https://bjw-s-labs.github.io/helm-charts"}
+	_ns: {
+		apiVersion: "v1"
+		kind:       "Namespace"
+		metadata: {
+			name: namespace
+			if len(namespaceLabels) > 0 {labels: namespaceLabels}
+		}
 	}
+
+	_repos: [for r in repositories {(r & {ns: namespace}).out}]
 
 	_mw: #Middlewares & {ns: namespace}
 
@@ -94,8 +210,9 @@ import (
 		before,
 		[for r in releases {r.out}],
 		after,
-		[_repo],
-		_mw.out,
+		_repos,
+		if middlewares {_mw.out},
+		if !middlewares {[]},
 	])
 }
 
