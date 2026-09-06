@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: draft
-generated: { by: claude-code/opus-5, at: 2026-09-06T14:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -16,8 +16,9 @@ The target shape for [replacing kustomize with CUE](/decisions/replace-kustomize
 cue.mod/                    module github.com/joker9944/k8s-config; gen/ holds the
                             Flux definitions from cue get go
 schema/                     package schema — #Release, #AppRelease, #Bundle,
-                            #Hardened, #Middlewares, #IngressAnnotations,
-                            #ConfigMapFiles, #NamespaceCert, #VolsyncRestic
+                            #Hardened, #HardenedPrivileged, #Middlewares,
+                            #IngressAnnotations, #ConfigMapFiles,
+                            #NamespaceCert, #VolsyncRestic
 infrastructure/
   controllers/
     controllers.cue         package controllers — the tier collector
@@ -39,14 +40,14 @@ A workload is a package. A tier is a package that imports its workloads and is a
 
 **`components/` has no successor tree.** Its contents become definitions in `schema/`:
 
-| Component                                  | Becomes                                                                                                |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `common-middlewares`                       | `#Middlewares`                                                                                         |
-| `bjw-s-helm-repository`, `ot-helm-…`       | A `HelmRepository` emitted by `#Bundle` from the chart the releases name                               |
-| `common-sync-patch`                        | Defaults on the level-3 `Kustomization` the tier collector emits                                       |
-| `namespace-cert`, `namespace-cert-kanidm`  | One `#NamespaceCert` taking the namespace as a parameter, which retires the kustomize#5953 duplication |
-| `common-kustomizeconfig`                   | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.          |
-| `blocky`/`komga` `kustomization-hack.yaml` | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                           |
+| Component                                  | Becomes                                                                                                                                 |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `common-middlewares`                       | `#Middlewares`                                                                                                                          |
+| `bjw-s-helm-repository`, `ot-helm-…`       | A `HelmRepository` emitted by `#Bundle` from the chart the releases name                                                                |
+| `common-sync-patch`                        | Defaults on the level-3 `Kustomization` the tier collector emits                                                                        |
+| `namespace-cert`, `namespace-cert-kanidm`  | `#NamespaceCert`, switched on with `#Bundle.namespaceCert`. Taking the namespace as a parameter retires the kustomize#5953 duplication. |
+| `common-kustomizeconfig`                   | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.                                           |
+| `blocky`/`komga` `kustomization-hack.yaml` | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                                                            |
 
 Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, and the middleware annotation is computed by `#Release`. See [kustomize components](/architecture/kustomize-components.md) for what is being replaced.
 
@@ -56,9 +57,11 @@ Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, a
 
 The annotations come from `#IngressAnnotations`, which derives the middleware reference from the namespace it is handed — that is what stops an ingress from naming another namespace's middleware. It is a separate definition because nextcloud has two ingresses behind different middleware sets.
 
-`#Bundle` takes `middlewares` (off where there is no ingress), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
+`#Release.crds` switches on the `install`/`upgrade` block every CRD-shipping chart carries — `crds: CreateReplace` with three remediation retries, byte-identical across the ten releases that have it. `#GitRepo` takes `branch` or `tag` plus an optional `ignore`, because two of the three git-sourced charts pin a tag and ship one directory out of a whole repository.
 
-Exceptions are named definitions or named fields rather than softened constraints, so `grep` finds every one: `#HardenedWritableRoot` for a container that cannot run on a read-only root, `bareMiddleware` for a release behind a single middleware instead of a chain. The first is policy; the second and the two `#VolsyncRestic` escape hatches model [known drift](/architecture/config-drift.md) and go away with it.
+`#Bundle` takes `middlewares` (off where there is no ingress), `namespaceCert` (an in-cluster certificate off the private CA, for a workload that serves TLS to Traefik rather than plain HTTP), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
+
+Exceptions are named definitions or named fields rather than softened constraints, so `grep` finds every one: `#HardenedWritableRoot` for a container that cannot run on a read-only root, `#HardenedPrivileged` for one that must run privileged — Kubernetes rejects `privileged: true` together with `allowPrivilegeEscalation: false`, so that definition drops the field rather than the constraint — and `bareMiddleware` for a release behind a single middleware instead of a chain. The first two are policy; `bareMiddleware`, `identifierSuffix` and the three `#VolsyncRestic` escape hatches model [known drift](/architecture/config-drift.md) and go away with it.
 
 # What kustomize was doing that CUE has to be told
 
@@ -88,7 +91,10 @@ Verified against cue v0.16.1. Each of these eliminated a layout that otherwise l
 | `cue vet ./...` does span every package                                              | Validation stays one command.                                                                                   |
 | `cue export -e` parses `a.b-c` as subtraction                                        | A hyphenated bundle key needs a bracket selector — `tier.rendered["cert-manager"]`.                             |
 | References resolve by declaration, not by embedding                                  | A derived definition must redeclare (`host: _`) every field it reads from the one it embeds.                    |
+| A closed definition as a list element type rejects the fields a derived one adds     | Constrain a list by what the consumer reads (`[...{out: #HelmRelease, ...}]`), not by the definition name.      |
 
 # Open
+
+**`infrastructure/nyx/config/` has no CUE counterpart.** Four cluster-singleton bundles — the CA chain and Cloudflare issuer, the Longhorn storage classes, the MetalLB pool, the CNPG image catalogs — with no `base/` half and no Namespace or repository of their own. `#Bundle` emits both unconditionally, so they need a parameter before they can be expressed.
 
 How a tier artifact is laid out internally. Each workload needs its own directory inside it, because [only level-3 Kustomizations decrypt](/architecture/flux-topology.md) and a SOPS file must sit under a path one of them reconciles. What is unresolved is how kustomize-controller treats a tier root holding both the level-3 sync manifests and those workload subdirectories with no `kustomization.yaml` present. Settle it with `flux build` before fixing the render step's output shape.

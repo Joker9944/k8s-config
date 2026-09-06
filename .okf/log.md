@@ -2,8 +2,11 @@
 
 ## 2026-09-06
 
-- Six manifests that diverge from the fleet's own conventions, registered — [known configuration drift](/architecture/config-drift.md)
-
+- All 16 `infrastructure/base` workloads ported; `#NamespaceCert`, `#HardenedPrivileged`, the `crds` preset and git tags added — [CUE layout](/architecture/cue-layout.md)
+- barman-cloud installs from its own chart instead of a kustomize remote resource — [backup and restore](/platform/backup-and-restore.md)
+- `#NamespaceCert` retires the `namespace-cert` component pair and its kustomize#5953 workaround — [kustomize components](/architecture/kustomize-components.md)
+- cspell's secret ignore widened to `*secret.yaml`, which the migrated filenames need — [formatting and cspell](/workflows/formatting-and-cspell.md)
+- Manifests that diverge from the fleet's own conventions, registered — [known configuration drift](/architecture/config-drift.md)
 - `#Release` split from `#AppRelease`, and `#Bundle` parameterized on middlewares, repositories and namespace labels — [CUE layout](/architecture/cue-layout.md)
 - Two more CUE mechanics that decide the layout: bracket selectors and reference resolution — [CUE layout](/architecture/cue-layout.md)
 - `#ConfigMapFiles` supersedes the per-app `nameReference` hack — [kustomize components](/architecture/kustomize-components.md)

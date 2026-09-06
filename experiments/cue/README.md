@@ -3,13 +3,14 @@
 An evaluation of replacing kustomize with CUE as the composition layer, keeping
 Flux, HelmReleases and the bjw-s `app-template` chart unchanged.
 
-All twelve of `apps/` are ported, across the `media`, `cloud` and `utility`
-tiers. Between them they exercise every shape the tree has: single and multiple
-releases per namespace, the bjw-s app-template and four foreign charts, a chart
-from a `GitRepository`, volsync pairs, generated ConfigMaps, CNPG clusters,
-LoadBalancer services, namespace-local middlewares, Pod Security labels, and
-SOPS secrets in both the whole-file and manifest shapes. `infrastructure/` is
-not started.
+All 28 workloads are ported — twelve in `apps/`, sixteen in
+`infrastructure/`, across eight tiers. Between them they exercise every shape
+the tree has: single and multiple releases per namespace, the bjw-s app-template
+and twelve foreign charts, charts from a `GitRepository` by branch and by tag,
+nested Flux `Kustomization`s, volsync pairs, generated ConfigMaps, CNPG
+clusters, LoadBalancer services, namespace-local middlewares and certificates,
+Pod Security labels, and SOPS secrets in both the whole-file and manifest
+shapes. The four `infrastructure/nyx/config/` bundles are not started.
 
 Nothing here is deployed. `apps/base/*` remains the source of truth. The
 conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`,
@@ -37,22 +38,22 @@ into `envParts` in `flake.nix`.
 
 ## Files
 
-| Path                     | Contents                                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `schema/schema.cue`      | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic` — the constraint and generator layer |
-| `schema/bundle.cue`      | `#Release`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, per-tier rendering       |
-| `apps/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
-| `apps/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                  |
-| `gate.sh` / `gate.py`    | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
-| `allowlist.txt`          | Resources permitted to differ. Currently empty.                                                         |
-| `verify.sh`              | Constraint checks                                                                                       |
-| `generate.sh`            | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
+| Path                       | Contents                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `schema/schema.cue`        | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic`, `#ConfigMapFiles`, `#NamespaceCert` |
+| `schema/bundle.cue`        | `#Release`, `#AppRelease`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, rendering |
+| `<tree>/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
+| `<tree>/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                  |
+| `gate.sh` / `gate.py`      | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
+| `allowlist.txt`            | Resources permitted to differ. Currently empty.                                                         |
+| `verify.sh`                | Constraint checks                                                                                       |
+| `generate.sh`              | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
 
 ## Results
 
-**Fidelity.** Every resource matches, with nothing excluded: **162 of 162**
-across the twelve workloads, including all 31 SOPS Secrets. The allowlist is
-empty.
+**Fidelity.** Every resource matches, with nothing excluded: **275 of 275**
+across the 28 workloads, including all 42 SOPS Secrets across 21 files. The
+allowlist is empty.
 
 **Both sides are decrypted before comparison**, the way kustomize-controller
 decrypts a source before building it. This became necessary once the secrets
@@ -70,6 +71,14 @@ whitespace inside base64 `data`, because kustomize writes Secret values as a
 wrapped block scalar and the line breaks land in the string; and `stringData`
 against `data`, which Kubernetes defines as the same Secret. Anything that
 decodes differently still fails.
+
+**`infrastructure/` cost four schema fields and no restructuring.** The
+`#Release`/`#AppRelease` split held: 13 of the 16 run a foreign chart and none
+needed a new definition to place its ingress. What it did need was `crds` (the
+`install`/`upgrade` block ten releases carry byte-identically), `tag` and
+`ignore` on `#GitRepo`, and `#NamespaceCert` — which is a net deletion, because
+it retires both `namespace-cert` components and the kustomize#5953 workaround
+that duplicated them.
 
 **servarr broke the first abstraction, which was the point.** `#App` assumed one
 release per namespace. Six releases sharing a namespace, a HelmRepository and one
@@ -116,10 +125,11 @@ Go types. Neither are durations: `metav1.Duration` generates to the top type, so
 
 **Size.**
 
-|                                 | YAML today | CUE  |
-| ------------------------------- | ---------- | ---- |
-| all of `apps/` (excluding SOPS) | 4394       | 1840 |
-| shared layer                    | ~1600      | 397  |
+|                                           | YAML today | CUE  |
+| ----------------------------------------- | ---------- | ---- |
+| all of `apps/` (excluding SOPS)           | 4394       | 1860 |
+| all of `infrastructure/base` (excl. SOPS) | 1935       | 1335 |
+| shared layer                              | ~1600      | 499  |
 
 The workloads that collapse hardest are the ones that were most repetitive:
 servarr 1972 → 459, blocky 233 → 180, jellyfin 243 → 122. opencloud barely moves
@@ -134,7 +144,7 @@ name. The HelmRelease v2 CRD carries `lastAttemptedConfigDigest`, which is
 helm-controller digesting the resolved config including `valuesFrom` — so the
 upgrade should still happen. Worth confirming empirically once.
 
-All seven `secretGenerator` secrets have since been converted to SOPS
+All eight `secretGenerator` secrets have since been converted to SOPS
 `secret.yaml` manifests, which is what makes this moot: the name is stable by
 construction. The conversion was not optional.
 CUE has no successor to `secretGenerator`, so a whole-file secret that stays
@@ -177,6 +187,11 @@ chart}` resolves the inner `chart` to the field being declared, not to the
 - **Two defaults for one field do not merge.** `string | *""` unified with
   `string | *"4.6.2"` is an unresolved disjunction, so a derived definition
   cannot re-default a field the base already defaulted.
+- **A closed definition makes a bad list element type.** `releases: [...#Release]`
+  rejected every field `#AppRelease` adds, because the element is re-unified with
+  the closed base. The fix is to constrain the list by what the consumer actually
+  reads — `[...{out: #HelmRelease, ...}]` — which is also the more honest
+  contract.
 
 The mechanics that decide how the tree is _organized_ — package boundaries,
 `@tag` propagation, `@embed` path rules — are in
@@ -198,6 +213,12 @@ The fix was **not** to soften `#Hardened` into an overridable default — that
 would silently permit the same thing everywhere. Instead there is a second,
 named definition, `#HardenedWritableRoot`. Exceptions are now easy to find with `grep`, and each
 one is a deliberate decision.
+
+It recurred a third time in `infrastructure/`. generic-device-plugin hands out
+host devices and runs `privileged: true`, and Kubernetes rejects that together
+with `allowPrivilegeEscalation: false`, which `#Hardened` pins. So
+`#HardenedPrivileged` drops that one field and keeps the rest — the capability
+drop and the read-only root still hold, and the exception is one `grep` away.
 
 The same pattern recurred with `#Chain`. qbittorrent's ingress names
 `network-internal-whitelist` rather than `chain-network-internal-whitelist`, so

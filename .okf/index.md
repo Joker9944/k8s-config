@@ -13,7 +13,7 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 - [Kustomize components](architecture/kustomize-components.md) - the shared `components/` tree and the PLACEHOLDER conventions.
 - [App-template pattern](architecture/app-template-pattern.md) - the shape every workload directory takes.
 - [CUE layout](architecture/cue-layout.md) - the target CUE tree: a package per workload, a collector per tier.
-- [Known configuration drift](architecture/config-drift.md) - six manifests that diverge from the fleet's own conventions.
+- [Known configuration drift](architecture/config-drift.md) - the manifests that diverge from the fleet's own conventions.
 
 # Platform
 

@@ -17,7 +17,7 @@ ignorePaths:
   - "**/cue.mod/gen/**"
   - "*.sops.yaml"
   - "*.sops.yml"
-  - secret.yaml
+  - "*secret.yaml"
   - "*.json"
   - /**/flux-system/*.yaml
 dictionaries:

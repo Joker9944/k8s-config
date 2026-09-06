@@ -23,3 +23,29 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: barman-cloud
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: plugin-barman-cloud
+      version: 0.5.0
+      sourceRef:
+        kind: HelmRepository
+        name: cnpg
+      interval: 5m
+
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3

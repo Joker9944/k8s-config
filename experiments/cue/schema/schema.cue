@@ -20,13 +20,31 @@ import "list"
 	securityContext: readOnlyRootFilesystem: false
 }
 
-#HardenedBase: {
+// The sanctioned exception for a container that has to run privileged.
+// Kubernetes rejects `privileged: true` together with
+// `allowPrivilegeEscalation: false`, so this one drops the field rather than the
+// constraint; the capability drop and the read-only root still hold.
+// generic-device-plugin is the only user, and it is privileged because it hands
+// out host devices.
+#HardenedPrivileged: #PinnedImage & {
+	securityContext: {
+		privileged:             true
+		readOnlyRootFilesystem: true
+		capabilities: {drop: ["ALL"], ...}
+		...
+	}
+}
+
+#HardenedBase: #PinnedImage & {
 	securityContext: {
 		allowPrivilegeEscalation: false
 		// open: a container may add back a capability it genuinely needs
 		capabilities: {drop: ["ALL"], ...}
 		...
 	}
+}
+
+#PinnedImage: {
 	image: {
 		repository: string
 		tag:        #Digest
@@ -101,6 +119,13 @@ import "list"
 	// dedicated-server-abiotic-factor is the only volume without one.
 	restore: bool | *true
 
+	// gotify's data volume is ReadWriteMany; every other backed-up volume is RWO.
+	accessMode: string | *"ReadWriteOnce"
+
+	// Whether the backup actually runs. gotify's is switched off, which means its
+	// data is not being backed up at all.
+	enabled: bool | *true
+
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
 	_repo: "\(app)-restic-\(vol)"
 
@@ -113,7 +138,7 @@ import "list"
 				trigger: manual: "restore-once"
 				restic: {
 					repository: _repo
-					accessModes: ["ReadWriteOnce"]
+					accessModes: [accessMode]
 					capacity:                size
 					copyMethod:              "Snapshot"
 					moverSecurityContext:    _mover
@@ -125,7 +150,7 @@ import "list"
 		"source-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationSource"
-			enabled:    true
+			"enabled":  enabled
 			spec: spec: {
 				sourcePVC: "\(app)-\(vol)"
 				trigger: schedule: "@daily"
@@ -153,10 +178,42 @@ import "list"
 	ns:   string
 	files: [string]: string
 
+	// Grafana's sidecar discovers dashboards by label, so a ConfigMap can need
+	// them even though the namespace and name are already fixed.
+	labels: [string]: string
+
 	out: {
 		apiVersion: "v1"
 		kind:       "ConfigMap"
-		metadata: {"name": name, namespace: ns}
+		metadata: {
+			"name":    name
+			namespace: ns
+			if len(labels) > 0 {"labels": labels}
+		}
 		data: files
+	}
+}
+
+// ------------------------------------------------------------ namespace certs
+// Replaces components/namespace-cert together with its kanidm-specific twin,
+// which differed only by a hardcoded `namespace:` working around
+// kustomize#5953. The namespace is a parameter, so there is nothing to duplicate.
+
+#NamespaceCert: {
+	ns: string
+
+	out: {
+		apiVersion: "cert-manager.io/v1"
+		kind:       "Certificate"
+		metadata: {name: "wildcard-\(ns)", namespace: ns}
+		spec: {
+			dnsNames: ["*.\(ns).svc.cluster.local", "*.\(ns)"]
+			issuerRef: {
+				group: "cert-manager.io"
+				kind:  "ClusterIssuer"
+				name:  "nyx-intermediate-ca"
+			}
+			secretName: "wildcard-\(ns)-cert"
+		}
 	}
 }

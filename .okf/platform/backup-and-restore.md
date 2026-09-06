@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -24,11 +24,13 @@ A backed-up app declares two objects in its HelmRelease `rawResources`, followin
 
 The PVC references the destination through `dataSourceRef`, and the mover runs under the app's `&PUID`/`&GUID` anchors so restored files keep their ownership.
 
-**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for. Two volumes depart from this shape — see [known drift](/architecture/config-drift.md).
+**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for. Three volumes depart from this shape — see [known drift](/architecture/config-drift.md).
 
 Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`, delivered by either [secret shape](/architecture/app-template-pattern.md).
 
 # CNPG + barman-cloud (Postgres)
+
+The plugin is a HelmRelease of its own in the `cnpg` namespace, `plugin-barman-cloud` from the same chart repository the operator comes from. The operator finds it by the `cnpg.io/pluginName` label on its `Service`, not by the release name.
 
 `apps/base/servarr/manifests/cnpg/` is the reference shape; blocky, gotify and nextcloud follow it in miniature.
 

@@ -64,6 +64,12 @@ import (
 	// every such release findable with grep. qbittorrent is the only user.
 	bareMiddleware: string | *""
 
+	// The preset every CRD-shipping chart in the fleet carries, byte-identical
+	// across all ten of them: Helm owns the CRD lifecycle and a failed install or
+	// upgrade is retried three times.
+	crds: bool | *false
+	_lifecycle: {"crds": "CreateReplace", remediation: retries: 3}
+
 	secretValuesName: string | *""
 	values: {...}
 
@@ -93,6 +99,10 @@ import (
 				if version != "" {"version": version}
 				sourceRef: {kind: sourceKind, name: sourceName, "namespace": namespace}
 			}
+			if crds {
+				install: _lifecycle
+				upgrade: _lifecycle
+			}
 			if secretValuesName != "" {
 				valuesFrom: [{kind: "Secret", name: secretValuesName}]
 			}
@@ -118,10 +128,17 @@ import (
 	ingressKey:         _
 	ingressAnnotations: _
 
+	// The identifier suffix is on for every app-template release in the fleet
+	// except traefik-geo-lookup. Turning it on there renames its Deployment and
+	// Service, so the exception is named here rather than fixed in passing.
+	identifierSuffix: bool | *true
+
 	// open at every level a constraint is added: a definition closes what it
 	// touches, and these are the chart's conventions, not its whole schema
 	values: {
-		global: {alwaysAppendIdentifierToResourceName: true, ...}
+		if identifierSuffix {
+			global: {alwaysAppendIdentifierToResourceName: true, ...}
+		}
 		if host != "" {
 			ingress: (ingressKey): {annotations: ingressAnnotations, ...}
 		}
@@ -153,23 +170,48 @@ import (
 	name:     string
 	ns:       string | *"" // supplied by #Bundle
 	url:      string
-	branch:   string
 	interval: string | *"5m"
+
+	// Exactly one of the two. Sentinels rather than optional fields, because
+	// referencing an unset optional is itself an error in CUE.
+	branch: string | *""
+	tag:    string | *""
+
+	// The ignore rules source-controller applies before it archives the clone,
+	// so a repository that ships one chart does not ship the whole tree.
+	ignore: string | *""
 
 	out: fluxSource.#GitRepository & {
 		apiVersion: "source.toolkit.fluxcd.io/v1"
 		kind:       "GitRepository"
 		metadata: {"name": name, namespace: ns}
-		spec: {"interval": interval, "url": url, ref: "branch": branch}
+		spec: {
+			"interval": interval
+			"url":      url
+			ref: {
+				if branch != "" {"branch": branch}
+				if tag != "" {"tag": tag}
+			}
+			if ignore != "" {"ignore": ignore}
+		}
 	}
 }
 
 #Bundle: {
 	namespace: string
-	releases: [...#Release]
+
+	// The element type is what a release renders, not #Release itself: a closed
+	// definition rejects the fields a derived one adds, so naming #Release here
+	// would make #AppRelease unusable in a bundle. The house constraints live in
+	// those definitions, and this is the only thing #Bundle reads.
+	releases: [...{out: fluxHelm.#HelmRelease, ...}]
 
 	// The Traefik middleware set. A bundle with no ingress does not install it.
 	middlewares: bool | *true
+
+	// An in-cluster wildcard certificate off the private CA, for a workload that
+	// serves TLS to the ingress controller rather than plain HTTP.
+	namespaceCert: bool | *false
 
 	// Chart sources, defaulting to the bjw-s repository every app-template
 	// release needs. A bundle on a foreign chart replaces the list.
@@ -204,6 +246,7 @@ import (
 	_repos: [for r in repositories {(r & {ns: namespace}).out}]
 
 	_mw: #Middlewares & {ns: namespace}
+	_cert: #NamespaceCert & {ns: namespace}
 
 	out: list.Concat([
 		[_ns],
@@ -211,6 +254,8 @@ import (
 		[for r in releases {r.out}],
 		after,
 		_repos,
+		if namespaceCert {[_cert.out]},
+		if !namespaceCert {[]},
 		if middlewares {_mw.out},
 		if !middlewares {[]},
 	])

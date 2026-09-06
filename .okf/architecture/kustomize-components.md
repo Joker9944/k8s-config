@@ -5,7 +5,7 @@ description: The shared components/ tree, what each component injects, and the t
 tags: [kustomize, dry, components]
 resource: components
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T14:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
 ---
 
 # Components
@@ -49,5 +49,5 @@ maps each component to what supersedes it.
 # Traps
 
 - **The `replacements` convention is not universal.** Only `infrastructure/base/{garage,kanidm,kube-prometheus-stack,longhorn}` declare it. Every `apps/base/*` ingress instead **hardcodes** its namespace in the middleware annotation (`jellyfin-chain-country-whitelist@kubernetescrd`) under a `TODO`. Copying an app manifest into a differently-named namespace silently points at a middleware that does not exist there.
-- **`namespace-cert-kanidm` duplicates `namespace-cert`.** It is the same component plus a hardcoded `namespace: kanidm`, working around [kustomize#5953](https://github.com/kubernetes-sigs/kustomize/issues/5953). Editing one without the other diverges them, and the unused original is the one that looks canonical.
+- **`namespace-cert-kanidm` duplicates `namespace-cert`.** It is the same component plus a hardcoded `namespace: kanidm`, working around [kustomize#5953](https://github.com/kubernetes-sigs/kustomize/issues/5953). Editing one without the other diverges them, and the unused original is the one that looks canonical. [`#NamespaceCert`](/architecture/cue-layout.md) is the successor: the namespace is a parameter, so there is nothing to duplicate.
 - **Per-app `configurations:` escape hatches.** `apps/base/{blocky,komga}/kustomize/kustomization-hack.yaml` add `nameReference` entries for `spec/values/persistence/*/name`, because those chart values reference a generated ConfigMap that `common-kustomizeconfig` does not cover. Both are marked `TODO find a way to replace this ugly hack`; the shared component carries the matching `TODO This is dumb, find a way to DRY this.` [`#ConfigMapFiles`](/architecture/cue-layout.md) is the successor: a stable name leaves nothing to chase.
