@@ -1,4 +1,4 @@
-package nyx
+package schema
 
 import "list"
 

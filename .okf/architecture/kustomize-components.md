@@ -43,7 +43,8 @@ replacements:
 ```
 
 A decision to [replace this layer with CUE](/decisions/replace-kustomize-with-cue.md)
-is recorded; the traps below are what motivated it.
+is recorded; the traps below are what motivated it. [The CUE layout](/architecture/cue-layout.md)
+maps each component to what supersedes it.
 
 # Traps
 

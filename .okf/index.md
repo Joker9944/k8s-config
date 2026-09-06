@@ -12,6 +12,7 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 - [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph and its ordering constraints.
 - [Kustomize components](architecture/kustomize-components.md) - the shared `components/` tree and the PLACEHOLDER conventions.
 - [App-template pattern](architecture/app-template-pattern.md) - the shape every workload directory takes.
+- [CUE layout](architecture/cue-layout.md) - the target CUE tree: a package per workload, a collector per tier.
 
 # Platform
 
@@ -32,6 +33,6 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 - [Adding an app](workflows/adding-an-app.md) - the end-to-end sequence, including what Flux cannot do for you.
 - [Development environment](workflows/dev-environment.md) - what the Nix flake provides.
 - [Secrets and SOPS](workflows/secrets-sops.md) - how a filename decides its encryption rule.
-- [Formatting and cspell](workflows/formatting-and-cspell.md) - the pre-commit suite and the dictionary submodule.
+- [Formatting and cspell](workflows/formatting-and-cspell.md) - the pre-commit suite and the spellchecker's dictionaries.
 - [Commit conventions](workflows/commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](workflows/images-and-ci.md) - Nix-built OCI images, signing, and renovate.

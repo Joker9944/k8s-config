@@ -1,6 +1,7 @@
-package nyx
+package schema
 
 import (
+	"encoding/yaml"
 	"list"
 	"strings"
 	fluxHelm "github.com/fluxcd/helm-controller/api/v2"
@@ -68,6 +69,15 @@ import (
 	before: [...] | *[] // emitted between the namespace and the releases
 	after: [...] | *[]  // emitted after the releases
 
+	// SOPS Secret manifests, module-relative. The render step copies them
+	// verbatim; ciphertext never passes through CUE. See
+	// /workflows/secrets-sops.md.
+	secretFiles: [...string] | *[]
+
+	// Migration bookkeeping: the kustomize overlay this bundle replaces, read
+	// by gate.py. "" means not yet ported. Goes away with apps/base/.
+	source: string | *""
+
 	_ns: {apiVersion: "v1", kind: "Namespace", metadata: name: namespace}
 
 	_repo: fluxSource.#HelmRepository & {
@@ -87,4 +97,22 @@ import (
 		[_repo],
 		_mw.out,
 	])
+}
+
+// A tier: one CUE package, one render, one OCI artifact. Collects the bundles
+// its workload packages export.
+#Tier: {
+	bundles: [string]: #Bundle
+
+	rendered: {
+		for k, b in bundles {(k): yaml.MarshalStream(b.out)}
+	}
+
+	// The registry gate.py reads, so the script carries no per-app knowledge.
+	// Goes away with apps/base/.
+	gateMeta: {
+		for k, b in bundles {
+			(k): {namespace: b.namespace, source: b.source, secretFiles: b.secretFiles}
+		}
+	}
 }

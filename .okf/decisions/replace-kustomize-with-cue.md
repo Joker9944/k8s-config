@@ -4,8 +4,7 @@ title: Replace kustomize with CUE
 description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as per-tier OCI artifacts.
 tags: [cue, kustomize, gitops, flux, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T21:40:00Z }
-verified: { by: human:Joker9944, at: 2026-09-05T21:51:42Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T09:10:00Z }
 stale_after: 2027-03-05
 sources:
   - id: poc
@@ -79,9 +78,10 @@ shape `forbid_secrets` rejects. Naming matters: a converted file must match the
 `secret.yaml` rule, not the whole-file `.sops.yaml` one. See
 [secrets and SOPS](/workflows/secrets-sops.md).
 
-**Layout** is flat per tier, because files in one directory share a CUE package
-and there is no glob-import. SOPS files sit beside the `.cue` files that
-reference them and are inert to CUE, which only loads `.cue`.
+**Layout** is a package per workload, collected by a package per tier, so the
+tier is at once the CUE package, the unit of rendering and the OCI artifact.
+`base/` and `nyx/` collapse into one file per tier, and `components/` has no
+successor tree. See [the CUE layout](/architecture/cue-layout.md).
 
 **Renovate** keeps working through regex managers over `.cue`: container images
 need no annotation because the `repository`/`tag` pair is self-describing, and
@@ -95,8 +95,9 @@ the definition sigil, so `# renovate:` is impossible.
   locally or `flux pull artifact`.
 - CI enters the deploy path. A failed render means no new artifact; running
   workloads are unaffected, but updates stall.
-- Nine secrets convert from the `secretGenerator` shape, and every converted file
-  needs an explicit `metadata.namespace` that kustomize used to inject.
+- Nine secrets must convert from the `secretGenerator` shape, which has no CUE
+  successor, and every converted file needs the `metadata.namespace` and
+  `type: Opaque` kustomize used to supply.
 - CUE's own traps, catalogued in the proof-of-concept: self-reference cycles,
   definitions closing recursively, and `x != _|_` not testing whether an optional field is
   set.
@@ -104,10 +105,12 @@ the definition sigil, so `# renovate:` is impossible.
 # Evidence
 
 `apps/base/jellyfin` and `apps/base/servarr` are ported in `experiments/cue/`,
-which carries its own README.[^poc] servarr renders
-byte-identical across 1942 lines; jellyfin differs only by the
-`secretGenerator` hash this decision removes. `verify.sh` re-proves both, plus
-the constraint and API-surface checks, from a clean checkout.
+which carries its own README.[^poc] `gate.sh` renders both sides and compares
+resource by resource, decrypting each the way kustomize-controller does: all 47
+resources match, including the 15 SOPS Secrets, with an empty allowlist. It reads the bundle registry out of CUE, so porting a
+workload enrols it in the gate rather than needing the script edited.
+`verify.sh` covers the constraint and API-surface checks. Both are migration
+scaffolding and die with `apps/base/`.
 
 [^poc]: CUE proof-of-concept (jellyfin and servarr)
 

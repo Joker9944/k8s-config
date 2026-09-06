@@ -1,0 +1,9 @@
+# Resources permitted to differ between kustomize and CUE.
+#
+#   <bundle>  <kind>/<name>  <reason>
+#
+# An entry whose resource turns out to be identical, or which names a resource
+# neither side emits, fails the gate: a stale exemption is a blind spot.
+#
+# Generator hash suffixes are NOT listed here. They are normalized away, since
+# they are a systematic encoding difference rather than a fidelity problem.

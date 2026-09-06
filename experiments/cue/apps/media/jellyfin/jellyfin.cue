@@ -1,18 +1,15 @@
-package nyx
+package jellyfin
 
-jellyfin: #Bundle & {
+import "github.com/joker9944/k8s-config/schema"
+
+bundle: schema.#Bundle & {
 	namespace: "jellyfin"
-	before: [{
-		apiVersion: "v1"
-		kind:       "Secret"
-		type:       "Opaque"
-		metadata: {name: "jellyfin-secret-values", namespace: "jellyfin"}
-		data: "values.yaml": secretData
-	}]
+	source:    "apps/base/jellyfin"
+	secretFiles: ["apps/media/jellyfin/secrets/values.secret.yaml"]
 	releases: [_jellyfin]
 }
 
-_jellyfin: #Release & {
+_jellyfin: schema.#Release & {
 	name:      "jellyfin"
 	namespace: "jellyfin"
 
@@ -32,7 +29,7 @@ _jellyfin: #Release & {
 		spec: httpGet: {path: "/health", port: portHTTP}
 	}
 
-	_backup: #VolsyncRestic & {
+	_backup: schema.#VolsyncRestic & {
 		app:   name, vol:  "config", size: configSize
 		"uid": uid, "gid": gid
 	}
@@ -55,7 +52,7 @@ _jellyfin: #Release & {
 					preference: matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
 				}]
 			}
-			containers: jellyfin: #Hardened & {
+			containers: jellyfin: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/jellyfin/jellyfin"
 					tag:        "10.11.11@sha256:45f648c382a0c8b552582fcea40e95cb17c5d475473a891cba0eb7523fb92112"
@@ -94,7 +91,7 @@ _jellyfin: #Release & {
 			}
 		}
 
-		// annotations (incl. the namespace-qualified middleware) come from #App
+		// annotations (incl. the namespace-qualified middleware) come from #Release
 		ingress: jellyfin: {
 			hosts: [{host: "jellyfin.vonarx.online", paths: [{path: "/", service: {identifier: "jellyfin", port: "http"}}]}]
 			tls: [{hosts: ["jellyfin.vonarx.online"], secretName: "wildcard-vonarx-online-cert"}]

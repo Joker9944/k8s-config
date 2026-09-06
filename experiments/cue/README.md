@@ -10,35 +10,64 @@ SOPS values. **servarr** exercises composition: six releases in one namespace, a
 shared Postgres cluster, and four near-identical `*arr` apps.
 
 Nothing here is deployed. `apps/base/*` remains the source of truth. The
-conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`.
+conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`,
+and the tree follows the layout in `.okf/architecture/cue-layout.md`: a package
+per workload, a collector package per tier.
+
+The tree is **self-contained**. It reads nothing from `apps/base/`, because a
+replacement that sources from what it replaces stops working the moment the
+original is deleted. Its plaintext files and its SOPS secrets are its own.
 
 ## Running it
 
 ```sh
-./verify.sh
+./gate.sh    # fidelity: does CUE still render what kustomize renders?
+./verify.sh  # constraints: do the house-style rules still hold?
 ```
 
-Renders `apps/base/jellyfin` with both kustomize and CUE, compares them with keys
-sorted, then checks that four house-style violations are rejected. Exits non-zero
-if any constraint stops holding. Tools come unpinned from the nixpkgs registry;
-if CUE is adopted, `cue` moves into `envParts` in `flake.nix`.
+`gate.sh` is the migration's quality gate. It finds tiers on disk and bundles in
+each tier's own `gateMeta`, so porting a workload enrols it automatically, and
+compares resource by resource — a missing resource fails as loudly as a wrong
+field. It needs the age key. It dies with `apps/base/`; `verify.sh` outlives it.
+
+Tools come unpinned from the nixpkgs registry; if CUE is adopted, `cue` moves
+into `envParts` in `flake.nix`.
 
 ## Files
 
-| File           | Contents                                                                                                |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| `schema.cue`   | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic` — the constraint and generator layer |
-| `app.cue`      | `#App` — namespace, HelmRepository, HelmRelease scaffolding, ingress annotations                        |
-| `jellyfin.cue` | The app itself. The only file a person edits per workload.                                              |
-| `data.cue`     | The injection point for SOPS ciphertext, which never passes through CUE evaluation                      |
-| `render.cue`   | `yaml.MarshalStream` over the resource list                                                             |
+| Path                   | Contents                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| `schema/schema.cue`    | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic` — the constraint and generator layer |
+| `schema/bundle.cue`    | `#Release`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, per-tier rendering       |
+| `apps/media/media.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
+| `apps/media/*/`        | One package per workload, with its own `files/` and `secrets/`.                                         |
+| `gate.sh` / `gate.py`  | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
+| `allowlist.txt`        | Resources permitted to differ. Currently empty.                                                         |
+| `verify.sh`            | Constraint checks                                                                                       |
+| `generate.sh`          | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
 
 ## Results
 
-**Fidelity.** servarr renders **byte-identical across all 1942 lines**, 19
-resources, Secrets excluded. jellyfin differs by 4 lines of 382 — the
-secretGenerator hash suffix, in the Secret's name and in `valuesFrom`. Document
-order is normalized on both sides; it is not meaningful to Flux.
+**Fidelity.** Every resource matches, with nothing excluded: jellyfin **12 of
+12**, servarr **35 of 35**, including all 15 SOPS Secrets. The allowlist is
+empty.
+
+**Both sides are decrypted before comparison**, the way kustomize-controller
+decrypts a source before building it. This became necessary once the secrets
+moved into the CUE tree: re-encrypting identical plaintext produces different
+ciphertext, so comparing ciphertext would only ever prove that no file had been
+touched. Comparing plaintext proves the migration preserved the actual values.
+The gate therefore needs the age key, holds decrypted material in memory and in
+one mode-0700 temporary tree it shreds on exit, and writes nothing decrypted
+into the repository.
+
+Four differences are normalized rather than exempted, because none is semantic:
+document and key order, which Flux does not read; kustomize's generator name
+suffix, which is only stripped where CUE emits the bare name at the same kind;
+whitespace inside base64 `data`, because kustomize writes Secret values as a
+wrapped block scalar and the line breaks land in the string; and `stringData`
+against `data`, which Kubernetes defines as the same Secret. Anything that
+decodes differently still fails.
 
 **servarr broke the first abstraction, which was the point.** `#App` assumed one
 release per namespace. Six releases sharing a namespace, a HelmRepository and one
@@ -59,23 +88,23 @@ role — today those two lists are related only by convention.
 **Constraints.** Four violations are rejected at build time: an image tag without
 a digest, `readOnlyRootFilesystem: false`, an ingress naming another namespace's
 middleware, and an undefined middleware chain. The third is the failure mode that
-`apps/base/*` is currently exposed to — `#App` computes the annotation from
-`namespace` and `chain`, so an app cannot write it.
+`apps/base/*` is currently exposed to — `#Release` computes the annotation from
+`namespace` and `chain`, so a release cannot write it.
 
 **Typed Flux resources.** `cue.mod/gen/` holds CUE definitions generated from
 helm-controller, kustomize-controller and source-controller's own Go API
-packages, so `#App` emits a `#HelmRelease` rather than an untyped struct.
+packages, so `#Release` emits a `#HelmRelease` rather than an untyped struct.
 `generate.sh` reads the controller versions out of
 `clusters/nyx/flux/flux-system/gotk-components.yaml`, which makes the
 definitions track what nyx actually runs and turns a Flux upgrade into a
 reviewable diff.
 
-What this buys is the opposite of what it first appears. `#App` is a definition,
-so CUE already closed everything inside it — a misspelled field was rejected
+What this buys is the opposite of what it first appears. `#Release` is a
+definition, so CUE already closed everything inside it — a misspelled field was rejected
 before. What typing adds is the **whole Flux API surface without hand-declaring
 it**: `spec.timeout`, `spec.install.crds` (which garage needs) and
 `spec.driftDetection` are accepted, while `spec.chartt` is still rejected.
-Without the generated definitions, `#App` would have to enumerate every Flux
+Without the generated definitions, `#Release` would have to enumerate every Flux
 field any workload might ever use.
 
 Two limits. Enum values are **not** validated — `install.crds: "Nonsense"` is
@@ -99,11 +128,13 @@ name. The HelmRelease v2 CRD carries `lastAttemptedConfigDigest`, which is
 helm-controller digesting the resolved config including `valuesFrom` — so the
 upgrade should still happen. Worth confirming empirically once.
 
-Related: committing rendered manifests is not viable, because the generated
-Secret holds base64-of-ciphertext with no file-level `sops:` block and
-`forbid_secrets` rejects it. The resolution is to drop `secretGenerator` and
-hand-write a SOPS `secret.yaml`, which also makes the Secret name stable by
-construction.
+Both `secretGenerator` secrets here have since been converted to SOPS
+`secret.yaml` manifests, which is what makes this moot for jellyfin and
+recyclarr: the name is stable by construction. The conversion was not optional.
+CUE has no successor to `secretGenerator`, so a whole-file secret that stays
+whole-file is a resource nothing renders. Two fields kustomize used to supply
+have to be written by hand — `metadata.namespace` and `type: Opaque` — and both
+fail silently if forgotten.
 
 **Renovate.** The built-in flux and helm-values managers key off
 `helm-release.yaml` and `kustomization.yaml` and would go blind. Regex managers
@@ -126,6 +157,10 @@ sigil, so `# renovate:` comments are impossible** — the annotation must be `//
   jellyfin always had an ingress.
 - Definitions close recursively, so a nested struct meant to be extended needs an
   explicit `...`.
+
+The mechanics that decide how the tree is _organized_ — package boundaries,
+`@tag` propagation, `@embed` path rules — are in
+`.okf/architecture/cue-layout.md` rather than repeated here.
 
 ## Changes this required outside the experiment
 

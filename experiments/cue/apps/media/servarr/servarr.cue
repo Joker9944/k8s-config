@@ -1,6 +1,11 @@
-package nyx
+@extern(embed)
 
-import "list"
+package servarr
+
+import (
+	"list"
+	"github.com/joker9944/k8s-config/schema"
+)
 
 // cSpell:ignore INSTANCENAME APIKEY MAINDB LOGDB
 
@@ -32,7 +37,7 @@ _cnpgSecretRef: {
 	app:          string // controller / container / service key
 	envPrefix:    string
 	instanceName: string
-	image: {repository: string, tag: #Digest}
+	image: {repository: string, tag: schema.#Digest}
 	uid:  int
 	gid:  int | *6000
 	port: int
@@ -54,7 +59,7 @@ _cnpgSecretRef: {
 		spec: httpGet: {"port": port, path: "/ping"}
 	}
 
-	release: #Release & {
+	release: schema.#Release & {
 		"name":     name
 		namespace:  "servarr"
 		host:       "\(name).vonarx.online"
@@ -75,7 +80,7 @@ _cnpgSecretRef: {
 					seccompProfile: type: "RuntimeDefault"
 				}
 
-				containers: (app): #Hardened & {
+				containers: (app): schema.#Hardened & {
 					"image": image
 					env: {
 						COMPlus_EnableDiagnostics: diagnostics
@@ -105,7 +110,7 @@ _cnpgSecretRef: {
 					}
 				}
 
-				initContainers: postgresql: #Hardened & {
+				initContainers: postgresql: schema.#Hardened & {
 					image: {
 						repository: "ghcr.io/joker9944/postgresql-client"
 						tag:        "4.0.0@sha256:af64249920494097d4185d8c2327b209014c28458295372222804a7a087842c6"
@@ -249,11 +254,12 @@ _arrs: [
 	},
 ]
 
-// File-content passthrough, injected at render time like the SOPS ciphertext.
-recyclarrConfig:   string @tag(recyclarrConfig)
-recyclarrSettings: string @tag(recyclarrSettings)
+// Plaintext config, read from disk at evaluation time. @embed cannot escape
+// the package directory, which is why these files live here.
+_recyclarrConfig:   _ @embed(file="files/recyclarr.yml", type=text)
+_recyclarrSettings: _ @embed(file="files/settings.yml", type=text)
 
-_flaresolverr: #Release & {
+_flaresolverr: schema.#Release & {
 	name:      "flaresolverr"
 	namespace: "servarr"
 	values: _servarrPod & {
@@ -263,7 +269,7 @@ _flaresolverr: #Release & {
 				seccompProfile: type: "RuntimeDefault"
 			}
 			// flaresolverr runs a headless browser and cannot take a read-only root
-			containers: flaresolverr: #HardenedWritableRoot & {
+			containers: flaresolverr: schema.#HardenedWritableRoot & {
 				image: {
 					repository: "ghcr.io/flaresolverr/flaresolverr"
 					tag:        "v3.5.0@sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47"
@@ -292,7 +298,7 @@ _flaresolverr: #Release & {
 	}
 }
 
-_recyclarr: #Release & {
+_recyclarr: schema.#Release & {
 	name:      "recyclarr"
 	namespace: "servarr"
 	values: _servarrPod & {
@@ -315,7 +321,7 @@ _recyclarr: #Release & {
 				fsGroupChangePolicy: "OnRootMismatch"
 				seccompProfile: type: "RuntimeDefault"
 			}
-			containers: recyclarr: #Hardened & {
+			containers: recyclarr: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/recyclarr/recyclarr"
 					tag:        "7.5.2@sha256:2550848d43a453f2c6adf3582f2198ac719f76670691d76de0819053103ef2fb"
@@ -421,16 +427,25 @@ _scheduledBackup: {
 	}
 }
 
-servarr: #Bundle & {
+bundle: schema.#Bundle & {
 	namespace: "servarr"
+	source:    "apps/base/servarr"
+	secretFiles: [
+		"apps/media/servarr/secrets/cnpg.secret.yaml",
+		"apps/media/servarr/secrets/prowlarr.secret.yaml",
+		"apps/media/servarr/secrets/radarr-standard.secret.yaml",
+		"apps/media/servarr/secrets/sonarr-anime.secret.yaml",
+		"apps/media/servarr/secrets/sonarr-standard.secret.yaml",
+		"apps/media/servarr/secrets/recyclarr.secret.yaml",
+	]
 	before: [
 		{
 			apiVersion: "v1"
 			kind:       "ConfigMap"
 			metadata: {name: "recyclarr-config-overlay", namespace: "servarr"}
 			data: {
-				"recyclarr.yml": recyclarrConfig
-				"settings.yml":  recyclarrSettings
+				"recyclarr.yml": _recyclarrConfig
+				"settings.yml":  _recyclarrSettings
 			}
 		},
 		_objectStore,

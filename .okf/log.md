@@ -1,5 +1,14 @@
 # Update Log
 
+## 2026-09-06
+
+- sops's YAML indent pinned to 2, which its default of 4 was breaking — [secrets and SOPS](/workflows/secrets-sops.md)
+- The CUE tree reads nothing outside itself, so every whole-file secret must convert — [CUE layout](/architecture/cue-layout.md)
+- Whole-file secrets are on their way out with kustomize — [secrets and SOPS](/workflows/secrets-sops.md)
+- Target CUE tree: a package per workload, a collector per tier, no `components/` successor — [CUE layout](/architecture/cue-layout.md)
+- `cspell-dicts` is an out-of-tree checkout rather than a submodule, and `nil` left the hook suite — [formatting and cspell](/workflows/formatting-and-cspell.md)
+- Fidelity is machine-checked by `gate.sh` across every resource, not sampled — [decision](/decisions/replace-kustomize-with-cue.md)
+
 ## 2026-09-05
 
 - conform's conventional-commit policy and the tree-shaped scope allowlist — [commit conventions](/workflows/commit-conventions.md)

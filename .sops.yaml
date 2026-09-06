@@ -1,4 +1,9 @@
 ---
+# sops defaults to 4-space YAML; the repo is 2 everywhere and the formatter
+# rewrites anything else.
+stores:
+  yaml:
+    indent: 2
 creation_rules:
   - path_regex: ^.*\.sops\.ya?ml
     age: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h

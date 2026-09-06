@@ -5,7 +5,7 @@ description: How a file's name decides its encryption rule, how the key reaches 
 tags: [sops, age, secrets, security]
 resource: .sops.yaml
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T09:10:00Z }
 ---
 
 # The filename is the rule
@@ -19,7 +19,9 @@ One age recipient covers the whole repo. `.sops.yaml` has four creation rules, a
 | `talenv.yaml`               | the whole file              |
 | `talsecret.yaml`            | the whole file              |
 
-The partial rule exists so that `apiVersion`, `kind` and `metadata` stay in plaintext and kustomize can still apply namespace, name-prefix and label transforms to the Secret. Fully-encrypted `*.sops.yaml` files are only ever consumed whole — as the file behind a `secretGenerator`, or by talhelper.
+The partial rule exists so that `apiVersion`, `kind` and `metadata` stay in plaintext and kustomize can still apply namespace, name-prefix and label transforms to the Secret. Fully-encrypted `*.sops.yaml` files are only ever consumed whole — as the file behind a `secretGenerator`, or by talhelper. The first of those goes away with kustomize: CUE has nothing that renders a `secretGenerator`, so those files convert to the partial rule. See [the CUE layout](/architecture/cue-layout.md).
+
+`stores.yaml.indent: 2` pins sops's YAML emitter to the repo's indentation. Its default is 4, which makes every freshly encrypted file fail the formatter — and, for a file whose payload is itself a YAML document, silently changes those bytes.
 
 Renaming a secret file changes how it is encrypted, and changes whether cspell skips it. Both `*.sops.yaml` and `secret.yaml` are on the cspell ignore list; a differently-named encrypted file will start failing spellcheck on its own encrypted contents.
 
