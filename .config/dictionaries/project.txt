@@ -57,5 +57,6 @@ talsecret
 Timoni
 toplevel
 traefikoidc
+updatekeys
 volsync
 websecure

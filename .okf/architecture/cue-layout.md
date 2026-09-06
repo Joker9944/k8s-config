@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: draft
-generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T20:10:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -16,8 +16,8 @@ The target shape for [replacing kustomize with CUE](/decisions/replace-kustomize
 cue.mod/                    module github.com/joker9944/k8s-config; gen/ holds the
                             Flux definitions from cue get go
 schema/                     package schema — #Release, #AppRelease, #Bundle,
-                            #Hardened, #HardenedPrivileged, #Middlewares,
-                            #IngressAnnotations, #ConfigMapFiles,
+                            #ConfigBundle, #Hardened, #HardenedPrivileged,
+                            #Middlewares, #IngressAnnotations, #ConfigMapFiles,
                             #NamespaceCert, #VolsyncRestic
 infrastructure/
   controllers/
@@ -35,6 +35,8 @@ clusters/nyx/               unchanged: Talos, bootstrap, and the level-2 tier
 ```
 
 A workload is a package. A tier is a package that imports its workloads and is also the OCI artifact boundary, so `cue export ./apps/media -e rendered` is both the unit of rendering and the unit of blast radius.
+
+`#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the MetalLB pool, the CNPG image catalogs. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
 
 **There is no `base/` and no `nyx/`.** The tier collector is simultaneously the tier definition and the cluster overlay. `nyx` is the only cluster and nothing under `base/` was ever parameterized per cluster, so the split is spent rather than preserved; a second cluster would reintroduce it as `clusters/<name>/` collectors.
 
@@ -81,20 +83,18 @@ See [secrets and SOPS](/workflows/secrets-sops.md) for the naming rule a convert
 
 Verified against cue v0.16.1. Each of these eliminated a layout that otherwise looked reasonable.
 
-| Mechanic                                                                             | Consequence                                                                                                     |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `cue export ./...` evaluates instances separately rather than merging them           | A cross-tier expression needs a package importing each tier by name. There is no glob import.                   |
-| `@tag` values do not reach imported packages — injection hits only the root instance | Tags cannot live in `schema/`. Prefer `@embed` and keep the layout free of them.                                |
-| `@embed` cannot refer to a parent directory                                          | A workload's plaintext files must sit at or below its own package. This is what makes the workload the package. |
-| `@embed(glob=…)` yields a map keyed by relative path                                 | A file set needs no enumeration.                                                                                |
-| A package name must be an identifier, so a hyphenated directory cannot supply one    | Most imports carry an explicit qualifier: `import cm ".../cert-manager:certmanager"`.                           |
-| `cue vet ./...` does span every package                                              | Validation stays one command.                                                                                   |
-| `cue export -e` parses `a.b-c` as subtraction                                        | A hyphenated bundle key needs a bracket selector — `tier.rendered["cert-manager"]`.                             |
-| References resolve by declaration, not by embedding                                  | A derived definition must redeclare (`host: _`) every field it reads from the one it embeds.                    |
-| A closed definition as a list element type rejects the fields a derived one adds     | Constrain a list by what the consumer reads (`[...{out: #HelmRelease, ...}]`), not by the definition name.      |
+| Mechanic                                                                             | Consequence                                                                                                                                                               |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cue export ./...` evaluates instances separately rather than merging them           | A cross-tier expression needs a package importing each tier by name. There is no glob import.                                                                             |
+| `@tag` values do not reach imported packages — injection hits only the root instance | Tags cannot live in `schema/`. Prefer `@embed` and keep the layout free of them.                                                                                          |
+| `@embed` cannot refer to a parent directory                                          | A workload's plaintext files must sit at or below its own package. This is what makes the workload the package.                                                           |
+| `@embed(glob=…)` yields a map keyed by relative path                                 | A file set needs no enumeration.                                                                                                                                          |
+| A package name must be an identifier, so a hyphenated directory cannot supply one    | Most imports carry an explicit qualifier: `import cm ".../cert-manager:certmanager"`.                                                                                     |
+| `cue vet ./...` does span every package                                              | Validation stays one command.                                                                                                                                             |
+| `cue export -e` parses `a.b-c` as subtraction                                        | A hyphenated bundle key needs a bracket selector — `tier.rendered["cert-manager"]`.                                                                                       |
+| References resolve by declaration, not by embedding                                  | A derived definition must redeclare (`host: _`) every field it reads from the one it embeds.                                                                              |
+| A closed definition used as an element type rejects anything but itself              | Constrain a collection by what the consumer reads (`[...{out: #HelmRelease, ...}]`), not by the definition name. This bit `#Bundle.releases` and `#Tier.bundles` in turn. |
 
 # Open
-
-**`infrastructure/nyx/config/` has no CUE counterpart.** Four cluster-singleton bundles — the CA chain and Cloudflare issuer, the Longhorn storage classes, the MetalLB pool, the CNPG image catalogs — with no `base/` half and no Namespace or repository of their own. `#Bundle` emits both unconditionally, so they need a parameter before they can be expressed.
 
 How a tier artifact is laid out internally. Each workload needs its own directory inside it, because [only level-3 Kustomizations decrypt](/architecture/flux-topology.md) and a SOPS file must sit under a path one of them reconciles. What is unresolved is how kustomize-controller treats a tier root holding both the level-3 sync manifests and those workload subdirectories with no `kustomization.yaml` present. Settle it with `flux build` before fixing the render step's output shape.

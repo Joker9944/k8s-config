@@ -261,10 +261,32 @@ import (
 	])
 }
 
+// A cluster singleton: resources that configure something already installed.
+// No namespace of its own, no chart and no releases, which is why
+// infrastructure/nyx/config/ has no base/ half — there was nothing to reuse.
+#ConfigBundle: {
+	resources: [...]
+
+	// SOPS Secret manifests, module-relative, on the same terms as #Bundle's.
+	secretFiles: [...string] | *[]
+
+	// Migration bookkeeping, read by gate.py. Goes away with the kustomize tree.
+	source: string | *""
+
+	out: resources
+}
+
 // A tier: one CUE package, one render, one OCI artifact. Collects the bundles
 // its workload packages export.
 #Tier: {
-	bundles: [string]: #Bundle
+	// Constrained by what this definition reads rather than by #Bundle, which is
+	// closed and would reject a #ConfigBundle outright.
+	bundles: [string]: {
+		out: [...]
+		secretFiles: [...string]
+		source: string
+		...
+	}
 
 	rendered: {
 		for k, b in bundles {(k): yaml.MarshalStream(b.out)}
@@ -274,7 +296,7 @@ import (
 	// Goes away with apps/base/.
 	gateMeta: {
 		for k, b in bundles {
-			(k): {namespace: b.namespace, source: b.source, secretFiles: b.secretFiles}
+			(k): {source: b.source, secretFiles: b.secretFiles}
 		}
 	}
 }

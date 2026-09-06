@@ -214,7 +214,11 @@ def check(name, bundle, pkg, work, allowed, used):
 
 
 def workload_count():
-    trees = (ROOT / "apps" / "base", ROOT / "infrastructure" / "base")
+    trees = (
+        ROOT / "apps" / "base",
+        ROOT / "infrastructure" / "base",
+        ROOT / "infrastructure" / "nyx" / "config",
+    )
     return sum(1 for t in trees for p in t.iterdir() if (p / "kustomization.yaml").exists())
 
 

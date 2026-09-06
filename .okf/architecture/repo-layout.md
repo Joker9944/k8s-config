@@ -4,7 +4,7 @@ title: Repository layout
 description: The top-level trees of k8s-config and the base/overlay split that separates a deployable unit from the cluster that selects it.
 tags: [gitops, layout]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T20:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T20:10:00Z }
 ---
 
 # Trees
@@ -24,7 +24,7 @@ generated: { by: claude-code/opus-5, at: 2026-09-05T20:40:00Z }
 Both `apps/` and `infrastructure/` split into `base/` and `nyx/`:
 
 - `*/base/<name>/` is a **self-contained deployable unit** — a kustomize overlay owning its namespace, HelmRelease, secrets and components. It names no cluster. Its shape is described in [the app-template pattern](/architecture/app-template-pattern.md).
-- `*/nyx/<tier>/` is the **cluster overlay**: a `<tier>-sync.yaml` listing one Flux `Kustomization` per workload, each pointing at a `*/base/` path. `infrastructure/nyx/config/` additionally holds cluster-singleton resources (`certs`, `cnpg`, `longhorn`, `metallb`) that have no `base/` counterpart because there is nothing to reuse.
+- `*/nyx/<tier>/` is the **cluster overlay**: a `<tier>-sync.yaml` listing one Flux `Kustomization` per workload, each pointing at a `*/base/` path. `infrastructure/nyx/config/` additionally holds cluster-singleton resources (`certs`, `cnpg`, `longhorn`, `metallb`) that have no `base/` counterpart because there is nothing to reuse; [`#ConfigBundle`](/architecture/cue-layout.md) is their CUE successor.
 
 Cluster membership is expressed only in the overlay: deploying a workload means adding an entry to a `<tier>-sync.yaml`, never editing anything under `base/`. `nyx` is the only cluster, so the split is an enforced convention rather than an exercised abstraction — nothing in `base/` has ever been parameterized per cluster. [The CUE layout](/architecture/cue-layout.md) spends it on that basis.
 

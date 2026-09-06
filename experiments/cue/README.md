@@ -3,14 +3,15 @@
 An evaluation of replacing kustomize with CUE as the composition layer, keeping
 Flux, HelmReleases and the bjw-s `app-template` chart unchanged.
 
-All 28 workloads are ported — twelve in `apps/`, sixteen in
-`infrastructure/`, across eight tiers. Between them they exercise every shape
+All 32 bundles are ported — twelve in `apps/`, sixteen in
+`infrastructure/base/` and the four `infrastructure/nyx/config/` cluster
+singletons, across eight tiers. Between them they exercise every shape
 the tree has: single and multiple releases per namespace, the bjw-s app-template
 and twelve foreign charts, charts from a `GitRepository` by branch and by tag,
 nested Flux `Kustomization`s, volsync pairs, generated ConfigMaps, CNPG
 clusters, LoadBalancer services, namespace-local middlewares and certificates,
-Pod Security labels, and SOPS secrets in both the whole-file and manifest
-shapes. The four `infrastructure/nyx/config/` bundles are not started.
+Pod Security labels, a two-tier private CA, and SOPS secrets in both the
+whole-file and manifest shapes. Only the level-3 sync manifests are left.
 
 Nothing here is deployed. `apps/base/*` remains the source of truth. The
 conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`,
@@ -38,21 +39,21 @@ into `envParts` in `flake.nix`.
 
 ## Files
 
-| Path                       | Contents                                                                                                |
-| -------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `schema/schema.cue`        | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic`, `#ConfigMapFiles`, `#NamespaceCert` |
-| `schema/bundle.cue`        | `#Release`, `#AppRelease`, `#Bundle`, `#Tier` — HelmRelease scaffolding, ingress annotations, rendering |
-| `<tree>/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                          |
-| `<tree>/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                  |
-| `gate.sh` / `gate.py`      | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                  |
-| `allowlist.txt`            | Resources permitted to differ. Currently empty.                                                         |
-| `verify.sh`                | Constraint checks                                                                                       |
-| `generate.sh`              | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                              |
+| Path                       | Contents                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `schema/schema.cue`        | `#Digest`, `#Hardened`, `#Chain`, `#Middlewares`, `#VolsyncRestic`, `#ConfigMapFiles`, `#NamespaceCert`      |
+| `schema/bundle.cue`        | `#Release`, `#AppRelease`, `#Bundle`, `#ConfigBundle`, `#Tier` — scaffolding, ingress annotations, rendering |
+| `<tree>/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                               |
+| `<tree>/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                       |
+| `gate.sh` / `gate.py`      | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                       |
+| `allowlist.txt`            | Resources permitted to differ. Currently empty.                                                              |
+| `verify.sh`                | Constraint checks                                                                                            |
+| `generate.sh`              | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                                   |
 
 ## Results
 
-**Fidelity.** Every resource matches, with nothing excluded: **275 of 275**
-across the 28 workloads, including all 42 SOPS Secrets across 21 files. The
+**Fidelity.** Every resource matches, with nothing excluded: **292 of 292**
+across the 32 bundles, including all 43 SOPS Secrets across 22 files. The
 allowlist is empty.
 
 **Both sides are decrypted before comparison**, the way kustomize-controller
@@ -71,6 +72,13 @@ whitespace inside base64 `data`, because kustomize writes Secret values as a
 wrapped block scalar and the line breaks land in the string; and `stringData`
 against `data`, which Kubernetes defines as the same Secret. Anything that
 decodes differently still fails.
+
+**A closed definition is the wrong element type, twice over.** `#Bundle.releases`
+was `[...#Release]` and `#Tier.bundles` was `[string]: #Bundle`, and each
+rejected the first derived definition that came along — `#AppRelease`, then
+`#ConfigBundle`. Both now name the structural shape their consumer actually
+reads, which is the more honest contract anyway: `#Bundle` only ever touches
+`r.out`, and `#Tier` only `out`, `source` and `secretFiles`.
 
 **`infrastructure/` cost four schema fields and no restructuring.** The
 `#Release`/`#AppRelease` split held: 13 of the 16 run a foreign chart and none
@@ -128,13 +136,17 @@ Go types. Neither are durations: `metav1.Duration` generates to the top type, so
 |                                           | YAML today | CUE  |
 | ----------------------------------------- | ---------- | ---- |
 | all of `apps/` (excluding SOPS)           | 4394       | 1860 |
-| all of `infrastructure/base` (excl. SOPS) | 1935       | 1335 |
-| shared layer                              | ~1600      | 499  |
+| all of `infrastructure/base` (excl. SOPS) | 1935       | 1343 |
+| `infrastructure/nyx/config` (excl. SOPS)  | 259        | 251  |
+| shared layer                              | ~1600      | 521  |
 
 The workloads that collapse hardest are the ones that were most repetitive:
 servarr 1972 → 459, blocky 233 → 180, jellyfin 243 → 122. opencloud barely moves
 (66 → 67) because its values are all chart-specific and there was nothing to
-share.
+share, and `nyx/config` barely moves for the same reason — one-off cluster
+resources with no second instance to factor against. Line count is the wrong
+measure there; what those bundles buy is that the CA chain and the storage
+classes are now referenced by name rather than retyped.
 
 ## Open questions
 

@@ -5,7 +5,7 @@ description: How a file's name decides its encryption rule, how the key reaches 
 tags: [sops, age, secrets, security]
 resource: .sops.yaml
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T09:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T20:10:00Z }
 ---
 
 # The filename is the rule
@@ -23,7 +23,9 @@ The partial rule exists so that `apiVersion`, `kind` and `metadata` stay in plai
 
 `stores.yaml.indent: 2` pins sops's YAML emitter to the repo's indentation. Its default is 4, which makes every freshly encrypted file fail the formatter — and, for a file whose payload is itself a YAML document, silently changes those bytes.
 
-Renaming a secret file changes how it is encrypted, and changes whether cspell skips it. Both `*.sops.yaml` and `secret.yaml` are on the cspell ignore list; a differently-named encrypted file will start failing spellcheck on its own encrypted contents.
+Renaming a secret file changes how it is encrypted, and changes whether cspell skips it: the ignore list carries `*.sops.yaml` and `*secret.yaml`.
+
+**A name and its content can disagree, and nothing notices.** Creation rules apply on _encryption_; `sops decrypt` and `sops edit` read the rule out of the file's own metadata instead. So a file named for the whole-file rule while its body carries `encrypted_regex` keeps working indefinitely — until the next `sops updatekeys` or re-encrypt follows the filename and swallows `apiVersion` and `kind` too. Renaming costs nothing, because the MAC does not cover the filename.
 
 # Reaching the cluster
 

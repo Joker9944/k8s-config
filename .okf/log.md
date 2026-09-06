@@ -2,6 +2,8 @@
 
 ## 2026-09-06
 
+- The four `infrastructure/nyx/config` cluster singletons ported behind a new `#ConfigBundle` — [CUE layout](/architecture/cue-layout.md)
+- A SOPS filename and its encrypted body can disagree indefinitely, and re-encrypting is what breaks it — [secrets and SOPS](/workflows/secrets-sops.md)
 - All 16 `infrastructure/base` workloads ported; `#NamespaceCert`, `#HardenedPrivileged`, the `crds` preset and git tags added — [CUE layout](/architecture/cue-layout.md)
 - barman-cloud installs from its own chart instead of a kustomize remote resource — [backup and restore](/platform/backup-and-restore.md)
 - `#NamespaceCert` retires the `namespace-cert` component pair and its kustomize#5953 workaround — [kustomize components](/architecture/kustomize-components.md)
