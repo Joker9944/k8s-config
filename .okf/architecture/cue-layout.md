@@ -3,8 +3,8 @@ type: Architecture
 title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
-status: draft
-generated: { by: claude-code/opus-5, at: 2026-09-06T20:10:00Z }
+status: stable
+generated: { by: claude-code/opus-5, at: 2026-09-06T22:30:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -15,6 +15,7 @@ The target shape for [replacing kustomize with CUE](/decisions/replace-kustomize
 ```
 cue.mod/                    module github.com/joker9944/k8s-config; gen/ holds the
                             Flux definitions from cue get go
+render_tool.cue             package tier — the `cue cmd render` workflow
 schema/                     package schema — #Release, #AppRelease, #Bundle,
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #ConfigMapFiles,
@@ -30,9 +31,15 @@ apps/
   media/
     media.cue               package media
     jellyfin/jellyfin.cue
-clusters/nyx/               unchanged: Talos, bootstrap, and the level-2 tier
-                            Kustomizations, now backed by OCIRepository
+clusters/nyx/flux/          package flux — the level-2 Kustomizations and their
+                            OCIRepositories, plus `cue cmd bootstrap`
 ```
+
+**Every tier collector is `package tier`.** A workflow command only applies to
+instances whose package clause matches the tool file's, so eight differently
+named packages would need eight copies of the render. The directory is the
+identity instead, declared as `tree` and `name` on `#Tier`; nothing imports a
+collector, so the name is free.
 
 A workload is a package. A tier is a package that imports its workloads and is also the OCI artifact boundary, so `cue export ./apps/media -e rendered` is both the unit of rendering and the unit of blast radius.
 
@@ -46,7 +53,7 @@ A workload is a package. A tier is a package that imports its workloads and is a
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `common-middlewares`                       | `#Middlewares`                                                                                                                          |
 | `bjw-s-helm-repository`, `ot-helm-…`       | A `HelmRepository` emitted by `#Bundle` from the chart the releases name                                                                |
-| `common-sync-patch`                        | Defaults on the level-3 `Kustomization` the tier collector emits                                                                        |
+| `common-sync-patch`                        | `#Tier.sync`, which generates the level-3 `Kustomization`s rather than patching them                                                    |
 | `namespace-cert`, `namespace-cert-kanidm`  | `#NamespaceCert`, switched on with `#Bundle.namespaceCert`. Taking the namespace as a parameter retires the kustomize#5953 duplication. |
 | `common-kustomizeconfig`                   | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.                                           |
 | `blocky`/`komga` `kustomization-hack.yaml` | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                                                            |
@@ -69,6 +76,30 @@ Exceptions are named definitions or named fields rather than softened constraint
 
 - **`namespace:` overrides a source's declared namespace.** `apps/base/nextcloud/flux/helm-repository.yaml` says `namespace: flux-system` and renders as `nextcloud`. The declared value is dead; the CUE side must emit the workload namespace. One file [does declare one](/architecture/config-drift.md).
 - **`secretGenerator` supplies `type: Opaque`** and a plain `secret.yaml` resource does not. A converted secret needs it written by hand; a moved one must not gain it.
+
+# The render is CUE
+
+`cue cmd --inject out=<dir> render ./<tree>/<tier>` writes one tier. Every task —
+the directories, the manifests, the copied secrets, the sync file — is produced
+by a comprehension over `tier.bundles`, so adding a workload adds its files with
+nothing in the workflow to edit.
+
+```
+<out>/<tree>/<tier>/
+  sync/<tier>-sync.yaml     the level-3 Kustomizations
+  <bundle>/manifests.yaml   everything the bundle declares
+  <bundle>/*.secret.yaml    copied byte for byte
+```
+
+The sync manifests sit in `sync/` rather than at the artifact root because
+[a generated kustomization walks subdirectories](/architecture/flux-topology.md).
+`#Tier.sync` generates them, which is what retires `common-sync-patch`: interval,
+timeout, prune, `sourceRef` and `decryption` were that component's entire content.
+
+Secrets are copied with `tool/file.Read` into `tool/file.Create`. That is not the
+thing the rules forbid — what is forbidden is `@embed` on a SOPS file, which puts
+ciphertext into a `.cue` file and reproduces the shape `forbid_secrets` rejects.
+The copy happens at command time, lands in no source file, and decrypts nothing.
 
 # The tree reads nothing outside itself
 
@@ -94,7 +125,10 @@ Verified against cue v0.16.1. Each of these eliminated a layout that otherwise l
 | `cue export -e` parses `a.b-c` as subtraction                                        | A hyphenated bundle key needs a bracket selector — `tier.rendered["cert-manager"]`.                                                                                       |
 | References resolve by declaration, not by embedding                                  | A derived definition must redeclare (`host: _`) every field it reads from the one it embeds.                                                                              |
 | A closed definition used as an element type rejects anything but itself              | Constrain a collection by what the consumer reads (`[...{out: #HelmRelease, ...}]`), not by the definition name. This bit `#Bundle.releases` and `#Tier.bundles` in turn. |
+| A `_tool.cue` only applies to instances sharing its package clause                   | One workflow across many directories means one package name across them. Hence `package tier` for all eight collectors.                                                   |
 
 # Open
 
-How a tier artifact is laid out internally. Each workload needs its own directory inside it, because [only level-3 Kustomizations decrypt](/architecture/flux-topology.md) and a SOPS file must sit under a path one of them reconciles. What is unresolved is how kustomize-controller treats a tier root holding both the level-3 sync manifests and those workload subdirectories with no `kustomization.yaml` present. Settle it with `flux build` before fixing the render step's output shape.
+How the artifact reaches the registry. The rendered tree is complete and `flux build` walks it, but nothing pushes it: there is no CI job, and `OCIRepository.spec.verify` is deliberately absent because nothing signs the artifacts yet. Both belong with [the signing machinery the images already use](/workflows/images-and-ci.md).
+
+The rendered bytes also depend on the `cue` version — 0.16.1 and 0.17.1 order YAML keys differently, so a toolchain bump changes every artifact digest without changing any resource. Worth pinning deliberately before digests start mattering.

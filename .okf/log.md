@@ -1,7 +1,14 @@
 # Update Log
 
+## 2026-09-07
+
+- `cue` single-sourced from the dev shell, so nothing evaluates the tree with a second version — [development environment](/workflows/dev-environment.md)
+
 ## 2026-09-06
 
+- The whole fleet renders to a deployable tree with `cue cmd`, no shell step — [CUE layout](/architecture/cue-layout.md)
+- Level-3 Kustomizations modelled as `#Tier.sync`, which retires `common-sync-patch` — [kustomize components](/architecture/kustomize-components.md)
+- A generated `kustomization.yaml` walks subdirectories, so sync manifests need their own — [Flux topology](/architecture/flux-topology.md)
 - The four `infrastructure/nyx/config` cluster singletons ported behind a new `#ConfigBundle` — [CUE layout](/architecture/cue-layout.md)
 - A SOPS filename and its encrypted body can disagree indefinitely, and re-encrypting is what breaks it — [secrets and SOPS](/workflows/secrets-sops.md)
 - All 16 `infrastructure/base` workloads ported; `#NamespaceCert`, `#HardenedPrivileged`, the `crds` preset and git tags added — [CUE layout](/architecture/cue-layout.md)

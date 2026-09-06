@@ -1,4 +1,4 @@
-package observability
+package tier
 
 // cSpell:ignore kubeprometheusstack
 
@@ -14,6 +14,9 @@ import (
 // because it is named, which is what
 // infrastructure/nyx/observability/observability-sync.yaml used to say.
 tier: schema.#Tier & {
+	tree: "infrastructure"
+	name: "observability"
+
 	bundles: {
 		"alloy":                 alloy.bundle
 		"gotify":                gotify.bundle

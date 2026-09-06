@@ -1,4 +1,4 @@
-package plugins
+package tier
 
 // cSpell:ignore genericdeviceplugin nvidiadeviceplugin
 
@@ -12,6 +12,9 @@ import (
 // it is named, which is what infrastructure/nyx/plugins/plugin-sync.yaml used to
 // say.
 tier: schema.#Tier & {
+	tree: "infrastructure"
+	name: "plugins"
+
 	bundles: {
 		"generic-device-plugin": genericdeviceplugin.bundle
 		"nvidia-device-plugin":  nvidiadeviceplugin.bundle

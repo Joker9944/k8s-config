@@ -5,7 +5,7 @@ description: The three-level Kustomization graph that reconciles nyx, and the or
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T22:30:00Z }
 ---
 
 # Three levels
@@ -27,6 +27,8 @@ generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
 
 **3. Workloads.** Each tier directory's `<tier>-sync.yaml` holds one Kustomization per workload, reduced to `metadata.name`, `spec.path` and — where needed — `dependsOn` or `healthChecks`. Everything else is patched in by the [`common-sync-patch` component](/architecture/kustomize-components.md), which the tier's `kustomization.yaml` pulls in alongside `namespace: flux-system`.
 
+Under [the CUE tree](/architecture/cue-layout.md) the graph keeps its shape and changes its source: level 2 reads an `OCIRepository` per tier instead of a path in this repository, level 3 ships inside that artifact, and both are generated rather than written.
+
 # Ordering
 
 Level-3 `dependsOn` edges exist where a workload needs a CRD, a Secret or a StorageClass another one creates:
@@ -40,4 +42,5 @@ Level-3 `dependsOn` edges exist where a workload needs a CRD, a Secret or a Stor
 # Traps
 
 - **Only level-3 Kustomizations can decrypt.** `decryption.provider: sops` comes from `common-sync-patch`, which is applied inside the overlay directories. A SOPS file must therefore live under a path reconciled by a level-3 Kustomization (`*/base/*` or `infrastructure/nyx/config/*`), never in a tier directory itself.
+- **A generated `kustomization.yaml` walks subdirectories.** Where `spec.path` holds no `kustomization.yaml`, kustomize-controller generates one — and it collects manifests from nested directories too, verified with `flux build`. A tier directory that held both its sync manifests and its workloads would therefore apply every workload twice: once through level 2, which cannot decrypt, and once through level 3. This is why the CUE artifact puts its sync manifests in a `sync/` subdirectory of their own.
 - **`clusters/nyx/bootstrap.sh` is stale.** It bootstraps `--branch=cluster-migration` while `gotk-sync.yaml` tracks `main`. The script is a one-time record of how the cluster was stood up, not a re-runnable procedure.

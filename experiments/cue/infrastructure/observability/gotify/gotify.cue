@@ -7,6 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "gotify"
 	source:    "infrastructure/base/gotify"
+	dependsOn: ["kube-prometheus-stack"]
 	secretFiles: ["infrastructure/observability/gotify/secrets/gotify.secret.yaml"]
 	releases: [_gotify, _bridge]
 }

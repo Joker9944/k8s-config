@@ -9,6 +9,16 @@ import (
 
 bundle: schema.#ConfigBundle & {
 	source: "infrastructure/nyx/config/certs"
+	dependsOn: ["cert-manager"]
+
+	// Nothing downstream can serve TLS until these two exist, so the reconcile
+	// blocks on them rather than on the Kustomization merely applying.
+	healthChecks: [for c in [_wildcardCert, _intermediateCert] {
+		apiVersion: c.apiVersion
+		kind:       c.kind
+		name:       c.metadata.name
+		namespace:  c.metadata.namespace
+	}]
 	secretFiles: ["infrastructure/controllers/certs-config/secrets/cloudflare.secret.yaml"]
 	resources: list.Concat([
 		[_rootCert, _rootIssuer, _intermediateCert, _intermediateIssuer],

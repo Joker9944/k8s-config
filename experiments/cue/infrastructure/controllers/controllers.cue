@@ -1,4 +1,4 @@
-package controllers
+package tier
 
 // cSpell:ignore certmanager certsconfig cnpgconfig longhornconfig metallbconfig redisoperator
 
@@ -22,6 +22,9 @@ import (
 // because it is named, which is what
 // infrastructure/nyx/controllers/controllers-sync.yaml used to say.
 tier: schema.#Tier & {
+	tree: "infrastructure"
+	name: "controllers"
+
 	bundles: {
 		"cert-manager":    certmanager.bundle
 		"certs-config":    certsconfig.bundle

@@ -6,6 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#ConfigBundle & {
 	source: "infrastructure/nyx/config/metallb"
+	dependsOn: ["metallb"]
 	resources: [_pool, _advertisement]
 }
 

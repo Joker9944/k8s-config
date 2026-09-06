@@ -1,4 +1,4 @@
-package storage
+package tier
 
 import (
 	"github.com/joker9944/k8s-config/schema"
@@ -9,6 +9,9 @@ import (
 // it is named, which is what infrastructure/nyx/storage/storage-sync.yaml used
 // to say.
 tier: schema.#Tier & {
+	tree: "infrastructure"
+	name: "storage"
+
 	bundles: {
 		"garage": garage.bundle
 	}

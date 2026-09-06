@@ -14,8 +14,9 @@ work="$(mktemp -d)"
 # the Go module cache is written read-only; make it removable first
 trap 'chmod -R u+w "$work" 2>/dev/null || true; rm -rf "$work"' EXIT
 
-tools=(nixpkgs#go nixpkgs#cue)
-run() { nix shell "${tools[@]}" --command "$@"; }
+# cue comes from the dev shell so cue.mod/gen is written by the same version
+# that reads it; go is only needed here.
+run() { nix shell nixpkgs#go --command "$@"; }
 
 version_of() {
 	grep -oE "ghcr\.io/fluxcd/$1:v[0-9.]+" "$components" | head -1 | sed 's/.*://'
@@ -48,6 +49,7 @@ done
 
 for ctrl in "${!pkgs[@]}"; do
 	echo "==> converting $ctrl/${pkgs[$ctrl]}"
+	# run, not bare: cue get go shells out to go, but resolves cue from PATH
 	run cue get go "github.com/fluxcd/$ctrl/${pkgs[$ctrl]}"
 done
 

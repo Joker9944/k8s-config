@@ -5,7 +5,7 @@ description: What the Nix flake provides — the envParts list that drives both 
 tags: [nix, flake, dev-shell, tooling]
 resource: flake.nix
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T09:00:00Z }
 ---
 
 # The dev shell
@@ -22,9 +22,12 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 | `talosctl`                                 | bash completion; exports `TALOSCONFIG=$PWD/clusters/nyx/talos/clusterconfig/talosconfig` |
 | `talhelper` (flake input, pinned `v3.1.3`) | bash completion                                                                          |
 | `sops`, `age`                              | —                                                                                        |
+| `cue`                                      | —                                                                                        |
 | `grafana-alloy`                            | —                                                                                        |
 
 `talhelper` is a pinned flake input rather than a nixpkgs package, so its version moves with `flake.lock` and the `nix-flake-update` workflow, not with the nixpkgs channel.
+
+`cue` is here because it has to be single-sourced: [the render](/architecture/cue-layout.md) and its scripts must all evaluate with one version, since two versions order YAML keys differently and would produce artifacts that differ byte for byte without differing in any resource. `experiments/cue/*.sh` take `cue` from this shell and refuse to run without it.
 
 # Other shells
 
@@ -33,7 +36,7 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 
 # Flake outputs
 
-- `packages` — three programs (`gomod-cap`, `gotify-slack-webhook`, `sops-pre-commit`) and six OCI images.
+- `packages` — three programs (`gomod-cap`, `gotify-slack-webhook`, `sops-pre-commit`), six OCI images, and one `cue-render-<tier>` per tier plus `cue-render-bootstrap`.
 - `apps` — generated from `envParts`.
 - `checks.default` = `checks.preCommitHooks`.
 - `formatter` — a wrapper running `pre-commit run --all-files` against the generated config, so `nix fmt` runs the whole hook suite rather than a formatter.

@@ -1,4 +1,4 @@
-package media
+package tier
 
 // cSpell:ignore dedicatedserverabioticfactor dsaf
 
@@ -17,6 +17,9 @@ import (
 // The media tier. Membership is this list: a workload is deployed here because
 // it is named, which is what apps/nyx/media/media-sync.yaml used to say.
 tier: schema.#Tier & {
+	tree: "apps"
+	name: "media"
+
 	bundles: {
 		"audiobookshelf":                  audiobookshelf.bundle
 		"dedicated-server-abiotic-factor": dsaf.bundle

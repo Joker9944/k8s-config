@@ -72,19 +72,26 @@
             package = pkgs.sops;
           }
           {
+            package = pkgs.cue;
+          }
+          {
             package = pkgs.age;
           }
           {
             package = pkgs.grafana-alloy;
           }
         ];
+        cueRender = pkgs.callPackage ./experiments/cue/render.nix { };
       in
       {
-        packages = {
+        packages = cueRender.perTier // {
           # programs
           gomod-cap = pkgs.callPackage ./pkgs/gomod-cap.nix { flake = self; };
           gotify-slack-webhook = pkgs.callPackage ./pkgs/gotify-slack-webhook.nix { flake = self; };
           sops-pre-commit = pkgs.callPackage ./pkgs/sops-pre-commit.nix { flake = self; };
+
+          # cue render
+          cue-render-bootstrap = cueRender.bootstrap;
 
           # images
           abiotic-factor-server = pkgs.callPackage ./images/abiotic-factor-server { flake = self; };

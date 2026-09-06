@@ -5,8 +5,9 @@ package loki
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
-	namespace:   "loki"
-	source:      "infrastructure/base/loki"
+	namespace: "loki"
+	source:    "infrastructure/base/loki"
+	dependsOn: ["garage"]
 	middlewares: false
 	secretFiles: ["infrastructure/observability/loki/secrets/values.secret.yaml"]
 	repositories: [_grafana]

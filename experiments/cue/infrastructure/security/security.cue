@@ -1,4 +1,4 @@
-package security
+package tier
 
 import (
 	"github.com/joker9944/k8s-config/schema"
@@ -9,6 +9,9 @@ import (
 // because it is named, which is what
 // infrastructure/nyx/security/security-sync.yaml used to say.
 tier: schema.#Tier & {
+	tree: "infrastructure"
+	name: "security"
+
 	bundles: {
 		"kanidm": kanidm.bundle
 	}

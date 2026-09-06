@@ -5,22 +5,22 @@ description: The shared components/ tree, what each component injects, and the t
 tags: [kustomize, dry, components]
 resource: components
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-06T22:30:00Z }
 ---
 
 # Components
 
 Every directory under `components/` is a `kustomize.config.k8s.io/v1alpha1` `Component`, pulled in through a `components:` list with a relative path.
 
-| Component                 | Users | Effect                                                                                                                                                                                                                                          |
-| ------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `common-kustomizeconfig`  | 34    | `configurations:` teaching kustomize two HelmRelease field paths — `spec/valuesFrom/name` is a Secret/ConfigMap name reference (so generator hash suffixes propagate), and `spec/chart/spec/sourceRef/namespace` takes the namespace transform. |
-| `common-middlewares`      | 15    | Installs the Traefik `Middleware` set into the namespace. See [ingress](/platform/networking-and-ingress.md).                                                                                                                                   |
-| `bjw-s-helm-repository`   | 13    | The `bjw-s` `HelmRepository`.                                                                                                                                                                                                                   |
-| `common-sync-patch`       | 8     | Patches every `Kustomization` in an overlay directory with interval/timeout/prune, `sourceRef` → `flux-system`, and SOPS decryption via the `sops-age` Secret. See [Flux topology](/architecture/flux-topology.md).                             |
-| `ot-helm-helm-repository` | 3     | The `ot-helm` `HelmRepository` (Redis operator charts).                                                                                                                                                                                         |
-| `namespace-cert-kanidm`   | 1     | A wildcard `*.<ns>.svc.cluster.local` Certificate issued by `nyx-intermediate-ca`.                                                                                                                                                              |
-| `namespace-cert`          | 0     | The same component without the hardcoded namespace. Currently unused.                                                                                                                                                                           |
+| Component                 | Users | Effect                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `common-kustomizeconfig`  | 34    | `configurations:` teaching kustomize two HelmRelease field paths — `spec/valuesFrom/name` is a Secret/ConfigMap name reference (so generator hash suffixes propagate), and `spec/chart/spec/sourceRef/namespace` takes the namespace transform.                                                                                              |
+| `common-middlewares`      | 15    | Installs the Traefik `Middleware` set into the namespace. See [ingress](/platform/networking-and-ingress.md).                                                                                                                                                                                                                                |
+| `bjw-s-helm-repository`   | 13    | The `bjw-s` `HelmRepository`.                                                                                                                                                                                                                                                                                                                |
+| `common-sync-patch`       | 8     | Patches every `Kustomization` in an overlay directory with interval/timeout/prune, `sourceRef` → `flux-system`, and SOPS decryption via the `sops-age` Secret. See [Flux topology](/architecture/flux-topology.md). [`#Tier.sync`](/architecture/cue-layout.md) is the successor: it generates the Kustomizations rather than patching them. |
+| `ot-helm-helm-repository` | 3     | The `ot-helm` `HelmRepository` (Redis operator charts).                                                                                                                                                                                                                                                                                      |
+| `namespace-cert-kanidm`   | 1     | A wildcard `*.<ns>.svc.cluster.local` Certificate issued by `nyx-intermediate-ca`.                                                                                                                                                                                                                                                           |
+| `namespace-cert`          | 0     | The same component without the hardcoded namespace. Currently unused.                                                                                                                                                                                                                                                                        |
 
 `Middleware` and `HelmRepository` are namespaced, which is why those components are pulled in once per namespace rather than installed cluster-wide.
 

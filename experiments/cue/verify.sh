@@ -3,8 +3,8 @@
 # generated Flux definitions still admit the real API. Fidelity against
 # apps/base/ is gate.sh's job, not this one's.
 #
-# Tools are pulled unpinned from the nixpkgs registry: this is an experiment,
-# not part of the build. If CUE is adopted, cue moves into flake.nix envParts.
+# cue comes from the dev shell, so the constraints are checked with the same
+# version render.nix builds with.
 
 # cSpell:ignore chartt
 
@@ -14,7 +14,10 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-run() { nix shell nixpkgs#cue --command "$@"; }
+command -v cue >/dev/null || {
+	echo "cue is not on PATH; run inside the dev shell (direnv, or 'nix develop')" >&2
+	exit 1
+}
 
 rc=0
 
@@ -25,7 +28,7 @@ check() {
 	rm -f "$dir/verify.sh" "$dir/generate.sh" "$dir/gate.sh" "$dir/gate.py"
 	# the probe joins the package that owns the release it constrains
 	printf 'package jellyfin\n\n%s\n' "$body" >"$dir/apps/media/jellyfin/check.cue"
-	if (cd "$dir" && run cue vet -c=false ./...) >"$work/err.txt" 2>&1; then
+	if (cd "$dir" && cue vet -c=false ./...) >"$work/err.txt" 2>&1; then
 		[ "$mode" = allow ] && {
 			echo "    accepted  $desc"
 			return 0

@@ -9,6 +9,7 @@ import (
 
 bundle: schema.#ConfigBundle & {
 	source: "infrastructure/nyx/config/longhorn"
+	dependsOn: ["longhorn"]
 	resources: list.Concat([_storageClasses, [_snapshotClass]])
 }
 

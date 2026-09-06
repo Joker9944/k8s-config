@@ -5,6 +5,7 @@ import (
 	"list"
 	"strings"
 	fluxHelm "github.com/fluxcd/helm-controller/api/v2"
+	fluxKustomize "github.com/fluxcd/kustomize-controller/api/v1"
 	fluxSource "github.com/fluxcd/source-controller/api/v1"
 )
 
@@ -230,6 +231,14 @@ import (
 	// by gate.py. "" means not yet ported. Goes away with apps/base/.
 	source: string | *""
 
+	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
+	// because the graph crosses tiers — loki (observability) waits on garage
+	// (storage) — and a typed reference would make the tier packages circular.
+	dependsOn: [...string] | *[]
+
+	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
+	healthChecks: [...] | *[]
+
 	// Pod Security admission levels and the like. Seven namespaces in the fleet
 	// carry one; the rest render a bare Namespace.
 	namespaceLabels: [string]: string
@@ -273,24 +282,75 @@ import (
 	// Migration bookkeeping, read by gate.py. Goes away with the kustomize tree.
 	source: string | *""
 
+	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
+	// because the graph crosses tiers — loki (observability) waits on garage
+	// (storage) — and a typed reference would make the tier packages circular.
+	dependsOn: [...string] | *[]
+
+	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
+	healthChecks: [...] | *[]
+
 	out: resources
 }
 
 // A tier: one CUE package, one render, one OCI artifact. Collects the bundles
 // its workload packages export.
 #Tier: {
+	// The tier's own identity: where its artifact renders, and the name its
+	// OCIRepository and level-2 Kustomization carry.
+	tree: "apps" | "infrastructure"
+	name: string
+
 	// Constrained by what this definition reads rather than by #Bundle, which is
 	// closed and would reject a #ConfigBundle outright.
 	bundles: [string]: {
 		out: [...]
 		secretFiles: [...string]
 		source: string
+		dependsOn: [...string]
+		healthChecks: [...]
 		...
 	}
 
 	rendered: {
 		for k, b in bundles {(k): yaml.MarshalStream(b.out)}
 	}
+
+	// The SOPS files the render copies verbatim beside the generated manifests.
+	// Ciphertext never passes through CUE evaluation; these are paths.
+	secretFiles: {
+		for k, b in bundles {(k): b.secretFiles}
+	}
+
+	// The level-3 Kustomizations, one per bundle, which retire <tier>-sync.yaml
+	// and the common-sync-patch component together: interval, timeout, prune,
+	// sourceRef and decryption were that patch's entire content.
+	//
+	// They render into sync/ rather than the artifact root because
+	// kustomize-controller's generated kustomization walks subdirectories. At the
+	// root, the level-2 Kustomization would apply every workload a second time —
+	// and without decryption, which would push SOPS ciphertext into the cluster.
+	sync: [for k, b in bundles {
+		fluxKustomize.#Kustomization
+		apiVersion: "kustomize.toolkit.fluxcd.io/v1"
+		kind:       "Kustomization"
+		metadata: {"name": k, namespace: "flux-system"}
+		spec: {
+			interval: "10m"
+			timeout:  "5m"
+			prune:    true
+			// source-root relative, not relative to the level-2 path above it
+			path: "./\(k)"
+			sourceRef: {kind: "OCIRepository", "name": name, namespace: "flux-system"}
+			decryption: {provider: "sops", secretRef: "name": "sops-age"}
+			if len(b.dependsOn) > 0 {
+				dependsOn: [for d in b.dependsOn {"name": d}]
+			}
+			if len(b.healthChecks) > 0 {
+				healthChecks: b.healthChecks
+			}
+		}
+	}]
 
 	// The registry gate.py reads, so the script carries no per-app knowledge.
 	// Goes away with apps/base/.

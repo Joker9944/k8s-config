@@ -5,8 +5,9 @@ package alloy
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
-	namespace:   "alloy"
-	source:      "infrastructure/base/alloy"
+	namespace: "alloy"
+	source:    "infrastructure/base/alloy"
+	dependsOn: ["loki"]
 	middlewares: false
 	repositories: [_grafana]
 	before: [_config.out]

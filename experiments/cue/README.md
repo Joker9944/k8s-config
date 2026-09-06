@@ -25,6 +25,10 @@ original is deleted. Its plaintext files and its SOPS secrets are its own.
 ## Running it
 
 ```sh
+cue cmd --inject out=./out render ./apps/media   # render one tier
+cue cmd --inject out=./out bootstrap ./clusters/nyx/flux
+nix build .#cue-render-media                     # the same, hermetically
+
 ./gate.sh    # fidelity: does CUE still render what kustomize renders?
 ./verify.sh  # constraints: do the house-style rules still hold?
 ```
@@ -34,8 +38,10 @@ each tier's own `gateMeta`, so porting a workload enrols it automatically, and
 compares resource by resource — a missing resource fails as loudly as a wrong
 field. It needs the age key. It dies with `apps/base/`; `verify.sh` outlives it.
 
-Tools come unpinned from the nixpkgs registry; if CUE is adopted, `cue` moves
-into `envParts` in `flake.nix`.
+`cue` comes from the dev shell, so the scripts, `render.nix` and the artifacts
+all evaluate with one version; the scripts refuse to run without it. kustomize,
+sops, yq and go still come unpinned from the registry, since their version cannot
+change what is compared.
 
 ## Files
 
@@ -45,6 +51,9 @@ into `envParts` in `flake.nix`.
 | `schema/bundle.cue`        | `#Release`, `#AppRelease`, `#Bundle`, `#ConfigBundle`, `#Tier` — scaffolding, ingress annotations, rendering |
 | `<tree>/<tier>/<tier>.cue` | The tier collector. Naming a workload here is what deploys it.                                               |
 | `<tree>/<tier>/*/`         | One package per workload, with its own `files/`, `secrets/` and notes.                                       |
+| `render_tool.cue`          | `cue cmd render` — the whole output tree as one comprehension, no shell step                                 |
+| `clusters/nyx/flux/`       | The level-2 Kustomizations and their `OCIRepository`s, plus `cue cmd bootstrap`                              |
+| `render.nix`               | One derivation per tier; `$out` is an OCI artifact root                                                      |
 | `gate.sh` / `gate.py`      | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                       |
 | `allowlist.txt`            | Resources permitted to differ. Currently empty.                                                              |
 | `verify.sh`                | Constraint checks                                                                                            |
@@ -55,6 +64,13 @@ into `envParts` in `flake.nix`.
 **Fidelity.** Every resource matches, with nothing excluded: **292 of 292**
 across the 32 bundles, including all 43 SOPS Secrets across 22 files. The
 allowlist is empty.
+
+**The rendered tree is what Flux would reconcile, and that is checked rather than
+asserted.** `flux build kustomization <tier> --path <artifact>/sync --recursive
+--local-sources OCIRepository/flux-system/<tier>=<artifact>` walks level 2 into
+level 3 for all eight tiers and yields 324 resources: the same 292 the gate
+validates, plus the 32 level-3 Kustomizations and nothing else. All 22 SOPS files
+land under a path that decrypts, and every one is byte-identical to its source.
 
 **Both sides are decrypted before comparison**, the way kustomize-controller
 decrypts a source before building it. This became necessary once the secrets
@@ -164,6 +180,12 @@ whole-file is a resource nothing renders. Two fields kustomize used to supply
 have to be written by hand — `metadata.namespace` and `type: Opaque` — and both
 fail silently if forgotten.
 
+**The artifact digest depends on the `cue` version.** 0.16.1 and 0.17.1 order
+YAML keys differently, so a toolchain bump rewrites every artifact without
+changing a single resource. Harmless for Kubernetes, not harmless for a
+digest-pinned `OCIRepository`. `cue` is now in `envParts` and every script takes
+it from there, so nothing in the repo evaluates the tree with a second version.
+
 **Renovate.** The built-in flux and helm-values managers key off
 `helm-release.yaml` and `kustomization.yaml` and would go blind. Regex managers
 for `.cue` were validated for both container images and chart versions, and a
@@ -199,6 +221,10 @@ chart}` resolves the inner `chart` to the field being declared, not to the
 - **Two defaults for one field do not merge.** `string | *""` unified with
   `string | *"4.6.2"` is an unresolved disjunction, so a derived definition
   cannot re-default a field the base already defaulted.
+- **A `_tool.cue` only applies to instances that share its package clause.** One
+  workflow command across eight tier directories means one package name across
+  them, which is why every collector is `package tier` and the tier's identity
+  moved into `#Tier.tree` and `#Tier.name`.
 - **A closed definition makes a bad list element type.** `releases: [...#Release]`
   rejected every field `#AppRelease` adds, because the element is re-unified with
   the closed base. The fix is to constrain the list by what the consumer actually
