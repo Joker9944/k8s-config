@@ -1,3 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: controllers
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/controllers
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -6,12 +16,22 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  path: ./infrastructure/nyx/controllers
+  path: ./sync
   prune: true
   sourceRef:
-    kind: GitRepository
-    name: flux-system
-
+    kind: OCIRepository
+    name: controllers
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: plugins
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/plugins
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -20,12 +40,22 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  path: ./infrastructure/nyx/plugins
+  path: ./sync
   prune: true
   sourceRef:
-    kind: GitRepository
-    name: flux-system
-
+    kind: OCIRepository
+    name: plugins
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: observability
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/observability
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -33,15 +63,25 @@ metadata:
   name: observability
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./infrastructure/nyx/observability
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
-
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: observability
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: security
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/security
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -49,15 +89,25 @@ metadata:
   name: security
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./infrastructure/nyx/security
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
-
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: security
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: storage
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/storage
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -65,11 +115,11 @@ metadata:
   name: storage
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./infrastructure/nyx/storage
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: storage

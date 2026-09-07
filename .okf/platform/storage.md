@@ -4,12 +4,12 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 ---
 
 # Longhorn classes
 
-The chart's default `longhorn` class is replicated. `infrastructure/nyx/config/longhorn` adds two single-replica classes, both `allowVolumeExpansion: true`:
+The chart's default `longhorn` class is replicated. `cue/infrastructure/controllers/longhorn-config` adds two single-replica classes, both `allowVolumeExpansion: true`:
 
 | Class                   | `dataLocality` | Replicas | Intended for                                                                                       |
 | ----------------------- | -------------- | -------- | -------------------------------------------------------------------------------------------------- |

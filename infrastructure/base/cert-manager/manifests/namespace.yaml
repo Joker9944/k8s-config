@@ -1,5 +1,0 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: KUSTOMIZE_IS_BAD

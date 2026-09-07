@@ -3,9 +3,9 @@ type: Infrastructure
 title: Certificates and PKI
 description: The two issuance paths — public ACME wildcard and a private root/intermediate CA — and the two unrelated mechanisms that distribute them across namespaces.
 tags: [cert-manager, tls, pki, trust-manager]
-resource: infrastructure/nyx/config/certs
+resource: cue/infrastructure/controllers/certs-config
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 ---
 
 # Public path
@@ -24,7 +24,7 @@ Issuer trust-manager  →  Certificate nyx-root-ca (isCA, "Nyx Root R1", 810d)
                       →  ClusterIssuer nyx-intermediate-ca
 ```
 
-`nyx-intermediate-ca` is what the [`namespace-cert*` components](/architecture/kustomize-components.md) use to mint a `*.<namespace>.svc.cluster.local` wildcard for workloads that need real TLS on the pod-to-pod hop (kanidm is the only current consumer).
+`nyx-intermediate-ca` is what [`#NamespaceCert`](/architecture/cue-layout.md) uses to mint a `*.<namespace>.svc.cluster.local` wildcard for workloads that need real TLS on the pod-to-pod hop (kanidm is the only current consumer).
 
 The `trust-manager` `Issuer` at the root of that chain **is not defined in this repository** — it is the self-signed issuer the trust-manager chart creates in its own namespace, reused here as the cluster's signing root.
 

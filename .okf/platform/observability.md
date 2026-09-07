@@ -3,9 +3,9 @@ type: Infrastructure
 title: Observability
 description: The metrics, logs and notification path — kube-prometheus-stack, Loki fed by Alloy, and Gotify running a repo-built image.
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
-resource: infrastructure/nyx/observability
+resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 ---
 
 # The tier
@@ -24,7 +24,7 @@ kube-prometheus-stack → gotify
 
 # Log pipeline
 
-`infrastructure/base/alloy/files/config.alloy` is a `configMapGenerator` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`.
+`cue/infrastructure/observability/alloy/files/config.alloy` is a `#ConfigMapFiles` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`.
 
 The dev shell ships `grafana-alloy` so this file can be checked with `alloy fmt`/`alloy validate` before committing.
 
@@ -36,4 +36,4 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 
 # Dashboards
 
-Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by a `configMapGenerator` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `infrastructure/base/kanidm/files/kanidm-logs.json` is the worked example.
+Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/security/kanidm/files/kanidm-logs.json` is the worked example.

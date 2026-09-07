@@ -1,5 +1,0 @@
-# TODO This is dumb, find a way to DRY this.
-namespace:
-  - kind: HelmRelease
-    path: spec/chart/spec/sourceRef/namespace
-    create: true

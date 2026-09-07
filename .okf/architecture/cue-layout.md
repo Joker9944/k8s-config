@@ -4,36 +4,53 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T21:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 stale_after: 2027-03-06
 ---
 
-The target shape for [replacing kustomize with CUE](/decisions/replace-kustomize-with-cue.md). Built for one tier in `experiments/cue/`, which carries its own README; [repo layout](/architecture/repo-layout.md) describes the kustomize tree that is still the deployed one.
+CUE is the composition layer, [replacing kustomize](/decisions/replace-kustomize-with-cue.md). The whole module lives under `cue/`; [repo layout](/architecture/repo-layout.md) places it among the other trees.
 
 # The tree
 
 ```
-cue.mod/                    module github.com/joker9944/k8s-config; gen/ holds the
+cue/
+  cue.mod/                  module github.com/joker9944/k8s-config; gen/ holds the
                             Flux definitions from cue get go
-render_tool.cue             package tier — the `cue cmd render` workflow
-schema/                     package schema — #Release, #AppRelease, #Bundle,
+  render_tool.cue           package tier — the `cue cmd render` workflow
+  render.nix                one derivation per tier, plus the bootstrap layer
+  verify.sh                 the house-style constraint checks
+  generate.sh               regenerates cue.mod/gen from the running Flux versions
+  schema/                   package schema — #Release, #AppRelease, #Bundle,
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #ConfigMapFiles,
                             #NamespaceCert, #VolsyncRestic
-infrastructure/
-  controllers/
-    controllers.cue         package controllers — the tier collector
-    traefik/
-      traefik.cue           package traefik
-      files/                plaintext read with @embed
-      secrets/*.secret.yaml inert to CUE; copied verbatim by the render step
-apps/
-  media/
-    media.cue               package media
-    jellyfin/jellyfin.cue
-clusters/nyx/flux/          package flux — the level-2 Kustomizations and their
+  infrastructure/
+    controllers/
+      controllers.cue       package controllers — the tier collector
+      traefik/
+        traefik.cue         package traefik
+        files/              plaintext read with @embed
+        secrets/*.secret.yaml  inert to CUE; copied verbatim by the render step
+  apps/
+    media/
+      media.cue             package media
+      jellyfin/jellyfin.cue
+  clusters/nyx/flux/        package flux — the level-2 Kustomizations and their
                             OCIRepositories, plus `cue cmd bootstrap`
 ```
+
+# Running it
+
+```sh
+cue cmd --inject out=./out render ./apps/media     # one tier
+cue cmd --inject out=.. bootstrap ./clusters/nyx/flux
+nix build .#cue-render-media                       # the same, hermetically
+./verify.sh                                        # do the house rules still hold?
+```
+
+`cue` comes from the dev shell so the scripts, `render.nix` and the artifacts all
+evaluate with one version; the scripts refuse to run without it. See
+[the development environment](/workflows/dev-environment.md).
 
 **Every tier collector is `package tier`.** A workflow command only applies to
 instances whose package clause matches the tool file's, so eight differently
@@ -45,9 +62,7 @@ A workload is a package. A tier is a package that imports its workloads and is a
 
 `#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the MetalLB pool, the CNPG image catalogs. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
 
-**There is no `base/` and no `nyx/`.** The tier collector is simultaneously the tier definition and the cluster overlay. `nyx` is the only cluster and nothing under `base/` was ever parameterized per cluster, so the split is spent rather than preserved; a second cluster would reintroduce it as `clusters/<name>/` collectors.
-
-**`components/` has no successor tree.** Its contents become definitions in `schema/`:
+**The kustomize `components/` tree has no successor.** Its contents are definitions in `schema/`:
 
 | Component                                  | Becomes                                                                                                                                 |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -58,7 +73,7 @@ A workload is a package. A tier is a package that imports its workloads and is a
 | `common-kustomizeconfig`                   | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.                                           |
 | `blocky`/`komga` `kustomization-hack.yaml` | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                                                            |
 
-Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, and the middleware annotation is computed by `#Release`. See [kustomize components](/architecture/kustomize-components.md) for what is being replaced.
+Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, and the middleware annotation is computed by `#Release`.
 
 # The schema
 
@@ -70,16 +85,11 @@ The annotations come from `#IngressAnnotations`, which derives the middleware re
 
 `#Bundle` takes `middlewares` (off where there is no ingress), `namespaceCert` (an in-cluster certificate off the private CA, for a workload that serves TLS to Traefik rather than plain HTTP), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
 
-`#VolsyncRestic` takes the SOPS manifest holding its credential Secret as an input — `<workload>/secrets/restic.secret.yaml`, which carries restic credentials and nothing else — so a [backup](/platform/backup-and-restore.md) and the credential it cannot run without are declared together. It exposes the `<app>-restic-<vol>` name that manifest and the `ReplicationSource` have to agree on. `#Bundle.secretFiles` is derived from it — the backups' files plus `extraSecretFiles`, deduplicated through a struct, because a workload usually keeps its restic credential in the same file as its other Secrets. CUE holds the path and never the ciphertext, so the other half is the gate's: every `ReplicationSource` it renders must name a Secret the bundle emits.
+`#VolsyncRestic` takes the SOPS manifest holding its credential Secret as an input — `<workload>/secrets/restic.secret.yaml`, which carries restic credentials and nothing else — so a [backup](/platform/backup-and-restore.md) and the credential it cannot run without are declared together. It exposes the `<app>-restic-<vol>` name that manifest and the `ReplicationSource` have to agree on. `#Bundle.secretFiles` is derived from it — the backups' files plus `extraSecretFiles`, deduplicated through a struct, because a workload usually keeps its restic credential in the same file as its other Secrets. CUE holds the path and never the ciphertext, so it can force the credential to be _named_ but not confirm the file contains it; `verify.sh` closes that half by grepping the file for the Secret, which the partial SOPS rule leaves in plaintext.
 
 **No release takes its values from a Secret.** `spec.valuesFrom` merges the payload into the release, so the material stops being a Secret the moment the chart renders — loki's S3 credentials landed in a plain `ConfigMap` that way. Every workload uses its chart's own mechanism instead: `secretKeyRef` and `envFrom` where the chart offers them, pgadmin's `existingSecret`, and for loki `-config.expand-env=true` with the credentials injected per component. `#Release` carries no field for the old shape, so a bundle cannot reintroduce it.
 
 Exceptions are named definitions rather than softened constraints, so `grep` finds every one: `#HardenedWritableRoot` for a container that cannot run on a read-only root, and `#HardenedPrivileged` for one that must run privileged — Kubernetes rejects `privileged: true` together with `allowPrivilegeEscalation: false`, so that definition drops the field rather than the constraint. Both are policy. There are no others: a workload that would need one is a workload that has to change.
-
-# What kustomize was doing that CUE has to be told
-
-- **`namespace:` overrides a source's declared namespace.** `apps/base/nextcloud/flux/helm-repository.yaml` says `namespace: flux-system` and renders as `nextcloud`; metallb's `IPAddressPool` and `L2Advertisement` say `metallb` against a `metallb-system` overlay. The declared value is dead either way, and the CUE side must emit the workload namespace. `infrastructure/base/alloy/flux/helm-repository.yaml` declares `${app_namespace:=alloy}` there, a Flux post-build variable nothing substitutes — kustomize overwrites it before Flux ever sees it.
-- **`secretGenerator` supplies `type: Opaque`** and a plain `secret.yaml` resource does not. A converted secret needs it written by hand; a moved one must not gain it.
 
 # The render is CUE
 
@@ -105,14 +115,7 @@ thing the rules forbid — what is forbidden is `@embed` on a SOPS file, which p
 ciphertext into a `.cue` file and reproduces the shape `forbid_secrets` rejects.
 The copy happens at command time, lands in no source file, and decrypts nothing.
 
-# The tree reads nothing outside itself
-
-A workload's plaintext files and SOPS secrets live in its own package, because a replacement that sources from the tree it replaces breaks the moment that tree is deleted. Two consequences that are easy to miss:
-
-- **`secretGenerator` has no successor.** A whole-file `*.sops.yaml` left as-is is a resource nothing renders, so every one becomes a `secret.yaml` manifest. The conversion has to supply two fields kustomize used to inject — `metadata.namespace` and `type: Opaque` — and neither failure is loud.
-- **Comparing a migrated secret means decrypting it.** Re-encrypting identical plaintext yields different ciphertext, so a byte comparison of two encrypted files proves only that neither was touched.
-
-See [secrets and SOPS](/workflows/secrets-sops.md) for the naming rule a converted file has to match.
+A workload's plaintext files and SOPS secrets live in its own package; [secrets and SOPS](/workflows/secrets-sops.md) has the naming rule each file has to match.
 
 # What the mechanics force
 

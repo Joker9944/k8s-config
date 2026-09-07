@@ -4,12 +4,9 @@ title: Replace kustomize with CUE
 description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as per-tier OCI artifacts.
 tags: [cue, kustomize, gitops, flux, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 stale_after: 2027-03-05
 sources:
-  - id: poc
-    resource: ../../experiments/cue/README.md
-    title: CUE proof-of-concept (jellyfin and servarr)
   - id: fluxcd-cues
     resource: https://github.com/fluxcd/cues
     title: fluxcd/cues
@@ -22,6 +19,8 @@ CUE replaces kustomize as the composition layer. Flux, the `HelmRelease` model a
 the bjw-s `app-template` chart are unchanged. CUE renders plain YAML in CI, which
 is published as one signed OCI artifact per tier and consumed by `OCIRepository`.
 
+Taken: the kustomize tree is deleted and the module lives at `cue/`.
+
 # The problem is kustomize, not YAML
 
 Of 19313 tracked YAML lines, 10417 are flux-generated and 1077 are ciphertext.
@@ -31,7 +30,7 @@ defined by the chart, not by Kubernetes — no typed DSL improves those.
 What hurts is the ~2400 lines of scaffolding that exist only because kustomize
 has no variables or functions: the `PLACEHOLDER`/`replacements` machinery, the
 per-app `nameReference` configs, 28 four-line namespace files. Those are what
-CUE deletes. See [kustomize components](/architecture/kustomize-components.md).
+CUE deletes. See [the CUE layout](/architecture/cue-layout.md) for what each replaced.
 
 # Rejected
 
@@ -84,10 +83,11 @@ tier is at once the CUE package, the unit of rendering and the OCI artifact.
 successor tree. See [the CUE layout](/architecture/cue-layout.md).
 
 **Renovate** keeps working through regex managers over `.cue`: container images
-need no annotation because the `repository`/`tag` pair is self-describing, and
-chart versions need one annotation total, since the version is a `#Release`
-default rather than a field on 19 HelmReleases. CUE comments are `//` — `#` is
-the definition sigil, so `# renovate:` is impossible.
+need no annotation because the `repository`/`tag` pair is self-describing. Chart
+versions need one comment each, which is 18 foreign charts plus the
+`_appTemplateVersion` default covering every app-template release at once. CUE
+comments are `//` — `#` is the definition sigil, so `# renovate:` is impossible.
+See [images, CI and dependency updates](/workflows/images-and-ci.md).
 
 # What it costs
 
@@ -95,28 +95,24 @@ the definition sigil, so `# renovate:` is impossible.
   locally or `flux pull artifact`.
 - CI enters the deploy path. A failed render means no new artifact; running
   workloads are unaffected, but updates stall.
-- Nine secrets must convert from the `secretGenerator` shape, which has no CUE
-  successor, and every converted file needs the `metadata.namespace` and
-  `type: Opaque` kustomize used to supply.
+- Every `secretGenerator` secret converts to a manifest, which has to supply the
+  `metadata.namespace` kustomize used to inject; the failure is not loud.
 - CUE's own traps, catalogued in the proof-of-concept: self-reference cycles,
   definitions closing recursively, and `x != _|_` not testing whether an optional field is
   set.
 
-# Evidence
+# How it was checked
 
-All 32 bundles are ported in `experiments/cue/`, which carries its own
-README.[^poc] `gate.sh` renders both sides and compares resource by resource,
-decrypting each the way kustomize-controller does. It reads the bundle registry
-out of CUE, so porting a workload enrols it in the gate rather than needing the
-script edited. `verify.sh` covers the constraint and API-surface checks. Both are
-migration scaffolding and die with `apps/base/`.
+A fidelity gate rendered both trees, decrypted each the way kustomize-controller
+does, and compared them resource by resource. It ended green across all 32
+bundles and 302 resources, with 35 disagreements named in an allowlist and the
+rest byte-identical. A green gate never meant the trees agreed — it meant every
+disagreement carried a reason, and the gate failed just as hard on an entry whose
+resource turned out identical, so an exemption could not outlive what it excused.
+Everything it excused was a manifest CUE renders per the fleet's own conventions
+while kustomize still rendered the divergence.
 
-A green gate does not mean the two trees agree. It means every disagreement is
-named in `allowlist.txt` with a reason, and the gate fails just as hard on an
-entry whose resource turns out identical — so an exemption cannot outlive what it
-excuses. Everything listed today is a manifest CUE renders per the fleet's own
-conventions while kustomize still renders the divergence.
-
-[^poc]: CUE proof-of-concept (jellyfin and servarr)
+The gate died with `apps/base/`, as designed. `cue/verify.sh` outlives it and
+covers the constraint and API-surface checks.
 
 [^fluxcd-cues]: fluxcd/cues

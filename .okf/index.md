@@ -4,15 +4,14 @@ okf_version: "0.2"
 
 # k8s-config
 
-GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flux, serving `vonarx.online`. Start with [repository layout](architecture/repo-layout.md); it names every top-level tree and the base/overlay split everything else assumes.
+GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flux, serving `vonarx.online`. Start with [repository layout](architecture/repo-layout.md); it names every top-level tree and points at the CUE module everything else lives in.
 
 # Architecture
 
-- [Repository layout](architecture/repo-layout.md) - the top-level trees and the base/overlay split.
-- [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph and its ordering constraints.
-- [Kustomize components](architecture/kustomize-components.md) - the shared `components/` tree and the PLACEHOLDER conventions.
-- [App-template pattern](architecture/app-template-pattern.md) - the shape every workload directory takes.
-- [CUE layout](architecture/cue-layout.md) - the target CUE tree: a package per workload, a collector per tier.
+- [Repository layout](architecture/repo-layout.md) - the top-level trees and the one CUE module.
+- [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph, its artifacts and its ordering constraints.
+- [App-template pattern](architecture/app-template-pattern.md) - the shape every workload package takes.
+- [CUE layout](architecture/cue-layout.md) - the CUE tree: a package per workload, a collector per tier.
 
 # Platform
 

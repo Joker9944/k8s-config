@@ -1,4 +1,5 @@
 /result*
+/cue/out
 /.cspellcache
 /.pre-commit-config.yaml
 /.direnv

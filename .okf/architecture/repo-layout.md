@@ -1,31 +1,40 @@
 ---
 type: Architecture
 title: Repository layout
-description: The top-level trees of k8s-config and the base/overlay split that separates a deployable unit from the cluster that selects it.
+description: The top-level trees of k8s-config, and why everything Kubernetes-shaped lives under one CUE module.
 tags: [gitops, layout]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T20:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 ---
 
 # Trees
 
-| Path               | Holds                                                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `clusters/nyx/`    | The cluster's own definition: Talos machine config (`talos/`), the Flux bootstrap script, and the top-level Flux Kustomizations (`flux/`). |
-| `infrastructure/`  | Platform services, grouped into the `controllers`, `plugins`, `observability`, `security` and `storage` tiers.                             |
-| `apps/`            | User-facing workloads, grouped into the `cloud`, `media` and `utility` tiers.                                                              |
-| `components/`      | Reusable kustomize `Component`s shared by both trees.                                                                                      |
-| `images/`, `pkgs/` | Nix derivations for the OCI images and helper programs this repo publishes.                                                                |
-| `.config/`         | cspell configuration.                                                                                                                      |
-| `experiments/`     | Evaluations that are not deployed and not reconciled by Flux. Each carries its own README.                                                 |
+| Path               | Holds                                                                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `cue/`             | The CUE module — every workload, the schema, and the render. See [the CUE layout](/architecture/cue-layout.md).               |
+| `clusters/nyx/`    | The cluster's own definition: Talos machine config (`talos/`), the Flux bootstrap script, and the Flux entry point (`flux/`). |
+| `images/`, `pkgs/` | Nix derivations for the OCI images and helper programs this repo publishes.                                                   |
+| `.config/`         | cspell configuration.                                                                                                         |
+| `.okf/`            | This bundle.                                                                                                                  |
 
-# The base/overlay split
+# One module, one root
 
-Both `apps/` and `infrastructure/` split into `base/` and `nyx/`:
+Everything the cluster runs is inside `cue/`, because CUE resolves imports and
+`@embed` against the module root and [`#Bundle.secretFiles`](/architecture/cue-layout.md)
+holds module-relative paths. Putting the module anywhere but its own directory
+would scatter `apps/`, `infrastructure/`, `schema/` and `cue.mod/` across the
+repository root for no gain.
 
-- `*/base/<name>/` is a **self-contained deployable unit** — a kustomize overlay owning its namespace, HelmRelease, secrets and components. It names no cluster. Its shape is described in [the app-template pattern](/architecture/app-template-pattern.md).
-- `*/nyx/<tier>/` is the **cluster overlay**: a `<tier>-sync.yaml` listing one Flux `Kustomization` per workload, each pointing at a `*/base/` path. `infrastructure/nyx/config/` additionally holds cluster-singleton resources (`certs`, `cnpg`, `longhorn`, `metallb`) that have no `base/` counterpart because there is nothing to reuse; [`#ConfigBundle`](/architecture/cue-layout.md) is their CUE successor.
+`cue/clusters/nyx/flux/` is the one place a source path and its output path
+differ only by that prefix: it holds the CUE that generates
+`clusters/nyx/flux/{app,infrastructure}-sync.yaml`, which are committed.
 
-Cluster membership is expressed only in the overlay: deploying a workload means adding an entry to a `<tier>-sync.yaml`, never editing anything under `base/`. `nyx` is the only cluster, so the split is an enforced convention rather than an exercised abstraction — nothing in `base/` has ever been parameterized per cluster. [The CUE layout](/architecture/cue-layout.md) spends it on that basis.
+# There is no base/overlay split
 
-The wiring between the two halves is described in [the Flux topology](/architecture/flux-topology.md); the shared machinery that makes `base/` directories this terse is in [kustomize components](/architecture/kustomize-components.md).
+`nyx` is the only cluster and nothing was ever parameterized per cluster, so the
+tier collector is simultaneously the tier definition and the cluster overlay. A
+second cluster would reintroduce the split as `clusters/<name>/` collectors.
+
+Cluster membership is expressed by naming a workload in its tier collector; that
+is what deploys it. The wiring is described in
+[the Flux topology](/architecture/flux-topology.md).

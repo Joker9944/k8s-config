@@ -17,20 +17,19 @@ It gates commits made **locally**, and nothing else. Renovate, the flake-update 
 
 All eleven conventional types are allowed (`build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`), with `descriptionLength: 72`.
 
-A scope is **optional** — `ci: pin actions/checkout` passes. The allowlist constrains scopes that are present, one per top-level tree in [the repo layout](/architecture/repo-layout.md):
+A scope is **optional** — `ci: pin actions/checkout` passes. The allowlist constrains scopes that are present, one per tree in [the repo layout](/architecture/repo-layout.md) — `cue/` splits into three, because one flat `cue` scope would cover almost every commit:
 
-| Scope         | Covers                                              |
-| ------------- | --------------------------------------------------- |
-| `cluster`     | `clusters/nyx/`                                     |
-| `infra`       | `infrastructure/`                                   |
-| `apps`        | `apps/`                                             |
-| `components`  | `components/`                                       |
-| `images`      | `images/`                                           |
-| `pkgs`        | `pkgs/`                                             |
-| `experiments` | `experiments/`                                      |
-| `okf`         | `.okf/`                                             |
-| `flake`       | `flake.nix`, `flake.lock`, the devShell, pre-commit |
-| `deps`        | renovate and lockfile bumps                         |
+| Scope     | Covers                                              |
+| --------- | --------------------------------------------------- |
+| `cluster` | `clusters/nyx/`                                     |
+| `infra`   | `cue/infrastructure/`                               |
+| `apps`    | `cue/apps/`                                         |
+| `schema`  | `cue/schema/` and the render tooling                |
+| `images`  | `images/`                                           |
+| `pkgs`    | `pkgs/`                                             |
+| `okf`     | `.okf/`                                             |
+| `flake`   | `flake.nix`, `flake.lock`, the devShell, pre-commit |
+| `deps`    | renovate and lockfile bumps                         |
 
 Scopes are deliberately coarse: the workload name goes in the description, not the scope, so adding an app never edits `.conform.yaml`. `.config/` and repo-root files have no scope; commit them unscoped. Workflow changes are `ci:` — there is no `ci` scope, because that would read `ci(ci)`.
 

@@ -81,7 +81,7 @@
             package = pkgs.grafana-alloy;
           }
         ];
-        cueRender = pkgs.callPackage ./experiments/cue/render.nix { };
+        cueRender = pkgs.callPackage ./cue/render.nix { };
       in
       {
         packages = cueRender.perTier // {

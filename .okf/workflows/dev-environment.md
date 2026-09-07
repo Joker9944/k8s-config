@@ -27,7 +27,7 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 
 `talhelper` is a pinned flake input rather than a nixpkgs package, so its version moves with `flake.lock` and the `nix-flake-update` workflow, not with the nixpkgs channel.
 
-`cue` is here because it has to be single-sourced: [the render](/architecture/cue-layout.md) and its scripts must all evaluate with one version, since two versions order YAML keys differently and would produce artifacts that differ byte for byte without differing in any resource. `experiments/cue/*.sh` take `cue` from this shell and refuse to run without it.
+`cue` is here because it has to be single-sourced: [the render](/architecture/cue-layout.md) and its scripts must all evaluate with one version, since two versions order YAML keys differently and would produce artifacts that differ byte for byte without differing in any resource. `cue/*.sh` take `cue` from this shell and refuse to run without it.
 
 # Other shells
 

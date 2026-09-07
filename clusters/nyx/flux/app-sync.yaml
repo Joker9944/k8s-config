@@ -1,3 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: cloud
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/cloud
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -5,15 +15,25 @@ metadata:
   name: cloud
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./apps/nyx/cloud
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
-
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: cloud
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: media
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/media
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -21,15 +41,25 @@ metadata:
   name: media
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./apps/nyx/media
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
-
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: media
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: utility
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: latest
+  url: oci://ghcr.io/joker9944/k8s-config/utility
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -37,11 +67,11 @@ metadata:
   name: utility
   namespace: flux-system
 spec:
-  interval: 30m
-  path: ./apps/nyx/utility
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
   dependsOn:
     - name: controllers
+  interval: 30m
+  path: ./sync
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: utility

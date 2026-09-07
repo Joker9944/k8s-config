@@ -16,12 +16,11 @@ policies:
           - test
         scopes:
           - cluster # clusters/nyx/
-          - infra # infrastructure/
-          - apps # apps/
-          - components # components/
+          - infra # cue/infrastructure/
+          - apps # cue/apps/
+          - schema # cue/schema/ and the render tooling
           - images # images/
           - pkgs # pkgs/
-          - experiments # experiments/
           - okf # .okf/
           - flake # flake.nix, flake.lock, devShell, pre-commit
           - deps # renovate, lockfile
