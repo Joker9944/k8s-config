@@ -430,7 +430,7 @@ _scheduledBackup: {
 bundle: schema.#Bundle & {
 	namespace: "servarr"
 	source:    "apps/base/servarr"
-	secretFiles: [
+	extraSecretFiles: [
 		"apps/media/servarr/secrets/cnpg.secret.yaml",
 		"apps/media/servarr/secrets/prowlarr.secret.yaml",
 		"apps/media/servarr/secrets/radarr-standard.secret.yaml",

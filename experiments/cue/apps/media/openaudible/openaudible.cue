@@ -7,15 +7,12 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "openaudible"
 	source:    "apps/base/openaudible"
-	secretFiles: ["apps/media/openaudible/secrets/values.secret.yaml"]
 	releases: [_openaudible]
 }
 
 _openaudible: schema.#AppRelease & {
 	name:      "openaudible"
 	namespace: "openaudible"
-
-	secretValuesName: "openaudible-secret-values"
 
 	let uid = 6012
 	let gid = 6000
@@ -36,10 +33,11 @@ _openaudible: schema.#AppRelease & {
 	}
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
-		sourceMoverExtra: fsGroupChangePolicy: "OnRootMismatch"
+		app:        name, vol:  "config", size: configSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/openaudible/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		controllers: openaudible: {
@@ -62,7 +60,7 @@ _openaudible: schema.#AppRelease & {
 				securityContext: capabilities: add: ["CHOWN", "SETUID", "SETGID", "FOWNER", "DAC_OVERRIDE"]
 				env: {
 					CUSTOM_PORT: portHTTP
-					UMASK:       2
+					UMASK:       "0002"
 					PUID:        uid
 					PGID:        gid
 				}
@@ -106,7 +104,5 @@ _openaudible: schema.#AppRelease & {
 			cache: {type: "emptyDir", globalMounts: [{path: "/config/.cache"}]}
 			tmp: type: "emptyDir"
 		}
-
-		rawResources: _backup.out
 	}
 }

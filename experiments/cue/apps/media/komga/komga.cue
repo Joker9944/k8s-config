@@ -9,7 +9,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "komga"
 	source:    "apps/base/komga"
-	secretFiles: ["apps/media/komga/secrets/komga.secret.yaml"]
+	extraSecretFiles: ["apps/media/komga/secrets/komga.secret.yaml"]
 	before: [_configOverlay.out]
 	releases: [_komga]
 }
@@ -36,9 +36,11 @@ _komga: schema.#AppRelease & {
 	let configSize = "1Gi"
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
+		app:        name, vol:  "config", size: configSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/komga/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		controllers: komga: {
@@ -66,7 +68,7 @@ _komga: schema.#AppRelease & {
 					tag:        "1.25.0@sha256:c4f9885fc077e2e9cd684dc95e8f6cfa5e33b100b46712b2de7f5cc2ff59e6fb"
 				}
 				env: {
-					UMASK:                       2
+					UMASK:                       "0002"
 					SERVER_PORT:                 portHTTP
 					KOMGA_CORS_ALLOWEDORIGINS:   "https://\(host)"
 					KOMGA_OAUTH2ACCOUNTCREATION: "true"
@@ -96,6 +98,7 @@ _komga: schema.#AppRelease & {
 				accessMode: "ReadWriteOnce"
 				retain:     true
 				size:       configSize
+				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-config"}
 			}
 			"config-overlay": {
 				type: "configMap"
@@ -108,7 +111,5 @@ _komga: schema.#AppRelease & {
 				path:   "/mnt/chronos/media-data"
 			}
 		}
-
-		rawResources: _backup.out
 	}
 }

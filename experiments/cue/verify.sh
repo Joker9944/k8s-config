@@ -53,6 +53,10 @@ check reject "middleware from another namespace" \
 	'_jellyfin: values: ingress: jellyfin: annotations: "traefik.ingress.kubernetes.io/router.middlewares": "komga-chain-country-whitelist@kubernetescrd"' || rc=1
 check reject "middleware chain that does not exist" \
 	'_jellyfin: chain: "chain-does-not-exist"' || rc=1
+check reject "a bare middleware in place of a chain" \
+	'_jellyfin: bareMiddleware: "network-internal-whitelist"' || rc=1
+check reject "a release taking its values from a Secret" \
+	'_jellyfin: secretValuesName: "jellyfin-secret-values"' || rc=1
 check reject "field the HelmRelease API does not have" \
 	'_jellyfin: out: spec: chartt: {}' || rc=1
 

@@ -5,7 +5,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "qbittorrent"
 	source:    "apps/base/qbittorrent"
-	secretFiles: ["apps/media/qbittorrent/secrets/values.secret.yaml"]
+	extraSecretFiles: ["apps/media/qbittorrent/secrets/qbittorrent.secret.yaml"]
 	// gluetun runs as root with NET_ADMIN to bring up the tunnel
 	namespaceLabels: "pod-security.kubernetes.io/enforce": "privileged"
 	releases: [_qbittorrent]
@@ -15,8 +15,6 @@ _qbittorrent: schema.#AppRelease & {
 	name:      "qbittorrent"
 	namespace: "qbittorrent"
 
-	secretValuesName: "qbittorrent-secret-values"
-
 	let uid = 6002
 	let gid = 6000
 	let portHTTP = 8080
@@ -24,8 +22,8 @@ _qbittorrent: schema.#AppRelease & {
 	let vpnSecret = "qbittorrent-vpn-config"
 	host: "downloader.vonarx.online"
 
-	// no chain: the UI is reachable only from the internal network
-	bareMiddleware: "network-internal-whitelist"
+	// the UI is reachable only from the internal network
+	chain: "chain-network-internal-whitelist"
 
 	let configSize = "500Mi"
 	let partOf = "servarr"
@@ -46,9 +44,11 @@ _qbittorrent: schema.#AppRelease & {
 	}
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
+		app:        name, vol:  "config", size: configSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/qbittorrent/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		global: labels: "app.kubernetes.io/part-of": partOf
@@ -163,7 +163,5 @@ _qbittorrent: schema.#AppRelease & {
 				advancedMounts: qbittorrent: qbittorrent: [{path: "/mnt/media-data"}]
 			}
 		}
-
-		rawResources: _backup.out
 	}
 }

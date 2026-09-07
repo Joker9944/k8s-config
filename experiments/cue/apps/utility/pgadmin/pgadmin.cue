@@ -7,7 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "pgadmin"
 	source:    "apps/base/pgadmin"
-	secretFiles: ["apps/utility/pgadmin/secrets/values.secret.yaml"]
+	extraSecretFiles: ["apps/utility/pgadmin/secrets/pgadmin.secret.yaml"]
 	repositories: [
 		schema.#HelmRepo & {name: "runix", url: "https://helm.runix.net"},
 	]
@@ -34,12 +34,17 @@ _pgadmin: schema.#Release & {
 	sourceName: "runix"
 	interval:   "5m"
 
-	secretValuesName: "pgadmin-secret-values"
-
 	host:  "pgadmin.vonarx.online"
 	chain: "chain-network-internal-whitelist"
 
 	values: {
+		// The chart routes PGADMIN_DEFAULT_PASSWORD through this Secret and stops
+		// generating one of its own. The email has no such path — the chart writes
+		// it as a literal — so it is an ordinary value.
+		existingSecret: "pgadmin-credentials"
+		secretKeys: pgadminPasswordKey: "password"
+		env: email:                     "admin@acme.com"
+
 		serverDefinitions: {
 			enabled: true
 			servers: {

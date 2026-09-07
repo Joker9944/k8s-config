@@ -17,13 +17,10 @@ import (
 	ns:    string
 	chain: #Chain | *"chain-country-whitelist"
 	extra: [...string] | *[]
-	bare: string | *""
 
 	// opencloud's chart writes the tls and entrypoint annotations itself, from
 	// its own `annotationsPreset: traefik`, and duplicating them is a conflict.
 	preset: bool | *false
-
-	_first: [if bare != "" {bare}, chain][0]
 
 	out: {
 		if !preset {
@@ -31,7 +28,7 @@ import (
 			"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
 		}
 		"traefik.ingress.kubernetes.io/router.middlewares": strings.Join([
-			for m in list.Concat([[_first], extra]) {"\(ns)-\(m)@kubernetescrd"},
+			for m in list.Concat([[chain], extra]) {"\(ns)-\(m)@kubernetescrd"},
 		], ",")
 	}
 }
@@ -59,19 +56,16 @@ import (
 	chain:      #Chain | *"chain-country-whitelist"
 	extraMiddlewares: [...string] | *[]
 
-	// The sanctioned exception, for a release that sits behind a single
-	// middleware instead of a chain and so skips the rate limit, the secure
-	// headers and compression. Naming it here rather than widening #Chain keeps
-	// every such release findable with grep. qbittorrent is the only user.
-	bareMiddleware: string | *""
-
 	// The preset every CRD-shipping chart in the fleet carries, byte-identical
 	// across all ten of them: Helm owns the CRD lifecycle and a failed install or
 	// upgrade is retried three times.
 	crds: bool | *false
 	_lifecycle: {"crds": "CreateReplace", remediation: retries: 3}
 
-	secretValuesName: string | *""
+	// The volsync repositories this release backs up to. Declaring one is what
+	// ships its credential Secret, so the two cannot drift apart.
+	backups: [...{secretFile: string, secretName: string, out: {...}, ...}] | *[]
+
 	values: {...}
 
 	// blocky-redis is the only release in the fleet that ships no values at all,
@@ -83,7 +77,6 @@ import (
 		ns:      namespace
 		"chain": chain
 		extra:   extraMiddlewares
-		bare:    bareMiddleware
 		preset:  ingressPreset
 	}).out
 
@@ -103,9 +96,6 @@ import (
 			if crds {
 				install: _lifecycle
 				upgrade: _lifecycle
-			}
-			if secretValuesName != "" {
-				valuesFrom: [{kind: "Secret", name: secretValuesName}]
 			}
 			if hasValues {"values": values}
 		}
@@ -128,20 +118,17 @@ import (
 	host:               _
 	ingressKey:         _
 	ingressAnnotations: _
-
-	// The identifier suffix is on for every app-template release in the fleet
-	// except traefik-geo-lookup. Turning it on there renames its Deployment and
-	// Service, so the exception is named here rather than fixed in passing.
-	identifierSuffix: bool | *true
+	backups:            _
 
 	// open at every level a constraint is added: a definition closes what it
 	// touches, and these are the chart's conventions, not its whole schema
 	values: {
-		if identifierSuffix {
-			global: {alwaysAppendIdentifierToResourceName: true, ...}
-		}
+		global: {alwaysAppendIdentifierToResourceName: true, ...}
 		if host != "" {
 			ingress: (ingressKey): {annotations: ingressAnnotations, ...}
+		}
+		if len(backups) > 0 {
+			rawResources: {for b in backups {b.out}}
 		}
 		...
 	}
@@ -205,7 +192,7 @@ import (
 	// definition rejects the fields a derived one adds, so naming #Release here
 	// would make #AppRelease unusable in a bundle. The house constraints live in
 	// those definitions, and this is the only thing #Bundle reads.
-	releases: [...{out: fluxHelm.#HelmRelease, ...}]
+	releases: [...{out: fluxHelm.#HelmRelease, backups: [...{secretFile: string, ...}], ...}]
 
 	// The Traefik middleware set. A bundle with no ingress does not install it.
 	middlewares: bool | *true
@@ -222,10 +209,18 @@ import (
 	before: [...] | *[] // emitted between the namespace and the releases
 	after: [...] | *[]  // emitted after the releases
 
-	// SOPS Secret manifests, module-relative. The render step copies them
-	// verbatim; ciphertext never passes through CUE. See
-	// /workflows/secrets-sops.md.
-	secretFiles: [...string] | *[]
+	// SOPS Secret manifests beyond the ones the backups bring in, module-relative.
+	// The render step copies them verbatim; ciphertext never passes through CUE.
+	// See /workflows/secrets-sops.md.
+	extraSecretFiles: [...string] | *[]
+
+	// Deduplicated through a struct, because a workload can hold its restic
+	// credential in the same file as its other secrets.
+	_secretFileSet: {
+		for f in extraSecretFiles {(f): true}
+		for r in releases for b in r.backups {(b.secretFile): true}
+	}
+	secretFiles: [for f, _ in _secretFileSet {f}]
 
 	// Migration bookkeeping: the kustomize overlay this bundle replaces, read
 	// by gate.py. "" means not yet ported. Goes away with apps/base/.

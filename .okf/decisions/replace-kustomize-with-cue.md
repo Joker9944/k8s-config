@@ -4,7 +4,7 @@ title: Replace kustomize with CUE
 description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as per-tier OCI artifacts.
 tags: [cue, kustomize, gitops, flux, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T09:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T12:00:00Z }
 stale_after: 2027-03-05
 sources:
   - id: poc
@@ -104,13 +104,18 @@ the definition sigil, so `# renovate:` is impossible.
 
 # Evidence
 
-`apps/base/jellyfin` and `apps/base/servarr` are ported in `experiments/cue/`,
-which carries its own README.[^poc] `gate.sh` renders both sides and compares
-resource by resource, decrypting each the way kustomize-controller does: all 47
-resources match, including the 15 SOPS Secrets, with an empty allowlist. It reads the bundle registry out of CUE, so porting a
-workload enrols it in the gate rather than needing the script edited.
-`verify.sh` covers the constraint and API-surface checks. Both are migration
-scaffolding and die with `apps/base/`.
+All 32 bundles are ported in `experiments/cue/`, which carries its own
+README.[^poc] `gate.sh` renders both sides and compares resource by resource,
+decrypting each the way kustomize-controller does. It reads the bundle registry
+out of CUE, so porting a workload enrols it in the gate rather than needing the
+script edited. `verify.sh` covers the constraint and API-surface checks. Both are
+migration scaffolding and die with `apps/base/`.
+
+A green gate does not mean the two trees agree. It means every disagreement is
+named in `allowlist.txt` with a reason, and the gate fails just as hard on an
+entry whose resource turns out identical — so an exemption cannot outlive what it
+excuses. Everything listed today is a manifest CUE renders per the fleet's own
+conventions while kustomize still renders the divergence.
 
 [^poc]: CUE proof-of-concept (jellyfin and servarr)
 

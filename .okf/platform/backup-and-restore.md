@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T19:30:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -24,9 +24,11 @@ A backed-up app declares two objects in its HelmRelease `rawResources`, followin
 
 The PVC references the destination through `dataSourceRef`, and the mover runs under the app's `&PUID`/`&GUID` anchors so restored files keep their ownership.
 
-**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for. Three volumes depart from this shape — see [known drift](/architecture/config-drift.md).
+**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for.
 
-Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`, delivered by either [secret shape](/architecture/app-template-pattern.md).
+`dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted.
+
+Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`, delivered by either [secret shape](/architecture/app-template-pattern.md). Nothing ties the two together here: the name is written twice and a backup whose Secret is missing fails on its first scheduled run. [The CUE tree](/architecture/cue-layout.md) makes the credential an input of the backup instead.
 
 # CNPG + barman-cloud (Postgres)
 

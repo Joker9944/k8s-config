@@ -142,6 +142,26 @@ def strip_generator_hashes(golden, rendered):
     return substitute(golden, mapping), mapping
 
 
+def backup_secret_problems(rendered):
+    """Every volsync repository the CUE side declares has to name a Secret the
+    bundle ships. This is the half of #VolsyncRestic's contract CUE cannot check:
+    it holds the file path, never the ciphertext. The golden side is exempt —
+    there the chart creates the Secret, so it is not a document to look at."""
+    secrets = {d["metadata"]["name"] for d in rendered if d.get("kind") == "Secret"}
+    problems = []
+    for doc in rendered:
+        if doc.get("kind") != "HelmRelease":
+            continue
+        raw = (doc.get("spec", {}).get("values") or {}).get("rawResources") or {}
+        for key, res in sorted(raw.items()):
+            if not isinstance(res, dict) or res.get("kind") != "ReplicationSource":
+                continue
+            repo = res.get("spec", {}).get("spec", {}).get("restic", {}).get("repository")
+            if repo not in secrets:
+                problems.append(f"{ident(doc)} rawResources.{key}: no Secret named {repo}")
+    return problems
+
+
 def load_allowlist():
     entries = {}
     for lineno, raw in enumerate(ALLOWLIST.read_text().splitlines(), 1):
@@ -207,6 +227,10 @@ def check(name, bundle, pkg, work, allowed, used):
         print(f"    FAIL      {key}: {kind}")
         for line in (detail or "").splitlines():
             print(f"      {line}")
+
+    for problem in backup_secret_problems(rendered):
+        failures += 1
+        print(f"    FAIL      {problem}")
 
     if not problems:
         print(f"    {len(left)} resources, identical")

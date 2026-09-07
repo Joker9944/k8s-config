@@ -7,7 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "opencloud"
 	source:    "apps/base/opencloud"
-	secretFiles: ["apps/cloud/opencloud/secrets/opencloud.secret.yaml"]
+	extraSecretFiles: ["apps/cloud/opencloud/secrets/opencloud.secret.yaml"]
 	// the chart is not published to a registry; Flux tracks the repository
 	repositories: [
 		schema.#GitRepo & {name: "opencloud", url: "https://github.com/opencloud-eu/helm", branch: "main"},

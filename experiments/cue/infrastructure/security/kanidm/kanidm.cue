@@ -9,7 +9,6 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "kanidm"
 	source:    "infrastructure/base/kanidm"
-	secretFiles: ["infrastructure/security/kanidm/secrets/values.secret.yaml"]
 
 	// kanidm terminates TLS itself, so Traefik talks to it over HTTPS with a
 	// certificate off the private CA.
@@ -40,8 +39,6 @@ _kanidm: schema.#AppRelease & {
 	name:      "kanidm"
 	namespace: bundle.namespace
 
-	secretValuesName: "kanidm-secret-values"
-
 	let uid = 568
 	let gid = 568
 	let pathTLSCrt = "/data/tls.crt"
@@ -56,9 +53,11 @@ _kanidm: schema.#AppRelease & {
 	}
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "data", size: dataSize
-		"uid": uid, "gid": gid
+		app:        name, vol:  "data", size: dataSize
+		"uid":      uid, "gid": gid
+		secretFile: "infrastructure/security/kanidm/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	// The private-CA certificate #Bundle emits, which the pod mounts and Traefik
 	// verifies against.
@@ -148,14 +147,12 @@ _kanidm: schema.#AppRelease & {
 			}
 		}
 
-		rawResources: _backup.out & {
-			transport: {
-				apiVersion: "traefik.io/v1alpha1"
-				kind:       "ServersTransport"
-				spec: spec: {
-					serverName: "\(name).\(namespace)"
-					rootCAsSecrets: ["nyx-ca-cert-bundle"]
-				}
+		rawResources: transport: {
+			apiVersion: "traefik.io/v1alpha1"
+			kind:       "ServersTransport"
+			spec: spec: {
+				serverName: "\(name).\(namespace)"
+				rootCAsSecrets: ["nyx-ca-cert-bundle"]
 			}
 		}
 	}

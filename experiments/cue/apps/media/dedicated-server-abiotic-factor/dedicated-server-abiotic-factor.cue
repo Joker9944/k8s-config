@@ -7,7 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "dedicated-server-abiotic-factor"
 	source:    "apps/base/dedicated-server-abiotic-factor"
-	secretFiles: [
+	extraSecretFiles: [
 		"apps/media/dedicated-server-abiotic-factor/secrets/dedicated-server-abiotic-factor.secret.yaml",
 	]
 	// no ingress: the server is reached on its own LoadBalancer
@@ -27,10 +27,11 @@ _server: schema.#AppRelease & {
 	out: spec: suspend: true
 
 	_backup: schema.#VolsyncRestic & {
-		app:     name, vol:  "saved", size: savedSize
-		"uid":   uid, "gid": gid
-		restore: false
+		app:        name, vol:  "saved", size: savedSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/dedicated-server-abiotic-factor/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		controllers: (name): {
@@ -113,13 +114,12 @@ _server: schema.#AppRelease & {
 				accessMode: "ReadWriteOnce"
 				retain:     true
 				size:       savedSize
+				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-saved"}
 				advancedMounts: (name): (name): [
 					{path: "/home/steam/.steam/steam/steamapps/common/Abiotic Factor Dedicated Server/AbioticFactor/Saved"},
 				]
 			}
 			tmp: type: "emptyDir"
 		}
-
-		rawResources: _backup.out
 	}
 }

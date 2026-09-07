@@ -7,15 +7,12 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "audiobookshelf"
 	source:    "apps/base/audiobookshelf"
-	secretFiles: ["apps/media/audiobookshelf/secrets/values.secret.yaml"]
 	releases: [_audiobookshelf]
 }
 
 _audiobookshelf: schema.#AppRelease & {
 	name:      "audiobookshelf"
 	namespace: "audiobookshelf"
-
-	secretValuesName: "audiobookshelf-secret-values"
 
 	let uid = 6011
 	let gid = 6000
@@ -32,14 +29,18 @@ _audiobookshelf: schema.#AppRelease & {
 		enabled: true
 	}
 
+	let secretFile = "apps/media/audiobookshelf/secrets/restic.secret.yaml"
 	_backupConfig: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
+		app:          name, vol:  "config", size: configSize
+		"uid":        uid, "gid": gid
+		"secretFile": secretFile
 	}
 	_backupMetadata: schema.#VolsyncRestic & {
-		app:   name, vol:  "metadata", size: metadataSize
-		"uid": uid, "gid": gid
+		app:          name, vol:  "metadata", size: metadataSize
+		"uid":        uid, "gid": gid
+		"secretFile": secretFile
 	}
+	backups: [_backupConfig, _backupMetadata]
 
 	values: {
 		controllers: audiobookshelf: {
@@ -65,7 +66,7 @@ _audiobookshelf: schema.#AppRelease & {
 					tag:        "2.35.1@sha256:1eef6716183c52abafe5405e7d6be8390248ecd59c7488c44af871757ac8fc4d"
 				}
 				env: {
-					UMASK:         2
+					UMASK:         "0002"
 					PORT:          portHTTP
 					CONFIG_PATH:   pathConfig
 					METADATA_PATH: pathMetadata
@@ -117,7 +118,5 @@ _audiobookshelf: schema.#AppRelease & {
 			}
 			tmp: type: "emptyDir"
 		}
-
-		rawResources: {_backupConfig.out, _backupMetadata.out}
 	}
 }

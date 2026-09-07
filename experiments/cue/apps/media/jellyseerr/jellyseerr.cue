@@ -7,15 +7,12 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "jellyseerr"
 	source:    "apps/base/jellyseerr"
-	secretFiles: ["apps/media/jellyseerr/secrets/values.secret.yaml"]
 	releases: [_jellyseerr]
 }
 
 _jellyseerr: schema.#AppRelease & {
 	name:      "jellyseerr"
 	namespace: "jellyseerr"
-
-	secretValuesName: "jellyseerr-secret-values"
 
 	let uid = 568
 	let gid = 568
@@ -28,9 +25,11 @@ _jellyseerr: schema.#AppRelease & {
 	let partOf = "servarr"
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
+		app:        name, vol:  "config", size: configSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/jellyseerr/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		global: labels: "app.kubernetes.io/part-of": partOf
@@ -99,7 +98,5 @@ _jellyseerr: schema.#AppRelease & {
 			yarn: {type: "emptyDir", globalMounts: [{path: "/.yarn"}]}
 			tmp: type: "emptyDir"
 		}
-
-		rawResources: _backup.out
 	}
 }

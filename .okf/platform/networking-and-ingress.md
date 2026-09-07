@@ -4,12 +4,12 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-05T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-07T12:00:00Z }
 ---
 
 # Address allocation
 
-MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`infrastructure/nyx/config/metallb`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.universe.tf/loadBalancerIPs` annotation (for example jellyfin's DLNA autodiscovery service on `192.168.0.130`), though [one uses the newer `metallb.io` domain](/architecture/config-drift.md).
+MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`infrastructure/nyx/config/metallb`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (for example jellyfin's DLNA autodiscovery service on `192.168.0.130`). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
 
 # Traefik
 
@@ -32,7 +32,7 @@ Two experimental plugins are loaded, both tracked by renovate against github-tag
 
 `network-internal-whitelist` admits the LAN (`192.168.1.0/23`, `fe80::/10`), the tailnet (`100.0.0.0/8`, `fd7a:115c:a1e0::/48`) and the pod network (`10.244.0.0/16`). `country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries.
 
-The chain is selected per-service: infrastructure dashboards (Longhorn, Prometheus, Alertmanager) take the internal whitelist; public-facing apps take the country whitelist. One ingress names a bare middleware instead — see [known drift](/architecture/config-drift.md).
+The chain is selected per-service: infrastructure dashboards (Longhorn, Prometheus, Alertmanager) take the internal whitelist; public-facing apps take the country whitelist. There is no third option: `#Release` has no field for a bare middleware, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed.
 
 The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept under their original names for compatibility with other TrueCharts charts still in use — the comment in `manifests/middleware.yaml` is the only record of that constraint.
 

@@ -7,7 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "kube-prometheus-stack"
 	source:    "infrastructure/base/kube-prometheus-stack"
-	secretFiles: ["infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml"]
+	extraSecretFiles: ["infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml"]
 	repositories: [_prometheusCommunity]
 	namespaceLabels: {
 		// required for node-exporter
@@ -112,8 +112,7 @@ _kps: schema.#Release & {
 				annotations: _public
 				hosts: ["grafana.vonarx.online"]
 				paths: ["/"]
-				// the doubled domain is deployed as-is; see /architecture/config-drift.md
-				tls: [{secretName: tlsSecret, hosts: ["grafana.vonarx.online.vonarx.online"]}]
+				tls: [{secretName: tlsSecret, hosts: ["grafana.vonarx.online"]}]
 			}
 		}
 
@@ -132,8 +131,7 @@ _kps: schema.#Release & {
 				annotations: _internal
 				hosts: ["prometheus.vonarx.online"]
 				paths: ["/"]
-				// the doubled domain is deployed as-is; see /architecture/config-drift.md
-				tls: [{secretName: tlsSecret, hosts: ["prometheus.vonarx.online.vonarx.online"]}]
+				tls: [{secretName: tlsSecret, hosts: ["prometheus.vonarx.online"]}]
 			}
 		}
 

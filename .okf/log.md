@@ -2,6 +2,14 @@
 
 ## 2026-09-07
 
+- No CUE release takes its values from a Secret; `spec.valuesFrom` leaks the payload into the render — [CUE layout](/architecture/cue-layout.md)
+- The volsync credential Secret is an input of `#VolsyncRestic`, and `#Bundle.secretFiles` derives from it — [CUE layout](/architecture/cue-layout.md)
+- Nothing in the kustomize tree binds a backup to the Secret it needs — [backup and restore](/platform/backup-and-restore.md)
+- Every registered configuration drift corrected in CUE; the register is retired — [CUE layout](/architecture/cue-layout.md)
+- `metallb.io` is the annotation domain; `metallb.universe.tf` is deprecated upstream — [networking and ingress](/platform/networking-and-ingress.md)
+- `dataSourceRef` is immutable, so every backed-up volume declares one up front — [backup and restore](/platform/backup-and-restore.md)
+- A sops MAC spans every document in a multi-document file — [secrets and SOPS](/workflows/secrets-sops.md)
+- A green gate means every disagreement is allowlisted, not that the trees agree — [decision](/decisions/replace-kustomize-with-cue.md)
 - `cue` single-sourced from the dev shell, so nothing evaluates the tree with a second version — [development environment](/workflows/dev-environment.md)
 
 ## 2026-09-06
@@ -15,7 +23,6 @@
 - barman-cloud installs from its own chart instead of a kustomize remote resource — [backup and restore](/platform/backup-and-restore.md)
 - `#NamespaceCert` retires the `namespace-cert` component pair and its kustomize#5953 workaround — [kustomize components](/architecture/kustomize-components.md)
 - cspell's secret ignore widened to `*secret.yaml`, which the migrated filenames need — [formatting and cspell](/workflows/formatting-and-cspell.md)
-- Manifests that diverge from the fleet's own conventions, registered — [known configuration drift](/architecture/config-drift.md)
 - `#Release` split from `#AppRelease`, and `#Bundle` parameterized on middlewares, repositories and namespace labels — [CUE layout](/architecture/cue-layout.md)
 - Two more CUE mechanics that decide the layout: bracket selectors and reference resolution — [CUE layout](/architecture/cue-layout.md)
 - `#ConfigMapFiles` supersedes the per-app `nameReference` hack — [kustomize components](/architecture/kustomize-components.md)

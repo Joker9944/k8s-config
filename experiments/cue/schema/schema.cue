@@ -110,34 +110,27 @@ import "list"
 	app: string, vol: string, size: string
 	uid: int, gid:    int
 
-	// Mover fields the source side sets and the destination does not. openaudible
-	// is the only user; the asymmetry is reproduced rather than harmonized while
-	// the fidelity gate is the arbiter.
-	sourceMoverExtra: {...} | *{}
-
-	// The disabled ReplicationDestination a restore is switched on from.
-	// dedicated-server-abiotic-factor is the only volume without one.
-	restore: bool | *true
-
 	// gotify's data volume is ReadWriteMany; every other backed-up volume is RWO.
 	accessMode: string | *"ReadWriteOnce"
 
-	// Whether the backup actually runs. gotify's is switched off, which means its
-	// data is not being backed up at all.
-	enabled: bool | *true
+	// The SOPS manifest holding this repository's credential Secret. Required:
+	// volsync cannot back up without it, and nothing notices until a run fails.
+	secretFile: string
+
+	// The Secret `repository` resolves against; #Bundle collects it.
+	secretName: "\(app)-restic-\(vol)"
 
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
-	_repo: "\(app)-restic-\(vol)"
 
 	out: {
-		if restore {"dest-\(vol)": {
+		"dest-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationDestination"
 			enabled:    false // restore is deliberate; see the runbook
 			spec: spec: {
 				trigger: manual: "restore-once"
 				restic: {
-					repository: _repo
+					repository: secretName
 					accessModes: [accessMode]
 					capacity:                size
 					copyMethod:              "Snapshot"
@@ -146,22 +139,22 @@ import "list"
 					volumeSnapshotClassName: "longhorn"
 				}
 			}
-		}}
+		}
 		"source-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationSource"
-			"enabled":  enabled
+			enabled:    true
 			spec: spec: {
 				sourcePVC: "\(app)-\(vol)"
 				trigger: schedule: "@daily"
 				restic: {
-					repository:        _repo
+					repository:        secretName
 					pruneIntervalDays: 7
 					retain: {daily: 7, weekly: 4}
 					copyMethod:            "Clone"
 					storageClassName:      "longhorn-local-lax"
 					cacheStorageClassName: "longhorn"
-					moverSecurityContext:  _mover & sourceMoverExtra
+					moverSecurityContext:  _mover
 				}
 			}
 		}

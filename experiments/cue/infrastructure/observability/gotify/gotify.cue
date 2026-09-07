@@ -8,7 +8,7 @@ bundle: schema.#Bundle & {
 	namespace: "gotify"
 	source:    "infrastructure/base/gotify"
 	dependsOn: ["kube-prometheus-stack"]
-	secretFiles: ["infrastructure/observability/gotify/secrets/gotify.secret.yaml"]
+	extraSecretFiles: ["infrastructure/observability/gotify/secrets/gotify.secret.yaml"]
 	releases: [_gotify, _bridge]
 }
 
@@ -48,8 +48,9 @@ _gotify: schema.#AppRelease & {
 		"uid":      uid
 		"gid":      gid
 		accessMode: "ReadWriteMany"
-		enabled:    false
+		secretFile: "infrastructure/observability/gotify/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		defaultPodOptions: podOptions
@@ -132,36 +133,35 @@ _gotify: schema.#AppRelease & {
 			accessMode: "ReadWriteMany"
 			retain:     true
 			size:       dataSize
+			dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-data"}
 		}
 
-		rawResources: _backup.out & {
-			cnpg: {
-				apiVersion: "postgresql.cnpg.io/v1"
-				kind:       "Cluster"
-				spec: spec: {
-					description: "PostgreSQL Cluster for gotify"
-					instances:   3
+		rawResources: cnpg: {
+			apiVersion: "postgresql.cnpg.io/v1"
+			kind:       "Cluster"
+			spec: spec: {
+				description: "PostgreSQL Cluster for gotify"
+				instances:   3
 
-					imageCatalogRef: {
-						apiGroup: "postgresql.cnpg.io"
-						kind:     "ClusterImageCatalog"
-						"name":   "postgresql-standard-trixie"
-						major:    18
-					}
+				imageCatalogRef: {
+					apiGroup: "postgresql.cnpg.io"
+					kind:     "ClusterImageCatalog"
+					"name":   "postgresql-standard-trixie"
+					major:    18
+				}
 
-					storage: {size: "1Gi", storageClass: "longhorn-local-strict"}
-					walStorage: {size: "1Gi", storageClass: "longhorn-local-strict"}
+				storage: {size: "1Gi", storageClass: "longhorn-local-strict"}
+				walStorage: {size: "1Gi", storageClass: "longhorn-local-strict"}
 
-					bootstrap: initdb: {
-						database: "gotify"
-						owner:    "gotify"
-						secret: name: "gotify-custom-cnpg-user"
-					}
+				bootstrap: initdb: {
+					database: "gotify"
+					owner:    "gotify"
+					secret: name: "gotify-custom-cnpg-user"
+				}
 
-					affinity: {
-						enablePodAntiAffinity: true
-						podAntiAffinityType:   "required"
-					}
+				affinity: {
+					enablePodAntiAffinity: true
+					podAntiAffinityType:   "required"
 				}
 			}
 		}

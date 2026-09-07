@@ -9,7 +9,7 @@ bundle: schema.#Bundle & {
 	source:    "infrastructure/base/loki"
 	dependsOn: ["garage"]
 	middlewares: false
-	secretFiles: ["infrastructure/observability/loki/secrets/values.secret.yaml"]
+	extraSecretFiles: ["infrastructure/observability/loki/secrets/loki.secret.yaml"]
 	repositories: [_grafana]
 	releases: [_loki]
 }
@@ -23,9 +23,15 @@ _loki: schema.#Release & {
 	version:    "6.55.0"
 	sourceName: _grafana.name
 
-	secretValuesName: "loki-secret-values"
+	// Loki expands these out of its environment at startup, so the credentials
+	// stay in the Secret instead of landing in the config the chart generates —
+	// which is a ConfigMap. Per component rather than global.extraEnvFrom, which
+	// would hand them to the memcached pods as well.
+	_s3Env: [{secretRef: name: "loki-s3"}]
 
 	values: {
+		global: extraArgs: ["-config.expand-env=true"]
+
 		"loki": {
 			// auth needs a reverse proxy supplying basic auth, which nothing in
 			// front of loki does today
@@ -56,6 +62,8 @@ _loki: schema.#Release & {
 				type: "s3"
 				bucketNames: {chunks: "loki-chunk", ruler: "loki-ruler", admin: "loki-admin"}
 				s3: {
+					accessKeyId:      "${AWS_ACCESS_KEY_ID}"
+					secretAccessKey:  "${AWS_SECRET_ACCESS_KEY}"
 					endpoint:         "http://garage.garage.svc.cluster.local:3900"
 					region:           "nyx"
 					signatureVersion: "v4"
@@ -72,8 +80,8 @@ _loki: schema.#Release & {
 		}
 
 		deploymentMode: "SimpleScalable"
-		backend: replicas: 3
-		read: replicas:    3
-		write: replicas:   3
+		backend: {replicas: 3, extraEnvFrom: _s3Env}
+		read: {replicas: 3, extraEnvFrom: _s3Env}
+		write: {replicas: 3, extraEnvFrom: _s3Env}
 	}
 }

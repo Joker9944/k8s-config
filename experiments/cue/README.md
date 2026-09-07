@@ -10,8 +10,9 @@ the tree has: single and multiple releases per namespace, the bjw-s app-template
 and twelve foreign charts, charts from a `GitRepository` by branch and by tag,
 nested Flux `Kustomization`s, volsync pairs, generated ConfigMaps, CNPG
 clusters, LoadBalancer services, namespace-local middlewares and certificates,
-Pod Security labels, a two-tier private CA, and SOPS secrets in both the
-whole-file and manifest shapes. Only the level-3 sync manifests are left.
+Pod Security labels, a two-tier private CA, and SOPS secrets, every one of them
+a Secret manifest the workload reads natively. Only the level-3 sync manifests
+are left.
 
 Nothing here is deployed. `apps/base/*` remains the source of truth. The
 conclusions drawn from this are recorded in `.okf/decisions/replace-kustomize-with-cue.md`,
@@ -55,21 +56,25 @@ change what is compared.
 | `clusters/nyx/flux/`       | The level-2 Kustomizations and their `OCIRepository`s, plus `cue cmd bootstrap`                              |
 | `render.nix`               | One derivation per tier; `$out` is an OCI artifact root                                                      |
 | `gate.sh` / `gate.py`      | Fidelity gate: renders both sides, decrypts both, normalizes, compares                                       |
-| `allowlist.txt`            | Resources permitted to differ. Currently empty.                                                              |
+| `allowlist.txt`            | Resources permitted to differ, with a reason each. Corrected manifests, and the retired secret shape.        |
 | `verify.sh`                | Constraint checks                                                                                            |
 | `generate.sh`              | Regenerates `cue.mod/gen/` from the Flux versions nyx runs                                                   |
 
 ## Results
 
-**Fidelity.** Every resource matches, with nothing excluded: **292 of 292**
-across the 32 bundles, including all 43 SOPS Secrets across 22 files. The
-allowlist is empty.
+**Fidelity.** All **302 resources** across the 32 bundles are compared, including
+all 44 SOPS Secrets across 26 files. Thirty-five are on the allowlist — manifests
+CUE renders per the fleet's own conventions while kustomize still renders the
+divergence, and the Secrets that changed shape when they left the encrypted
+values blob; the remaining 267 match byte for byte. A diff that is not
+allowlisted fails, and so does an allowlist entry whose resource turns out
+identical.
 
 **The rendered tree is what Flux would reconcile, and that is checked rather than
 asserted.** `flux build kustomization <tier> --path <artifact>/sync --recursive
 --local-sources OCIRepository/flux-system/<tier>=<artifact>` walks level 2 into
-level 3 for all eight tiers and yields 324 resources: the same 292 the gate
-validates, plus the 32 level-3 Kustomizations and nothing else. All 22 SOPS files
+level 3 for all eight tiers and yields 323 resources: the same 291 CUE renders,
+plus the 32 level-3 Kustomizations and nothing else. All 26 SOPS files
 land under a path that decrypts, and every one is byte-identical to its source.
 
 **Both sides are decrypted before comparison**, the way kustomize-controller
@@ -166,19 +171,12 @@ classes are now referenced by name rather than retyped.
 
 ## Open questions
 
-**The generator hash (likely a non-issue).** kustomize renames the Secret on
-every content change, which is what forces a Helm upgrade. CUE emits a stable
-name. The HelmRelease v2 CRD carries `lastAttemptedConfigDigest`, which is
-helm-controller digesting the resolved config including `valuesFrom` — so the
-upgrade should still happen. Worth confirming empirically once.
-
-All eight `secretGenerator` secrets have since been converted to SOPS
-`secret.yaml` manifests, which is what makes this moot: the name is stable by
-construction. The conversion was not optional.
-CUE has no successor to `secretGenerator`, so a whole-file secret that stays
-whole-file is a resource nothing renders. Two fields kustomize used to supply
-have to be written by hand — `metadata.namespace` and `type: Opaque` — and both
-fail silently if forgotten.
+**The generator hash is moot.** kustomize renames a generated Secret on every
+content change, which is what forced a Helm upgrade when its ciphertext moved.
+Nothing here depends on that. No release takes its values from a Secret, so
+editing a credential changes only the Secret; every consumer reads it at runtime
+through `envFrom`, `secretKeyRef` or a mounted file, and a pod restart is what
+picks it up. `#Release` has no field for the old shape, so it cannot come back.
 
 **The artifact digest depends on the `cue` version.** 0.16.1 and 0.17.1 order
 YAML keys differently, so a toolchain bump rewrites every artifact without

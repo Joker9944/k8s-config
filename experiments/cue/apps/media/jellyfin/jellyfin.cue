@@ -5,15 +5,12 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "jellyfin"
 	source:    "apps/base/jellyfin"
-	secretFiles: ["apps/media/jellyfin/secrets/values.secret.yaml"]
 	releases: [_jellyfin]
 }
 
 _jellyfin: schema.#AppRelease & {
 	name:      "jellyfin"
 	namespace: "jellyfin"
-
-	secretValuesName: "jellyfin-secret-values"
 
 	let uid = 6003
 	let gid = 6000
@@ -30,9 +27,11 @@ _jellyfin: schema.#AppRelease & {
 	}
 
 	_backup: schema.#VolsyncRestic & {
-		app:   name, vol:  "config", size: configSize
-		"uid": uid, "gid": gid
+		app:        name, vol:  "config", size: configSize
+		"uid":      uid, "gid": gid
+		secretFile: "apps/media/jellyfin/secrets/restic.secret.yaml"
 	}
+	backups: [_backup]
 
 	values: {
 		controllers: jellyfin: {
@@ -83,7 +82,7 @@ _jellyfin: schema.#AppRelease & {
 			autodiscovery: {
 				controller: "jellyfin"
 				type:       "LoadBalancer"
-				annotations: "metallb.universe.tf/loadBalancerIPs": "192.168.0.130"
+				annotations: "metallb.io/loadBalancerIPs": "192.168.0.130"
 				ports: {
 					"service-discovery": {port: 1900, protocol: "UDP"}
 					"client-discovery": {port: 7359, protocol: "UDP"}
@@ -116,7 +115,5 @@ _jellyfin: schema.#AppRelease & {
 			}
 			tmp: type: "emptyDir"
 		}
-
-		rawResources: _backup.out
 	}
 }
