@@ -16,7 +16,7 @@ _garageRepo: schema.#GitRepo & {
 	name: "garage"
 	url:  "https://git.deuxfleurs.fr/Deuxfleurs/garage"
 	// renovate: datasource=git-tags packageName=https://git.deuxfleurs.fr/Deuxfleurs/garage
-	tag: "v2.3.0"
+	tag: "v2.4.1"
 	ignore: """
 		# exclude all
 		/*
