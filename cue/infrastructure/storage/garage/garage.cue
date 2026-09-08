@@ -15,7 +15,8 @@ bundle: schema.#Bundle & {
 _garageRepo: schema.#GitRepo & {
 	name: "garage"
 	url:  "https://git.deuxfleurs.fr/Deuxfleurs/garage"
-	tag:  "v2.3.0"
+	// renovate: datasource=git-tags packageName=https://git.deuxfleurs.fr/Deuxfleurs/garage
+	tag: "v2.3.0"
 	ignore: """
 		# exclude all
 		/*

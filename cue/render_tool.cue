@@ -60,7 +60,10 @@ command: render: {
 			filename: src
 			contents: bytes
 		}
-		"copy-\(src)": file.Create & {
+		// keyed by bundle and basename rather than by source path: two files
+		// landing on one name in the same bundle collide here, loudly, instead of
+		// overwriting each other
+		"copy-\(name)-\(path.Base(src, "unix"))": file.Create & {
 			$after:   command.render["mkdir-\(name)"]
 			filename: "\(_root)/\(name)/\(path.Base(src, "unix"))"
 			contents: command.render["read-\(src)"].contents

@@ -18,8 +18,7 @@ let
     ];
   };
 
-  # A tier is a directory holding a .cue file named after it — the same rule
-  # gate.py discovers them by.
+  # A tier is a directory holding a .cue file named after it.
   tiersIn =
     tree:
     lib.pipe (builtins.readDir (src + "/${tree}")) [

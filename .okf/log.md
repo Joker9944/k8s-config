@@ -4,6 +4,7 @@
 
 - kustomize deleted; the CUE module is the tree, under `cue/` — [repo layout](/architecture/repo-layout.md)
 - `verify.sh` checks that a backup's credential Secret is in the file the backup names — [CUE layout](/architecture/cue-layout.md)
+- A stable ConfigMap or Secret name means a content edit rolls nothing — [CUE layout](/architecture/cue-layout.md)
 - Level 2 reads a per-tier OCI artifact, which nothing publishes yet — [Flux topology](/architecture/flux-topology.md)
 - The `components/` concept retired with the tree it described — [CUE layout](/architecture/cue-layout.md)
 - One secret shape, and the package shape that replaces the overlay directory — [app-template pattern](/architecture/app-template-pattern.md)

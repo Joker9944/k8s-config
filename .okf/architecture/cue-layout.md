@@ -75,6 +75,8 @@ A workload is a package. A tier is a package that imports its workloads and is a
 
 Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, and the middleware annotation is computed by `#Release`.
 
+**A content edit does not roll pods.** This is the cost of the stable name. `configMapGenerator` renamed a ConfigMap on every edit and `common-kustomizeconfig` chased the new name into `spec.values`, so the HelmRelease changed and Helm rolled the workload. `#ConfigMapFiles` and the secret manifests keep one name forever, so editing `files/config.yml` or a credential changes only that object — the HelmRelease is untouched and nothing restarts. Worse where the mount uses `subPath` (komga, recyclarr), because kubelet never refreshes those files at all. Restart the workload by hand after such an edit.
+
 # The schema
 
 `#Release` is a HelmRelease with the chart as a parameter (`chart`, `version`, `sourceKind`, `sourceName`), because most of the fleet outside `apps/` runs a foreign chart. `#AppRelease` embeds it and adds what the bjw-s app-template needs: the chart name, the identifier suffix, and the keyed `values.ingress.<key>` the middleware annotations are placed into. A foreign chart splices `ingressAnnotations` at whatever path its own schema uses.

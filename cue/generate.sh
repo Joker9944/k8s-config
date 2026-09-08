@@ -22,10 +22,11 @@ version_of() {
 	grep -oE "ghcr\.io/fluxcd/$1:v[0-9.]+" "$components" | head -1 | sed 's/.*://'
 }
 
+# shellcheck disable=SC1003  # the quoting keeps shfmt from spacing out the keys
 declare -A pkgs=(
-	[helm - controller]=api/v2
-	[kustomize - controller]=api/v1
-	[source - controller]=api/v1
+	["helm-controller"]=api/v2
+	["kustomize-controller"]=api/v1
+	["source-controller"]=api/v1
 )
 
 mkdir -p "$work/cue.mod"

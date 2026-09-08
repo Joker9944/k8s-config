@@ -23,7 +23,8 @@ bundle: schema.#Bundle & {
 _snapshotter: schema.#GitRepo & {
 	name: "external-snapshotter"
 	url:  "https://github.com/kubernetes-csi/external-snapshotter"
-	tag:  "v8.6.0"
+	// renovate: datasource=git-tags packageName=https://github.com/kubernetes-csi/external-snapshotter
+	tag: "v8.6.0"
 }
 
 _snapshotSync: [for k, path in {
