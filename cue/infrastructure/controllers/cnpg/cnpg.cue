@@ -31,7 +31,7 @@ _barman: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "plugin-barman-cloud"
 	// renovate: datasource=helm packageName=plugin-barman-cloud registryUrl=https://cloudnative-pg.github.io/charts/
-	version:    "0.5.0"
+	version:    "0.8.0"
 	sourceName: "cnpg"
 	interval:   "5m"
 	crds:       true
