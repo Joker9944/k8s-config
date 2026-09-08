@@ -2,6 +2,11 @@
 
 ## 2026-09-08
 
+- Machine configuration moved to `nix-config`; the cluster concept keeps only the node facts the manifests schedule against — [the nyx cluster](/platform/cluster-nyx.md)
+- `clusters/nyx/` is the Flux entry point and nothing else — [repo layout](/architecture/repo-layout.md)
+- The dev shell drops `talosctl` and `talhelper`; the flake has no third-party inputs left — [development environment](/workflows/dev-environment.md)
+- The whole-file SOPS rule has no users left — [secrets and SOPS](/workflows/secrets-sops.md)
+- Renovate reads only `*.cue`; the YAML, `Dockerfile` and `pre-commit` managers are gone — [images, CI and dependency updates](/workflows/images-and-ci.md)
 - `checks.cueVet` vets the CUE module, so `nix flake check` covers the house rules — [development environment](/workflows/dev-environment.md)
 - The house-style and Flux API-surface checks are CUE under `probe/`; `verify.sh` and the `backupSecrets` export it read are gone — [CUE layout](/architecture/cue-layout.md)
 - Nothing checks that a backup's credential file holds the Secret it names — [backup and restore](/platform/backup-and-restore.md)

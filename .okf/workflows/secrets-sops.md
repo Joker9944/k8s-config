@@ -5,21 +5,19 @@ description: How a file's name decides its encryption rule, how the key reaches 
 tags: [sops, age, secrets, security]
 resource: .sops.yaml
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
 ---
 
 # The filename is the rule
 
-One age recipient covers the whole repo. `.sops.yaml` has four creation rules, all keyed on the path:
+One age recipient covers the whole repo. `.sops.yaml` has two creation rules, both keyed on the path:
 
 | `path_regex`                | Encrypts                    |
 | --------------------------- | --------------------------- |
 | `^.*\.sops\.ya?ml`          | the whole file              |
 | `^.*(?:/\|\.)secret\.ya?ml` | `^(data\|stringData)$` only |
-| `talenv.yaml`               | the whole file              |
-| `talsecret.yaml`            | the whole file              |
 
-The partial rule leaves `apiVersion`, `kind` and `metadata` readable, which is why a file can be identified without the key. Every Kubernetes secret in the repo uses it. The whole-file rule now has exactly one user left — `clusters/nyx/talos/talsecret.sops.yaml`, which talhelper consumes whole and which never enters the cluster as a SOPS document.
+The partial rule leaves `apiVersion`, `kind` and `metadata` readable, which is why a file can be identified without the key. Every Kubernetes secret in the repo uses it, and the whole-file rule has no users left — it stands for the next file whose payload is not a Kubernetes object.
 
 `stores.yaml.indent: 2` pins sops's YAML emitter to the repo's indentation. Its default is 4, which makes every freshly encrypted file fail the formatter — and, for a file whose payload is itself a YAML document, silently changes those bytes.
 
@@ -32,8 +30,6 @@ Renaming a secret file changes how it is encrypted, and changes whether cspell s
 # Reaching the cluster
 
 `clusters/nyx/bootstrap.sh` creates the `sops-age` Secret in `flux-system` from the age private key, read from stdin. Every level-3 Flux Kustomization then references it through `decryption.provider: sops` / `secretRef: sops-age`, set by `#Tier.sync` — which is why a SOPS file has to sit in a bundle directory inside the artifact rather than at its root (see [Flux topology](/architecture/flux-topology.md)).
-
-Talos secrets take a different route entirely: `talenv.yaml` and `talsecret.sops.yaml` are decrypted **locally** by talhelper at render time and never enter the cluster as SOPS documents. See [the cluster](/platform/talos-nyx.md).
 
 # The guardrail
 

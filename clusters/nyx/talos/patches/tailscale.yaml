@@ -1,5 +1,0 @@
-machine:
-  kubelet:
-    nodeIP:
-      validSubnets:
-        - ${ADDRESS_SPACE}

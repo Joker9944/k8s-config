@@ -9,21 +9,7 @@
   "helm-values": {
     enabled: false,
   },
-  "pre-commit": {
-    enabled: true,
-  },
   customManagers: [
-    {
-      customType: "regex",
-      description: "Update versions in yaml files marked by comment",
-      managerFilePatterns: [
-        "/(?:^|/)talconfig\\.ya?ml$/",
-        "/(?:^|/)docker-publish\\.ya?ml$/",
-      ],
-      matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+: (?<currentValue>.+?)(?:\\s|$)",
-      ],
-    },
     {
       customType: "regex",
       description: "Update chart and plugin versions in cue files marked by comment",
@@ -41,14 +27,6 @@
       ],
       datasourceTemplate: "docker",
     },
-    {
-      customType: "regex",
-      description: "Update versions in Dockerfile ARG statements marked by comment",
-      managerFilePatterns: ["/(?:^|/)Dockerfile$/"],
-      matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\sARG [\\w_]+=(?<currentValue>.+?)(?:\\s|$)",
-      ],
-    },
   ],
   assignees: ["Joker9944"],
   packageRules: [
@@ -60,12 +38,6 @@
     {
       matchUpdateTypes: ["minor", "patch", "pin", "digest"],
       automerge: true,
-    },
-    {
-      matchDatasources: ["docker"],
-      matchDepNames: ["talos", "kubelet"],
-      automerge: false,
-      dependencyDashboardApproval: true,
     },
   ],
 }

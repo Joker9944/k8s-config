@@ -19,8 +19,8 @@ bundle: schema.#Bundle & {
 	releases: [_nvidia]
 }
 
-// Talos registers the nvidia container runtime under this handler; the chart
-// only references the class, it does not create it.
+// The node's container runtime registers the nvidia handler; the chart only
+// references the class, it does not create it.
 _runtimeClass: {
 	apiVersion: "node.k8s.io/v1"
 	kind:       "RuntimeClass"

@@ -2,7 +2,7 @@
 
 The services nyx runs so that everything else can run.
 
-- [The nyx Talos cluster](talos-nyx.md) - node inventory, labelling, and talhelper rendering.
+- [The nyx cluster](cluster-nyx.md) - node inventory, the label and taint scheme, and what lives outside this repo.
 - [Networking and ingress](networking-and-ingress.md) - MetalLB, Traefik, and the three middleware chains.
 - [Certificates and PKI](certificates-and-pki.md) - the public ACME wildcard, the private CA chain, and how both are distributed.
 - [Identity — kanidm](identity-kanidm.md) - the OIDC provider, and why client registration is manual.

@@ -10,7 +10,3 @@ creation_rules:
   - path_regex: ^.*(?:/|\.)secret\.ya?ml
     age: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
     encrypted_regex: "^(data|stringData)$"
-  - path_regex: talenv.yaml
-    age: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h
-  - path_regex: talsecret.yaml
-    age: age1pee99j8wzwkgx98xcx7vqhj4ml2qh8farzanv07pmhrlr9x3uyxqp6dw8h

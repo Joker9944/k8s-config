@@ -4,11 +4,6 @@
   inputs = {
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # third party packages
-    talhelper = {
-      url = "github:budimanjojo/talhelper/v3.1.3"; # cSpell:ignore budimanjojo talhelper
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # helpers
     flake-utils.url = "github:numtide/flake-utils/main"; # cSpell:ignore numtide
     pre-commit-hooks = {
@@ -51,21 +46,6 @@
 
             shellHook = ''
               source <(helm completion bash)
-            '';
-          }
-          {
-            package = pkgs.talosctl;
-
-            shellHook = ''
-              export TALOSCONFIG="$PWD/clusters/nyx/talos/clusterconfig/talosconfig"
-              source <(talosctl completion bash)
-            '';
-          }
-          {
-            package = inputs.talhelper.packages.${system}.default;
-
-            shellHook = ''
-              source <(talhelper completion bash)
             '';
           }
           {

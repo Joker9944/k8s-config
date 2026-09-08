@@ -25,7 +25,7 @@ A `VolumeSnapshotClass` named `longhorn` backs volsync's `copyMethod: Snapshot`;
 
 Bulk media is not in Longhorn at all. Workloads mount it straight off the NAS with `type: nfs`, `server: 192.168.0.10`, paths under `/mnt/chronos/`. Nothing in this repo backs it up or provisions it — the NAS is external state.
 
-Pods that read it declare a preferred node affinity on `vonarx.online/nfs-host`, the label carried only by `nyx-worker-1` (see [the cluster](/platform/talos-nyx.md)).
+Pods that read it declare a preferred node affinity on `vonarx.online/nfs-host`, the label carried only by `nyx-worker-1` (see [the cluster](/platform/cluster-nyx.md)).
 
 # Garage
 

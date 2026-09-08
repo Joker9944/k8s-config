@@ -5,7 +5,7 @@ description: What the Nix flake provides — the envParts list that drives both 
 tags: [nix, flake, dev-shell, tooling]
 resource: flake.nix
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T20:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
 ---
 
 # The dev shell
@@ -14,18 +14,14 @@ generated: { by: claude-code/opus-5, at: 2026-09-08T20:30:00Z }
 
 Tools are declared **once** in the `envParts` list — a package plus an optional `shellHook` — and that one list is consumed twice: `devShells.k8s` takes the packages and concatenates the hooks, while `apps` maps each entry to `nix run .#<mainProgram>`. Adding a tool means adding one attrset.
 
-| Package                                    | Hook                                                                                     |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `kubectl`                                  | bash completion; `garage` alias running the CLI inside the `garage-0` pod                |
-| `fluxcd`                                   | bash completion                                                                          |
-| `kubernetes-helm`                          | bash completion                                                                          |
-| `talosctl`                                 | bash completion; exports `TALOSCONFIG=$PWD/clusters/nyx/talos/clusterconfig/talosconfig` |
-| `talhelper` (flake input, pinned `v3.1.3`) | bash completion                                                                          |
-| `sops`, `age`                              | —                                                                                        |
-| `cue`                                      | —                                                                                        |
-| `grafana-alloy`                            | —                                                                                        |
-
-`talhelper` is a pinned flake input rather than a nixpkgs package, so its version moves with `flake.lock` and the `nix-flake-update` workflow, not with the nixpkgs channel.
+| Package           | Hook                                                                      |
+| ----------------- | ------------------------------------------------------------------------- |
+| `kubectl`         | bash completion; `garage` alias running the CLI inside the `garage-0` pod |
+| `fluxcd`          | bash completion                                                           |
+| `kubernetes-helm` | bash completion                                                           |
+| `sops`, `age`     | —                                                                         |
+| `cue`             | —                                                                         |
+| `grafana-alloy`   | —                                                                         |
 
 `cue` is here because it has to be single-sourced: [the render](/architecture/cue-layout.md) and its scripts must all evaluate with one version, since two versions order YAML keys differently and would produce artifacts that differ byte for byte without differing in any resource. `generate.sh` takes `cue` from this shell; `checks.cueVet` takes the same one from the flake.
 

@@ -4,18 +4,18 @@ title: Repository layout
 description: The top-level trees of k8s-config, and why everything Kubernetes-shaped lives under one CUE module.
 tags: [gitops, layout]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
 ---
 
 # Trees
 
-| Path               | Holds                                                                                                                         |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `cue/`             | The CUE module — every workload, the schema, and the render. See [the CUE layout](/architecture/cue-layout.md).               |
-| `clusters/nyx/`    | The cluster's own definition: Talos machine config (`talos/`), the Flux bootstrap script, and the Flux entry point (`flux/`). |
-| `images/`, `pkgs/` | Nix derivations for the OCI images and helper programs this repo publishes.                                                   |
-| `.config/`         | cspell configuration.                                                                                                         |
-| `.okf/`            | This bundle.                                                                                                                  |
+| Path               | Holds                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cue/`             | The CUE module — every workload, the schema, and the render. See [the CUE layout](/architecture/cue-layout.md).                                        |
+| `clusters/nyx/`    | The Flux bootstrap script and the Flux entry point (`flux/`). Machine configuration is not in this repo — see [the cluster](/platform/cluster-nyx.md). |
+| `images/`, `pkgs/` | Nix derivations for the OCI images and helper programs this repo publishes.                                                                            |
+| `.config/`         | cspell configuration.                                                                                                                                  |
+| `.okf/`            | This bundle.                                                                                                                                           |
 
 # One module, one root
 

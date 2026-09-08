@@ -5,7 +5,6 @@ barmancloud
 buildmode
 ciphertext
 cloudnative
-clusterconfig
 cnpg
 crds
 creds
@@ -29,7 +28,6 @@ helmreleases
 HSTS
 initdb
 installsuffix
-iscsi
 jetstack
 kclient
 kubebuilder
@@ -50,11 +48,6 @@ serverstransport
 sigstore
 stdlib
 TAILNET
-talconfig
-talenv
-talhelper
-TALOSCONFIG
-talsecret
 Timoni
 toplevel
 traefikoidc

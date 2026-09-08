@@ -4,7 +4,7 @@ okf_version: "0.2"
 
 # k8s-config
 
-GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flux, serving `vonarx.online`. Start with [repository layout](architecture/repo-layout.md); it names every top-level tree and points at the CUE module everything else lives in.
+GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled by Flux, serving `vonarx.online`. Start with [repository layout](architecture/repo-layout.md); it names every top-level tree and points at the CUE module everything else lives in.
 
 # Architecture
 
@@ -15,7 +15,7 @@ GitOps configuration for **nyx** — a four-node Talos cluster reconciled by Flu
 
 # Platform
 
-- [The nyx Talos cluster](platform/talos-nyx.md) - node inventory, labelling, and talhelper rendering.
+- [The nyx cluster](platform/cluster-nyx.md) - node inventory, the label and taint scheme, and what lives outside this repo.
 - [Networking and ingress](platform/networking-and-ingress.md) - MetalLB, Traefik, and the three middleware chains.
 - [Certificates and PKI](platform/certificates-and-pki.md) - the public ACME wildcard, the private CA chain, and how both are distributed.
 - [Identity — kanidm](platform/identity-kanidm.md) - the OIDC provider, and why client registration is manual.

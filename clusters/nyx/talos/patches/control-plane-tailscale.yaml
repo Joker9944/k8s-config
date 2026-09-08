@@ -1,4 +1,0 @@
-cluster:
-  etcd:
-    advertisedSubnets:
-      - ${ADDRESS_SPACE}
