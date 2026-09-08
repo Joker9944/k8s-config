@@ -15,7 +15,7 @@ buildGoModule (finalAttrs: {
   src = stdenvNoCC.mkDerivation {
     name = "${finalAttrs.pname}-updated-src-${finalAttrs.version}";
 
-    outputHash = "sha256-+XXCkV3jC22IaZTTV6JLkKpZy7JmF0ZkySAiq6AA33I=";
+    outputHash = "sha256-uQmz3UOJIujPA7tDmmw/0gKDt95fbUxhzpM2QzloCHs=";
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
 
@@ -62,7 +62,7 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-Xv0cUdCITF0kumjFs4UzzypyMaarSWlEDJKGkjCPcTg=";
+  vendorHash = "sha256-rLFcZyO0iNIQ11qT4u/1sMykN08CyZiMeJLHrFW9FeI=";
 
   env = {
     CGO_ENABLED = "1";
