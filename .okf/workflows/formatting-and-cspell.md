@@ -4,7 +4,7 @@ title: Formatting and cspell
 description: The pre-commit suite declared in flake.nix, the generated config symlink that must not be edited, and how the spellchecker's dictionaries are assembled.
 tags: [pre-commit, formatting, cspell, nix]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-06T18:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T22:10:00Z }
 ---
 
 # Where the config lives
@@ -27,7 +27,7 @@ Run everything with `nix fmt`, which the flake's `formatter` output maps to `pre
 | Custom  | `sops-pre-commit` — see [secrets and SOPS](/workflows/secrets-sops.md)                                  |
 | Git     | `conform` — see [commit conventions](/workflows/commit-conventions.md)                                  |
 
-Prettier owns YAML formatting, which is most of this repository. `.editorconfig` fixes LF endings, a final newline, UTF-8, and 2-space indentation for YAML.
+Prettier owns YAML formatting but excludes `clusters/nyx/flux`: those manifests are flux's own output, and reformatting them turns every renovate bump into a whole-file diff. `.editorconfig` fixes LF endings, a final newline, UTF-8, and 2-space indentation for YAML.
 
 # cspell
 

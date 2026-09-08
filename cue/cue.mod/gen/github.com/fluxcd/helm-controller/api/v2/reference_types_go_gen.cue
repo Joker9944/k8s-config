@@ -4,6 +4,8 @@
 
 package v2
 
+import "github.com/fluxcd/pkg/apis/meta"
+
 // CrossNamespaceObjectReference contains enough information to let you locate
 // the typed referenced object at cluster level.
 #CrossNamespaceObjectReference: {
@@ -58,21 +60,4 @@ package v2
 }
 
 // DependencyReference defines a HelmRelease dependency on another HelmRelease resource.
-#DependencyReference: {
-	// Name of the referent.
-	// +required
-	name: string @go(Name)
-
-	// Namespace of the referent, defaults to the namespace of the HelmRelease
-	// resource object that contains the reference.
-	// +optional
-	namespace?: string @go(Namespace)
-
-	// ReadyExpr is a CEL expression that can be used to assess the readiness
-	// of a dependency. When specified, the built-in readiness check
-	// is replaced by the logic defined in the CEL expression.
-	// To make the CEL expression additive to the built-in readiness check,
-	// the feature gate `AdditiveCELDependencyCheck` must be set to `true`.
-	// +optional
-	readyExpr?: string @go(ReadyExpr)
-}
+#DependencyReference: meta.#DependencyReference

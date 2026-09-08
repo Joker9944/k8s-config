@@ -24,6 +24,10 @@ import (
 // repositories using GitHub App authentication
 #GitProviderGitHub: "github"
 
+// GitProviderAWS provides support for authentication to AWS CodeCommit
+// repositories using IAM credentials.
+#GitProviderAWS: "aws"
+
 // IncludeUnavailableCondition indicates one of the includes is not
 // available. For example, because it does not exist, or does not have an
 // Artifact.
@@ -53,7 +57,7 @@ import (
 
 // GitRepositorySpec specifies the required configuration to produce an
 // Artifact for a Git repository.
-// +kubebuilder:validation:XValidation:rule="!has(self.serviceAccountName) || (has(self.provider) && self.provider == 'azure')",message="serviceAccountName can only be set when provider is 'azure'"
+// +kubebuilder:validation:XValidation:rule="!has(self.serviceAccountName) || (has(self.provider) && (self.provider == 'azure' || self.provider == 'aws'))",message="serviceAccountName can only be set when provider is 'azure' or 'aws'"
 #GitRepositorySpec: {
 	// URL specifies the Git repository URL, it can be an HTTP/S or SSH address.
 	// +kubebuilder:validation:Pattern="^(http|https|ssh)://.*$"
@@ -69,14 +73,14 @@ import (
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
-	// Provider used for authentication, can be 'azure', 'github', 'generic'.
+	// Provider used for authentication, can be 'aws', 'azure', 'github', 'generic'.
 	// When not specified, defaults to 'generic'.
-	// +kubebuilder:validation:Enum=generic;azure;github
+	// +kubebuilder:validation:Enum=generic;aws;azure;github
 	// +optional
 	provider?: string @go(Provider)
 
 	// ServiceAccountName is the name of the Kubernetes ServiceAccount used to
-	// authenticate to the GitRepository. This field is only supported for 'azure' provider.
+	// authenticate to the GitRepository. This field is only supported for 'azure' and 'aws' providers.
 	// +optional
 	serviceAccountName?: string @go(ServiceAccountName)
 
@@ -200,7 +204,8 @@ import (
 	mode?: #GitVerificationMode @go(Mode)
 
 	// SecretRef specifies the Secret containing the public keys of trusted Git
-	// authors.
+	// authors. PGP public keys must be stored under keys with the .asc suffix,
+	// and SSH public keys must be stored under keys with the .sshpub suffix.
 	// +required
 	secretRef: meta.#LocalObjectReference @go(SecretRef)
 }

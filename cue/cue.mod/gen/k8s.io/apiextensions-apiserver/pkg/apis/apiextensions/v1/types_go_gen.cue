@@ -319,7 +319,8 @@ import (
 	#NamesAccepted |
 	#NonStructuralSchema |
 	#Terminating |
-	#KubernetesAPIApprovalPolicyConformant
+	#KubernetesAPIApprovalPolicyConformant |
+	#StorageMigrating
 
 // Established means that the resource has become active. A resource is established when all names are
 // accepted without a conflict for the first time. A resource stays established until deleted, even during
@@ -356,6 +357,10 @@ import (
 // See https://github.com/kubernetes/enhancements/pull/1111 for more details.
 #KubernetesAPIApprovalPolicyConformant: #CustomResourceDefinitionConditionType & "KubernetesAPIApprovalPolicyConformant"
 
+// StorageMigrating indicates that the underlying storage version of the CRD
+// is undergoing migration.
+#StorageMigrating: #CustomResourceDefinitionConditionType & "StorageMigrating"
+
 // CustomResourceDefinitionCondition contains details for the current condition of this pod.
 #CustomResourceDefinitionCondition: {
 	// type is the type of the condition. Types include Established, NamesAccepted and Terminating.
@@ -376,6 +381,13 @@ import (
 	// message is a human-readable message indicating details about last transition.
 	// +optional
 	message?: string @go(Message) @protobuf(5,bytes,opt)
+
+	// observedGeneration represents the .metadata.generation that the condition was set based upon.
+	// For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+	// with respect to the current state of the instance.
+	// +featureGate=CRDObservedGenerationTracking
+	// +optional
+	observedGeneration?: int64 @go(ObservedGeneration) @protobuf(6,varint,opt)
 }
 
 // CustomResourceDefinitionStatus indicates the state of the CustomResourceDefinition
@@ -400,6 +412,11 @@ import (
 	// +optional
 	// +listType=atomic
 	storedVersions?: [...string] @go(StoredVersions,[]string) @protobuf(3,bytes,rep)
+
+	// The generation observed by the CRD controller.
+	// +featureGate=CRDObservedGenerationTracking
+	// +optional
+	observedGeneration?: int64 @go(ObservedGeneration) @protobuf(4,varint,opt)
 }
 
 #CustomResourceCleanupFinalizer: "customresourcecleanup.apiextensions.k8s.io"

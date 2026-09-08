@@ -6,6 +6,19 @@ package v2
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+// CurrentSnapshotAPIVersion is the current API version for snapshots.
+// This is used to distinguish between snapshots created with different
+// helm-controller versions, allowing for graceful migration when the
+// digest calculation method changes. This will typically happen when
+// there is a major Helm version upgrade that introduces breaking
+// changes to the Chart or Release APIs. This version should be bumped
+// accordingly when such changes occur.
+#CurrentSnapshotAPIVersion: "v2"
+
+// SnapshotAPIVersion2 is the API version for snapshots created with
+// Helm v4 (Chart API v2), introduced in helm-controller v1.5.0.
+#SnapshotAPIVersion2: "v2"
+
 // snapshotStatusDeployed indicates that the release the snapshot was taken
 // from is currently deployed.
 _#snapshotStatusDeployed: "deployed"
@@ -18,6 +31,10 @@ _#snapshotStatusSuperseded: "superseded"
 // was taken from has failed.
 _#snapshotTestPhaseFailed: "Failed"
 
+// snapshotTestPhaseSucceeded indicates that the test of the release the snapshot
+// was taken from has succeeded.
+_#snapshotTestPhaseSucceeded: "Succeeded"
+
 // Snapshots is a list of Snapshot objects.
 #Snapshots: [...#Snapshot]
 
@@ -25,8 +42,8 @@ _#snapshotTestPhaseFailed: "Failed"
 // as managed by the controller.
 #Snapshot: {
 	// APIVersion is the API version of the Snapshot.
-	// Provisional: when the calculation method of the Digest field is changed,
-	// this field will be used to distinguish between the old and new methods.
+	// When the calculation method of the Digest field is changed, this
+	// field will be used to distinguish between the old and new methods.
 	// +optional
 	apiVersion?: string @go(APIVersion)
 
@@ -50,6 +67,10 @@ _#snapshotTestPhaseFailed: "Failed"
 	// Status is the current state of the release.
 	// +required
 	status: string @go(Status)
+
+	// Action is the action that resulted in this snapshot being created.
+	// +optional
+	action?: #ReleaseAction @go(Action)
 
 	// ChartName is the chart name of the release object in storage.
 	// +required

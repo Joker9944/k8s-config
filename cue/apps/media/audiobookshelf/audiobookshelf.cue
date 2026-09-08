@@ -54,10 +54,6 @@ _audiobookshelf: schema.#AppRelease & {
 					supplementalGroups: [568]
 					seccompProfile: type: "RuntimeDefault"
 				}
-				affinity: nodeAffinity: preferredDuringSchedulingIgnoredDuringExecution: [{
-					weight: 10
-					preference: matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
-				}]
 			}
 			containers: audiobookshelf: schema.#Hardened & {
 				image: {
@@ -109,10 +105,7 @@ _audiobookshelf: schema.#AppRelease & {
 				globalMounts: [{path: pathMetadata}]
 				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-metadata"}
 			}
-			media: {
-				type:   "nfs"
-				server: "192.168.0.10"
-				path:   "/mnt/chronos/media-data"
+			media: schema.#MediaData & {
 				globalMounts: [{path: "/audiobooks"}]
 			}
 			tmp: type: "emptyDir"

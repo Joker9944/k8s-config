@@ -44,7 +44,10 @@ _jellyfin: schema.#AppRelease & {
 					supplementalGroups: [44, 107, 568]
 					seccompProfile: type: "RuntimeDefault"
 				}
-				tolerations: [{key: "nvidia.com/gpu", operator: "Exists", effect: "NoSchedule"}]
+				tolerations: [
+					{key: "nvidia.com/gpu", operator: "Exists", effect: "NoSchedule"},
+					schema.#Reserved.storage,
+				]
 				affinity: nodeAffinity: preferredDuringSchedulingIgnoredDuringExecution: [{
 					weight: 10
 					preference: matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
@@ -106,10 +109,7 @@ _jellyfin: schema.#AppRelease & {
 			}
 			transcodes: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/config/transcodes"}]}
 			cache: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/cache"}]}
-			media: {
-				type:   "nfs"
-				server: "192.168.0.10"
-				path:   "/mnt/chronos/media-data"
+			media: schema.#MediaData & {
 				advancedMounts: jellyfin: jellyfin: [{path: "/mnt/media-data"}]
 			}
 			tmp: type: "emptyDir"

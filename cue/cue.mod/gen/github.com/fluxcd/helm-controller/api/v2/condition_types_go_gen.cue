@@ -17,6 +17,10 @@ package v2
 // latest desired state.
 #RemediatedCondition: "Remediated"
 
+// DriftedCondition represents the status of the Helm release drift detection,
+// indicating that the deployed release has drifted from the desired state.
+#DriftedCondition: "Drifted"
+
 // InstallSucceededReason represents the fact that the Helm install for the
 // HelmRelease succeeded.
 #InstallSucceededReason: "InstallSucceeded"
@@ -64,3 +68,11 @@ package v2
 // DependencyNotReadyReason represents the fact that
 // one of the dependencies is not ready.
 #DependencyNotReadyReason: "DependencyNotReady"
+
+// DriftDetectedReason represents the fact that drift has been detected in the
+// Helm release compared to the expected state.
+#DriftDetectedReason: "DriftDetected"
+
+// NoDriftDetectedReason represents the fact that no drift has been detected in
+// the Helm release compared to the expected state.
+#NoDriftDetectedReason: "NoDriftDetected"

@@ -2,6 +2,15 @@
 
 ## 2026-09-08
 
+- Renovate's flux manager is enabled and owns `gotk-components.yaml`, which `generate.sh` also reads — [images, CI and dependency updates](/workflows/images-and-ci.md)
+- `flux bootstrap` and renovate both write `gotk-components.yaml`; `--version` is what keeps them from fighting — [Flux topology](/architecture/flux-topology.md)
+- Prettier excludes `clusters/nyx/flux` so flux's own manifests survive a bump intact — [formatting and cspell](/workflows/formatting-and-cspell.md)
+- Node inventory is four k3s nodes (`tars`, `kipp`, `case`, `mother`); the capacity and performance labels are gone — [the nyx cluster](/platform/cluster-nyx.md)
+- `mother` is reserved with `vonarx.online/reserved=storage:NoSchedule`, retiring the `weak-node` taint — [the nyx cluster](/platform/cluster-nyx.md)
+- `#Reserved` and `#MediaData` keep the taint and the NFS address out of the workload packages — [CUE layout](/architecture/cue-layout.md)
+- Media NFS moved to `mother` at `192.168.0.24`; only jellyfin still reads the `nfs-host` preference — [storage](/platform/storage.md)
+- volsync exposes no mover toleration, which a reserved node makes load-bearing — [backup and restore](/platform/backup-and-restore.md)
+- `abiotic-factor-server` and `steamcmd` retired, taking the flake's only unfree allowance with them — [images, CI and dependency updates](/workflows/images-and-ci.md)
 - Machine configuration moved to `nix-config`; the cluster concept keeps only the node facts the manifests schedule against — [the nyx cluster](/platform/cluster-nyx.md)
 - `clusters/nyx/` is the Flux entry point and nothing else — [repo layout](/architecture/repo-layout.md)
 - The dev shell drops `talosctl` and `talhelper`; the flake has no third-party inputs left — [development environment](/workflows/dev-environment.md)

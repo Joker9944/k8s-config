@@ -210,3 +210,33 @@ import "list"
 		}
 	}
 }
+
+// ------------------------------------------------------------------ scheduling
+// `mother` carries `vonarx.online/reserved=storage:NoSchedule`, keeping its
+// capacity for ZFS and NFS. Infrastructure that has to cover every node tolerates
+// the key whatever a node is reserved for; a workload deliberately placed there
+// matches the value, so `grep` finds every such placement.
+
+#Reserved: {
+	key:    "vonarx.online/reserved"
+	value:  "storage"
+	effect: "NoSchedule"
+
+	any: {"key": key, operator: "Exists", "effect": effect}
+	storage: {"key": key, operator: "Equal", "value": value, "effect": effect}
+
+	// longhorn configures its system-managed components with a taint string
+	// rather than a pod-spec toleration
+	taint: "\(key)=\(value):\(effect)"
+}
+
+// ------------------------------------------------------------------ media data
+// The NFS export every media workload reads, in one place because the address
+// moves with the host. Open, so a workload can add its own mounts.
+
+#MediaData: {
+	type:   "nfs"
+	server: "192.168.0.24"
+	path:   "/mnt/chronos/media-data"
+	...
+}

@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -49,4 +49,5 @@ Postgres images come from upstream: `cue/infrastructure/controllers/cnpg-config`
 
 - The `ObjectStore` sets `AWS_REQUEST_CHECKSUM_CALCULATION` and `AWS_RESPONSE_CHECKSUM_VALIDATION` to `when_required` in `instanceSidecarConfiguration`. This is a compatibility workaround for non-AWS S3 ([plugin-barman-cloud#541](https://github.com/cloudnative-pg/plugin-barman-cloud/issues/541)); removing it breaks Storj.
 - The archiving `serverName` (`servarr-cnpg`) and the recovery `serverName` (`servarr-cnpg-restored-5`) are different, hand-maintained strings. The trailing counter is bumped manually per restore generation — a restore does not read from the path the live cluster writes to.
+- `ReplicationSource` exposes `moverAffinity` but no toleration field, and the chart's `tolerations` reach only the operator Deployment. Whether a mover can run on a `NoSchedule` node is therefore not something the manifests can state — it matters for jellyfin, whose volume lives on the reserved [`mother`](/platform/cluster-nyx.md).
 - volsync and CNPG are independent. An app with both a PVC and a database needs both restored, and neither system knows about the other's point in time.

@@ -155,10 +155,7 @@ _qbittorrent: schema.#AppRelease & {
 				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-config"}
 				advancedMounts: qbittorrent: qbittorrent: [{path: "/config"}]
 			}
-			media: {
-				type:   "nfs"
-				server: "192.168.0.10"
-				path:   "/mnt/chronos/media-data"
+			media: schema.#MediaData & {
 				advancedMounts: qbittorrent: qbittorrent: [{path: "/mnt/media-data"}]
 			}
 		}

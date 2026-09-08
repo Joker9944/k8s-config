@@ -83,7 +83,7 @@ _#defaultMaxHistory: 5
 	// references to HelmRelease resources that must be ready before this HelmRelease
 	// can be reconciled.
 	// +optional
-	dependsOn?: [...#DependencyReference] @go(DependsOn,[]DependencyReference)
+	dependsOn?: [...meta.#DependencyReference] @go(DependsOn,[]DependencyReference)
 
 	// Timeout is the time to wait for any individual Kubernetes operation (like Jobs
 	// for hooks) during the performance of a Helm action. Defaults to '5m0s'.
@@ -163,6 +163,28 @@ _#defaultMaxHistory: 5
 	// of their definition.
 	// +optional
 	postRenderers?: [...#PostRenderer] @go(PostRenderers,[]PostRenderer)
+
+	// PostRenderStrategy defines the strategy for sending hooks to post-renderers.
+	// Valid values are 'nohooks' (hooks not sent to post-renderers, Helm 3 behavior),
+	// 'combined' (hooks and templates sent together, Helm 4 default), and 'separate'
+	// (hooks and templates sent in separate streams, Helm 4.2 opt-in).
+	// Defaults to 'combined', or 'nohooks' when the UseHelm3Defaults feature gate is enabled.
+	// +kubebuilder:validation:Enum=nohooks;combined;separate
+	// +optional
+	postRenderStrategy?: #PostRenderStrategy @go(PostRenderStrategy)
+
+	// WaitStrategy defines Helm's wait strategy for waiting for applied
+	// resources to become ready.
+	// +optional
+	waitStrategy?: null | #WaitStrategy @go(WaitStrategy,*WaitStrategy)
+
+	// HealthCheckExprs is a list of healthcheck expressions for evaluating the
+	// health of custom resources using Common Expression Language (CEL).
+	// The expressions are evaluated only when the specific Helm action
+	// taking place has wait enabled, i.e. DisableWait is false, and the
+	// 'poller' WaitStrategy is used.
+	// +optional
+	healthCheckExprs?: [...kustomize.#CustomHealthCheck] @go(HealthCheckExprs,[]kustomize.CustomHealthCheck)
 }
 
 #ValuesReference: meta.#ValuesReference
@@ -198,6 +220,26 @@ _#defaultMaxHistory: 5
 	// +optional
 	kustomize?: null | #Kustomize @go(Kustomize,*Kustomize)
 }
+
+// PostRenderStrategy represents the strategy for sending hooks to post-renderers.
+#PostRenderStrategy: string // #enumPostRenderStrategy
+
+#enumPostRenderStrategy:
+	#PostRenderStrategyNoHooks |
+	#PostRenderStrategyCombined |
+	#PostRenderStrategySeparate
+
+// PostRenderStrategyNoHooks is the Helm 3 behavior where hooks are not sent
+// to post-renderers.
+#PostRenderStrategyNoHooks: #PostRenderStrategy & "nohooks"
+
+// PostRenderStrategyCombined is the Helm 4 default behavior where both hooks
+// and templates are sent to post-renderers in the same stream.
+#PostRenderStrategyCombined: #PostRenderStrategy & "combined"
+
+// PostRenderStrategySeparate is the Helm 4.2 opt-in behavior where hooks and
+// templates are sent to post-renderers in separate streams.
+#PostRenderStrategySeparate: #PostRenderStrategy & "separate"
 
 // DriftDetectionMode represents the modes in which a controller can detect and
 // handle differences between the manifest in the Helm storage and the resources
@@ -336,6 +378,34 @@ _#defaultMaxHistory: 5
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 }
 
+// WaitStrategyName is a strategy for waiting for resources to be ready.
+#WaitStrategyName: string // #enumWaitStrategyName
+
+#enumWaitStrategyName:
+	#WaitStrategyPoller |
+	#WaitStrategyLegacy
+
+// WaitStrategyPoller is the strategy for polling resource statuses via kstatus.
+#WaitStrategyPoller: #WaitStrategyName & "poller"
+
+// WaitStrategyLegacy is the legacy strategy for waiting for resources to be ready
+// used in Helm v3.
+#WaitStrategyLegacy: #WaitStrategyName & "legacy"
+
+// WaitStrategy defines Helm's wait strategy for waiting for applied
+// resources to become ready.
+#WaitStrategy: {
+	// Name is Helm's wait strategy for waiting for applied resources to
+	// become ready. One of 'poller' or 'legacy'. The 'poller' strategy uses
+	// kstatus to poll resource statuses, while the 'legacy' strategy uses
+	// Helm v3's waiting logic.
+	// Defaults to 'poller', or to 'legacy' when UseHelm3Defaults feature
+	// gate is enabled.
+	// +kubebuilder:validation:Enum=poller;legacy
+	// +required
+	name: #WaitStrategyName @go(Name)
+}
+
 // Remediation defines a consistent interface for InstallRemediation and
 // UpgradeRemediation.
 // +kubebuilder:object:generate=false
@@ -363,7 +433,8 @@ _#defaultMaxHistory: 5
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
 	// Strategy defines the install strategy to use for this HelmRelease.
-	// Defaults to 'RemediateOnFailure'.
+	// Defaults to 'RemediateOnFailure', or 'RetryOnFailure' when the
+	// DefaultToRetryOnFailure feature gate is enabled.
 	// +optional
 	strategy?: null | #InstallStrategy @go(Strategy,*InstallStrategy)
 
@@ -441,6 +512,11 @@ _#defaultMaxHistory: 5
 	// On uninstall, the namespace will not be garbage collected.
 	// +optional
 	createNamespace?: bool @go(CreateNamespace)
+
+	// ServerSideApply enables server-side apply for resources during install.
+	// Defaults to true (or false when UseHelm3Defaults feature gate is enabled).
+	// +optional
+	serverSideApply?: null | bool @go(ServerSideApply,*bool)
 }
 
 // InstallStrategy holds the configuration for Helm install strategy.
@@ -500,6 +576,37 @@ _#defaultMaxHistory: 5
 // and keep (do not delete) CRDs which no longer exist in the current release.
 #CreateReplace: #CRDsPolicy & "CreateReplace"
 
+// ServerSideApplyMode defines the server-side apply mode for Helm upgrade and
+// rollback actions.
+#ServerSideApplyMode: string // #enumServerSideApplyMode
+
+#enumServerSideApplyMode:
+	#ServerSideApplyEnabled |
+	#ServerSideApplyDisabled |
+	#ServerSideApplyAuto
+
+// ServerSideApplyEnabled enables server-side apply for resources.
+#ServerSideApplyEnabled: #ServerSideApplyMode & "enabled"
+
+// ServerSideApplyDisabled disables server-side apply for resources.
+#ServerSideApplyDisabled: #ServerSideApplyMode & "disabled"
+
+// ServerSideApplyAuto uses the release's previous apply method.
+#ServerSideApplyAuto: #ServerSideApplyMode & "auto"
+
+// ChartNameChangeStrategy defines the strategy to use when a Helm chart name changes
+#ChartNameChangeStrategy: string // #enumChartNameChangeStrategy
+
+#enumChartNameChangeStrategy:
+	#ChartNameChangeStrategyInPlaceUpdate |
+	#ChartNameChangeStrategyReinstall
+
+// ChartNameChangeStrategyInPlaceUpdate updates the Helm release in place.
+#ChartNameChangeStrategyInPlaceUpdate: #ChartNameChangeStrategy & "InPlaceUpdate"
+
+// ChartNameChangeStrategyReinstall reinstalls the Helm release, uninstalling the existing Helm release.
+#ChartNameChangeStrategyReinstall: #ChartNameChangeStrategy & "Reinstall"
+
 // Upgrade holds the configuration for Helm upgrade actions for this
 // HelmRelease.
 #Upgrade: {
@@ -512,7 +619,8 @@ _#defaultMaxHistory: 5
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
 	// Strategy defines the upgrade strategy to use for this HelmRelease.
-	// Defaults to 'RemediateOnFailure'.
+	// Defaults to 'RemediateOnFailure', or 'RetryOnFailure' when the
+	// DefaultToRetryOnFailure feature gate is enabled.
 	// +optional
 	strategy?: null | #UpgradeStrategy @go(Strategy,*UpgradeStrategy)
 
@@ -550,7 +658,10 @@ _#defaultMaxHistory: 5
 	// +optional
 	disableSchemaValidation?: bool @go(DisableSchemaValidation)
 
-	// Force forces resource updates through a replacement strategy.
+	// Force forces resource updates through a replacement strategy
+	// that avoids 3-way merge conflicts on client-side apply.
+	// This field is ignored for server-side apply (which always
+	// forces conflicts with other field managers).
 	// +optional
 	force?: bool @go(Force)
 
@@ -584,6 +695,25 @@ _#defaultMaxHistory: 5
 	// +kubebuilder:validation:Enum=Skip;Create;CreateReplace
 	// +optional
 	crds?: #CRDsPolicy @go(CRDs)
+
+	// ServerSideApply enables server-side apply for resources during upgrade.
+	// Can be "enabled", "disabled", or "auto".
+	// When "auto", server-side apply usage will be based on the release's previous usage.
+	// Defaults to "auto".
+	// +kubebuilder:validation:Enum=enabled;disabled;auto
+	// +optional
+	serverSideApply?: #ServerSideApplyMode @go(ServerSideApply)
+
+	// ChartNameChangeStrategy defines the strategy to use when a Helm chart name changes.
+	// Valid values are 'Reinstall' or 'InPlaceUpdate'. Defaults to 'Reinstall' if omitted.
+	//
+	// Reinstall: Reinstall the Helm release, uninstalling the existing Helm release.
+	//
+	// InPlaceUpdate: Update the Helm release in place.
+	//
+	// +kubebuilder:validation:Enum=InPlaceUpdate;Reinstall
+	// +optional
+	chartNameChangeStrategy?: #ChartNameChangeStrategy @go(ChartNameChangeStrategy)
 }
 
 // UpgradeStrategy holds the configuration for Helm upgrade strategy.
@@ -721,11 +851,22 @@ _#defaultMaxHistory: 5
 	// +optional
 	disableHooks?: bool @go(DisableHooks)
 
-	// Recreate performs pod restarts for the resource if applicable.
+	// Recreate performs pod restarts for any managed workloads.
+	//
+	// Deprecated: This behavior was deprecated in Helm 3:
+	//   - Deprecation: https://github.com/helm/helm/pull/6463
+	//   - Removal: https://github.com/helm/helm/pull/31023
+	// After helm-controller was upgraded to the Helm 4 SDK,
+	// this field is no longer functional and will print a
+	// warning if set to true. It will also be removed in a
+	// future release.
 	// +optional
 	recreate?: bool @go(Recreate)
 
-	// Force forces resource updates through a replacement strategy.
+	// Force forces resource updates through a replacement strategy
+	// that avoids 3-way merge conflicts on client-side apply.
+	// This field is ignored for server-side apply (which always
+	// forces conflicts with other field managers).
 	// +optional
 	force?: bool @go(Force)
 
@@ -733,6 +874,14 @@ _#defaultMaxHistory: 5
 	// rollback action when it fails.
 	// +optional
 	cleanupOnFail?: bool @go(CleanupOnFail)
+
+	// ServerSideApply enables server-side apply for resources during rollback.
+	// Can be "enabled", "disabled", or "auto".
+	// When "auto", server-side apply usage will be based on the release's previous usage.
+	// Defaults to "auto".
+	// +kubebuilder:validation:Enum=enabled;disabled;auto
+	// +optional
+	serverSideApply?: #ServerSideApplyMode @go(ServerSideApply)
 }
 
 // Uninstall holds the configuration for Helm uninstall actions for this
@@ -773,13 +922,25 @@ _#defaultMaxHistory: 5
 
 #enumReleaseAction:
 	#ReleaseActionInstall |
-	#ReleaseActionUpgrade
+	#ReleaseActionUpgrade |
+	#ReleaseActionRollback |
+	#ReleaseActionUninstall |
+	#ReleaseActionUninstallRemediation
 
 // ReleaseActionInstall represents a Helm install action.
 #ReleaseActionInstall: #ReleaseAction & "install"
 
 // ReleaseActionUpgrade represents a Helm upgrade action.
 #ReleaseActionUpgrade: #ReleaseAction & "upgrade"
+
+// ReleaseActionRollback represents a Helm rollback action.
+#ReleaseActionRollback: #ReleaseAction & "rollback"
+
+// ReleaseActionUninstall represents a Helm uninstall action.
+#ReleaseActionUninstall: #ReleaseAction & "uninstall"
+
+// ReleaseActionUninstallRemediation represents a Helm uninstall action for remediation.
+#ReleaseActionUninstallRemediation: #ReleaseAction & "uninstall-remediation"
 
 // HelmReleaseStatus defines the observed state of a HelmRelease.
 #HelmReleaseStatus: {
@@ -823,6 +984,11 @@ _#defaultMaxHistory: 5
 	// up to the last successfully completed release.
 	// +optional
 	history?: #Snapshots @go(History)
+
+	// Inventory contains the list of Kubernetes resource object references
+	// that have been applied for this release.
+	// +optional
+	inventory?: null | #ResourceInventory @go(Inventory,*ResourceInventory)
 
 	// LastAttemptedReleaseAction is the last release action performed for this
 	// HelmRelease. It is used to determine the active retry or remediation

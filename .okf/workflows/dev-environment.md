@@ -5,7 +5,7 @@ description: What the Nix flake provides — the envParts list that drives both 
 tags: [nix, flake, dev-shell, tooling]
 resource: flake.nix
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
 ---
 
 # The dev shell
@@ -32,9 +32,7 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 
 # Flake outputs
 
-- `packages` — three programs (`gomod-cap`, `gotify-slack-webhook`, `sops-pre-commit`), six OCI images, and one `cue-render-<tier>` per tier plus `cue-render-bootstrap`.
+- `packages` — three programs (`gomod-cap`, `gotify-slack-webhook`, `sops-pre-commit`), four OCI images, and one `cue-render-<tier>` per tier plus `cue-render-bootstrap`.
 - `apps` — generated from `envParts`.
 - `checks.default` = `checks.preCommitHooks`; `checks.cueVet` vets the CUE module, so `nix flake check` covers both.
 - `formatter` — a wrapper running `pre-commit run --all-files` against the generated config, so `nix fmt` runs the whole hook suite rather than a formatter.
-
-`config.allowUnfreePredicate` permits exactly one package, `steamcmd`, needed by the abiotic-factor server image.

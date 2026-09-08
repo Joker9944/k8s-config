@@ -40,7 +40,25 @@ _nvidia: schema.#Release & {
 
 	values: {
 		runtimeClassName: _runtimeClass.metadata.name
-		gfd: enabled:              true
-		nfd: enableNodeFeatureApi: true
+		gfd: enabled: true
+		nfd: {
+			enableNodeFeatureApi: true
+			// the feature-discovery worker labels the node, so it has to reach the
+			// reserved one too
+			worker: tolerations: [
+				{key: "node-role.kubernetes.io/master", operator: "Equal", value: "", effect: "NoSchedule"},
+				{key: "nvidia.com/gpu", operator: "Equal", value: "present", effect: "NoSchedule"},
+				schema.#Reserved.any,
+			]
+		}
+
+		// the device-plugin, gfd and mps-control DaemonSets share this list. Helm
+		// replaces lists rather than merging them, so the chart's own two entries
+		// have to be restated.
+		tolerations: [
+			{key: "CriticalAddonsOnly", operator: "Exists"},
+			{key: "nvidia.com/gpu", operator: "Exists", effect: "NoSchedule"},
+			schema.#Reserved.any,
+		]
 	}
 }

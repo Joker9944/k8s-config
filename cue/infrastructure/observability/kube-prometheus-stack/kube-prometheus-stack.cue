@@ -135,6 +135,10 @@ _kps: schema.#Release & {
 			}
 		}
 
+		// the node exporter is a DaemonSet; without this a reserved node reports
+		// no metrics at all
+		"prometheus-node-exporter": tolerations: [schema.#Reserved.any]
+
 		// WORKAROUND both disabled: security prohibits scraping these endpoints
 		// directly
 		kubeScheduler: enabled:         false

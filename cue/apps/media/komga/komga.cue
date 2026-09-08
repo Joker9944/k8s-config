@@ -54,10 +54,6 @@ _komga: schema.#AppRelease & {
 					supplementalGroups: [568]
 					seccompProfile: type: "RuntimeDefault"
 				}
-				affinity: nodeAffinity: preferredDuringSchedulingIgnoredDuringExecution: [{
-					weight: 10
-					preference: matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
-				}]
 			}
 			// TODO Probes
 			// TODO Resources
@@ -104,11 +100,7 @@ _komga: schema.#AppRelease & {
 				name: _configOverlay.name
 				globalMounts: [{path: "/config/application.yml", subPath: "application.yml"}]
 			}
-			data: {
-				type:   "nfs"
-				server: "192.168.0.10"
-				path:   "/mnt/chronos/media-data"
-			}
+			data: schema.#MediaData
 		}
 	}
 }

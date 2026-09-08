@@ -12,6 +12,7 @@ import (
 #HelmChartKind: "HelmChart"
 
 // HelmChartSpec specifies the desired state of a Helm chart.
+// +kubebuilder:validation:XValidation:rule="!has(self.verify) || self.sourceRef.kind == 'HelmRepository'",message="spec.verify is only supported when spec.sourceRef.kind is 'HelmRepository'"
 #HelmChartSpec: {
 	// Chart is the name or path the Helm chart is available at in the
 	// SourceRef.
@@ -69,7 +70,7 @@ import (
 	// This field is only supported when using HelmRepository source with spec.type 'oci'.
 	// Chart dependencies, which are not bundled in the umbrella chart artifact, are not verified.
 	// +optional
-	verify?: null | #OCIRepositoryVerification @go(Verify,*OCIRepositoryVerification)
+	verify?: null | #HelmChartVerification @go(Verify,*HelmChartVerification)
 }
 
 // ReconcileStrategyChartVersion reconciles when the version of the Helm chart is different.
@@ -125,7 +126,7 @@ import (
 
 	// URL is the dynamic fetch link for the latest Artifact.
 	// It is provided on a "best effort" basis, and using the precise
-	// BucketStatus.Artifact data is recommended.
+	// HelmChartStatus.Artifact data is recommended.
 	// +optional
 	url?: string @go(URL)
 

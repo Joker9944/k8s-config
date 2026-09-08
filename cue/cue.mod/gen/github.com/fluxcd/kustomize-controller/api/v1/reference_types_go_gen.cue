@@ -4,6 +4,8 @@
 
 package v1
 
+import "github.com/fluxcd/pkg/apis/meta"
+
 // CrossNamespaceSourceReference contains enough information to let you locate the
 // typed Kubernetes resource object at cluster level.
 #CrossNamespaceSourceReference: {
@@ -27,21 +29,4 @@ package v1
 }
 
 // DependencyReference defines a Kustomization dependency on another Kustomization resource.
-#DependencyReference: {
-	// Name of the referent.
-	// +required
-	name: string @go(Name)
-
-	// Namespace of the referent, defaults to the namespace of the Kustomization
-	// resource object that contains the reference.
-	// +optional
-	namespace?: string @go(Namespace)
-
-	// ReadyExpr is a CEL expression that can be used to assess the readiness
-	// of a dependency. When specified, the built-in readiness check
-	// is replaced by the logic defined in the CEL expression.
-	// To make the CEL expression additive to the built-in readiness check,
-	// the feature gate `AdditiveCELDependencyCheck` must be set to `true`.
-	// +optional
-	readyExpr?: string @go(ReadyExpr)
-}
+#DependencyReference: meta.#DependencyReference

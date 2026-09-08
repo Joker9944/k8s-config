@@ -2,10 +2,6 @@
 
 set -e
 
-kubectl taint node \
-	nyx-worker-1 \
-	vonarx.online/weak-node=true:PreferNoSchedule
-
 kubectl create namespace flux-system || true
 
 echo "Enter age secret key"

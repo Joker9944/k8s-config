@@ -36,9 +36,12 @@ _alloy: schema.#Release & {
 	// The CRDs come with the loki release, which is why this one installs none.
 	// The chart is pointed at the ConfigMap above rather than templating its own;
 	// upstream asks for exactly this when the config is managed outside the chart.
-	values: alloy: configMap: {
-		create: false
-		name:   _config.name
-		key:    "config.alloy"
+	values: {
+		alloy: configMap: {
+			create: false
+			name:   _config.name
+			key:    "config.alloy"
+		}
+		controller: tolerations: [schema.#Reserved.any]
 	}
 }

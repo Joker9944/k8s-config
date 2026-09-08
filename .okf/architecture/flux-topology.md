@@ -5,7 +5,7 @@ description: The three-level Kustomization graph that reconciles nyx, and the or
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T22:10:00Z }
 ---
 
 # Three levels
@@ -45,4 +45,5 @@ Level-3 `dependsOn` edges exist where a workload needs a CRD, a Secret or a Stor
 
 - **Only level-3 Kustomizations can decrypt.** `#Tier.sync` is what sets `decryption`, so a SOPS file must live in a bundle directory inside the artifact, never at the artifact root.
 - **A generated `kustomization.yaml` walks subdirectories.** Where `spec.path` holds no `kustomization.yaml`, kustomize-controller generates one — and it collects manifests from nested directories too, verified with `flux build`. This is why the render puts the level-3 manifests in `sync/` rather than at the artifact root: from the root, the level-2 Kustomization would apply every bundle a second time, without the decryption only level 3 carries.
+- **`gotk-components.yaml` has two writers.** Renovate bumps the controller images in place; `flux bootstrap` regenerates the whole file from whatever version its CLI asks for. Re-running bootstrap without `--version` matching what is committed silently reverts the upgrade — the flag downloads the manifests for the version named, so the dev shell's CLI need not match.
 - **`clusters/nyx/bootstrap.sh` is stale.** It bootstraps `--branch=cluster-migration` while `gotk-sync.yaml` tracks `main`. The script is a one-time record of how the cluster was stood up, not a re-runnable procedure.

@@ -160,10 +160,7 @@ _cnpgSecretRef: {
 						size:       "1Gi"
 						globalMounts: [{path: "/config/MediaCover"}]
 					}
-					"media": {
-						type:   "nfs"
-						server: "192.168.0.10"
-						path:   "/mnt/chronos/media-data"
+					"media": schema.#MediaData & {
 						globalMounts: [{path: "/mnt/media-data"}]
 					}
 				}

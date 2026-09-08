@@ -38,6 +38,7 @@ _traefik: schema.#Release & {
 	values: {
 		// a DaemonSet so externalTrafficPolicy: Local routes node-locally
 		deployment: kind: "DaemonSet"
+		tolerations: [schema.#Reserved.any]
 
 		ingressClass: enabled: false
 

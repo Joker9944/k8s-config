@@ -20,10 +20,7 @@
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          config.allowUnfreePredicate = pkg: lib.elem (lib.getName pkg) [ "steamcmd" ];
-        };
+        pkgs = import nixpkgs { inherit system; };
 
         envParts = [
           {
@@ -74,8 +71,6 @@
           cue-render-bootstrap = cueRender.bootstrap;
 
           # images
-          abiotic-factor-server = pkgs.callPackage ./images/abiotic-factor-server { flake = self; };
-          steamcmd = pkgs.callPackage ./images/steamcmd { flake = self; };
           base = pkgs.callPackage ./images/base.nix { flake = self; };
           gotify-custom = pkgs.callPackage ./images/gotify-custom.nix { flake = self; };
           jinja-cli = pkgs.callPackage ./images/jinja-cli.nix { flake = self; };

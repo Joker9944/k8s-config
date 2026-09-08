@@ -25,5 +25,8 @@ _metallb: schema.#Release & {
 	sourceName: "metallb"
 	interval:   "5m"
 	crds:       true
-	hasValues:  false
+
+	// the speaker is a DaemonSet and has to announce from every node, reserved
+	// or not
+	values: speaker: tolerations: [schema.#Reserved.any]
 }

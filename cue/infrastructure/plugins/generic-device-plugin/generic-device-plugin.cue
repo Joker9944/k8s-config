@@ -42,7 +42,7 @@ _genericDevicePlugin: schema.#AppRelease & {
 					requests: {cpu: "50m", memory: "10Mi"}
 					limits: {cpu: "50m", memory: "20Mi"}
 				}
-				// advertises /dev/net/tun to the qbittorrent and abiotic-factor pods
+				// advertises /dev/net/tun to the qbittorrent pod
 				args: ["--device", """
 					name: tun
 					groups:

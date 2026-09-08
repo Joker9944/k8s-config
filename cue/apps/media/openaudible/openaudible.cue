@@ -94,10 +94,7 @@ _openaudible: schema.#AppRelease & {
 				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-config"}
 				globalMounts: [{path: "/config/OpenAudible"}]
 			}
-			media: {
-				type:   "nfs"
-				server: "192.168.0.10"
-				path:   "/mnt/chronos/media-data"
+			media: schema.#MediaData & {
 				globalMounts: [{path: "/mnt/media-data"}]
 			}
 			cache: {type: "emptyDir", globalMounts: [{path: "/config/.cache"}]}

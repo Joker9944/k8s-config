@@ -126,8 +126,8 @@ import apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 	apiVersion: string @go(APIVersion)
 
 	// Kind of the custom resource under evaluation.
-	// +required
-	kind: string @go(Kind)
+	// +optional
+	kind?: string @go(Kind)
 
 	#HealthCheckExpressions
 }

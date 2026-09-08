@@ -23,6 +23,27 @@ package meta
 	namespace?: string @go(Namespace)
 }
 
+// DependencyReference contains enough information to locate the referenced Kubernetes resource object
+// and optional CEL expression to assess its readiness.
+#DependencyReference: {
+	// Name of the referent.
+	// +required
+	name: string @go(Name)
+
+	// Namespace of the referent, defaults to the namespace of the resource
+	// object that contains the reference.
+	// +optional
+	namespace?: string @go(Namespace)
+
+	// ReadyExpr is a CEL expression that can be used to assess the readiness
+	// of a dependency. When specified, the built-in readiness check
+	// is replaced by the logic defined in the CEL expression.
+	// To make the CEL expression additive to the built-in readiness check,
+	// the feature gate `AdditiveCELDependencyCheck` must be set to `true`.
+	// +optional
+	readyExpr?: string @go(ReadyExpr)
+}
+
 // NamespacedObjectKindReference contains enough information to locate the typed referenced Kubernetes resource object
 // in any namespace.
 #NamespacedObjectKindReference: {
@@ -166,4 +187,15 @@ package meta
 	// transient error will still result in a reconciliation failure.
 	// +optional
 	optional?: bool @go(Optional)
+
+	// Literal marks this ValuesReference as a literal value. When set in
+	// combination with TargetPath, the referenced value is merged at the target
+	// path without interpreting Helm's `--set` syntax (commas, brackets, dots,
+	// equal signs, etc.), mirroring the behavior of `helm --set-literal`. This
+	// is the only safe way to inject arbitrary file content (config files, JSON
+	// blobs, multi-line strings containing special characters) through
+	// `valuesFrom`. Has no effect when TargetPath is empty: in that mode the
+	// referenced value is always YAML-merged at the root.
+	// +optional
+	literal?: bool @go(Literal)
 }

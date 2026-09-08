@@ -55,12 +55,12 @@ _longhorn: schema.#Release & {
 	chain: "chain-network-internal-whitelist"
 
 	values: {
-		longhornManager: tolerations: [{
-			key:      "vonarx.online/weak-node"
-			value:    "true"
-			effect:   "PreferNoSchedule"
-			operator: "Equal"
-		}]
+		// longhorn has to run on the reserved node — that is where the storage is.
+		// defaultSettings covers the system-managed components (instance-manager,
+		// engine-image, CSI plugins), which take a taint string rather than a
+		// pod-spec toleration.
+		defaultSettings: taintToleration: schema.#Reserved.taint
+		longhornManager: tolerations: [schema.#Reserved.any]
 
 		persistence: defaultDataLocality: "best-effort"
 
