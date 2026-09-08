@@ -7,6 +7,7 @@
 - The dev shell drops `talosctl` and `talhelper`; the flake has no third-party inputs left — [development environment](/workflows/dev-environment.md)
 - The whole-file SOPS rule has no users left — [secrets and SOPS](/workflows/secrets-sops.md)
 - Renovate reads only `*.cue`; the YAML, `Dockerfile` and `pre-commit` managers are gone — [images, CI and dependency updates](/workflows/images-and-ci.md)
+- The image manager cannot tell the probe fixture from a dependency, so `cue/probe/` is excluded by path — [images, CI and dependency updates](/workflows/images-and-ci.md)
 - `checks.cueVet` vets the CUE module, so `nix flake check` covers the house rules — [development environment](/workflows/dev-environment.md)
 - The house-style and Flux API-surface checks are CUE under `probe/`; `verify.sh` and the `backupSecrets` export it read are gone — [CUE layout](/architecture/cue-layout.md)
 - Nothing checks that a backup's credential file holds the Secret it names — [backup and restore](/platform/backup-and-restore.md)

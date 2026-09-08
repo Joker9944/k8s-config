@@ -58,6 +58,8 @@ Two regex managers do the work instead, both reading `*.cue`:
 
 `.cue` is the only tree renovate reads. The manager for marked YAML went with [the machine configuration](/platform/cluster-nyx.md), the `Dockerfile` one with the move to Nix-built images, and the stock `pre-commit` manager has nothing to read because the flake generates `.pre-commit-config.yaml` and it is gitignored — hook versions move with `flake.lock`.
 
+The image manager needs no comment, which also means it cannot tell a fixture from a dependency: [`#Digest`](/architecture/cue-layout.md) forces `cue/probe/`'s image into exactly the shape it scans for, and the probe needs a valid pin for its "image without a digest" mutation to mean anything. That path is excluded in `packageRules` rather than worked around in the fixture.
+
 The `.cue` comment carries an optional `registryUrl=` because a chart's repository lives in a `#HelmRepo` elsewhere in the file — 18 foreign charts each need one, and `schema/bundle.cue`'s `_appTemplateVersion` covers every app-template release at once. The same manager keeps the [Traefik plugin versions](/platform/networking-and-ingress.md) updated.
 
 # Publishing artifacts

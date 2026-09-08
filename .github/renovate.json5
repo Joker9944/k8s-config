@@ -39,5 +39,10 @@
       matchUpdateTypes: ["minor", "patch", "pin", "digest"],
       automerge: true,
     },
+    {
+      description: "Probe fixtures are mutation tests, not dependencies",
+      matchFileNames: ["cue/probe/**"],
+      enabled: false,
+    },
   ],
 }
