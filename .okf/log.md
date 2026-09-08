@@ -2,6 +2,7 @@
 
 ## 2026-09-09
 
+- The cosign identity regex needs GitHub's owner casing, unlike the GHCR path beside it — [Flux topology](/architecture/flux-topology.md)
 - The GPU reaches pods via CDI; the `nvidia` RuntimeClass is k3s's and the handler does not exist — [the nyx cluster](/platform/cluster-nyx.md)
 - Media NFS export is `/chronos/media-data`; the `/mnt` prefix was a TrueNAS altroot artefact — [storage](/platform/storage.md)
 - Every replication destination is enabled for the bootstrap restore, and what leaving one enabled actually costs — [backup and restore](/platform/backup-and-restore.md)

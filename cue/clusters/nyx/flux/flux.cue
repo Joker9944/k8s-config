@@ -51,8 +51,10 @@ _source: {
 			verify: {
 				provider: "cosign"
 				matchOIDCIdentity: [{
-					issuer:  "^https://token\\.actions\\.githubusercontent\\.com$"
-					subject: "^https://github\\.com/joker9944/k8s-config/\\.github/workflows/cue-publish\\.yaml@refs/heads/main$"
+					issuer: "^https://token\\.actions\\.githubusercontent\\.com$"
+					// Joker9944, not joker9944: the SAN carries GitHub's canonical owner
+					// casing, unlike the registry path above, which GHCR lowercases.
+					subject: "^https://github\\.com/Joker9944/k8s-config/\\.github/workflows/cue-publish\\.yaml@refs/heads/main$"
 				}]
 			}
 		}
