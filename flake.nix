@@ -183,7 +183,10 @@
               };
 
               # General
-              prettier.enable = true;
+              prettier = {
+                enable = true;
+                excludes = [ "clusters/nyx/flux" ];
+              };
 
               # Nix
               deadnix.enable = true;
