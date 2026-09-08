@@ -225,10 +225,6 @@ _appTemplateVersion: "4.6.2"
 	}
 	secretFiles: [for f, _ in _secretFileSet {f}]
 
-	// Every backup's credential Secret and the file that has to hold it. CUE
-	// holds the path and never the ciphertext, so verify.sh checks the pair.
-	backupSecrets: [for r in releases for b in r.backups {{name: b.secretName, file: b.secretFile}}]
-
 	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
 	// because the graph crosses tiers — loki (observability) waits on garage
 	// (storage) — and a typed reference would make the tier packages circular.
@@ -276,9 +272,6 @@ _appTemplateVersion: "4.6.2"
 	// SOPS Secret manifests, module-relative, on the same terms as #Bundle's.
 	secretFiles: [...string] | *[]
 
-	// No releases, so nothing to back up. Present because #Tier reads it.
-	backupSecrets: []
-
 	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
 	// because the graph crosses tiers — loki (observability) waits on garage
 	// (storage) — and a typed reference would make the tier packages circular.
@@ -303,7 +296,6 @@ _appTemplateVersion: "4.6.2"
 	bundles: [string]: {
 		out: [...]
 		secretFiles: [...string]
-		backupSecrets: [...{name: string, file: string}]
 		dependsOn: [...string]
 		healthChecks: [...]
 		...
@@ -318,11 +310,6 @@ _appTemplateVersion: "4.6.2"
 	secretFiles: {
 		for k, b in bundles {(k): b.secretFiles}
 	}
-
-	// "<file> <secret>" per backup, for the check verify.sh runs.
-	backupSecrets: strings.Join([
-		for k, b in bundles for s in b.backupSecrets {"\(s.file) \(s.name)"},
-	], "\n")
 
 	// The level-3 Kustomizations, one per bundle, which retire <tier>-sync.yaml
 	// and the common-sync-patch component together: interval, timeout, prune,

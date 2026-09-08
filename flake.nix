@@ -181,7 +181,14 @@
         };
 
         checks = {
-          default = self.checks.${system}.preCommitHooks;
+          cueVet = pkgs.stdenvNoCC.mkDerivation {
+            name = "cue-vet";
+            src = ./cue;
+            nativeBuildInputs = [ pkgs.cue ];
+            doCheck = true;
+            checkPhase = "cue vet -c ./...";
+            installPhase = "mkdir $out";
+          };
 
           preCommitHooks = inputs.pre-commit-hooks.lib.${system}.run {
             src = ./.;

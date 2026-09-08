@@ -5,7 +5,7 @@
 }:
 let
   # The module and the tool file that defines the workflow commands. Every
-  # instance needs both; nothing else is shared by all of them. verify.sh and
+  # instance needs both; nothing else is shared by all of them. probe/ and
   # generate.sh are named nowhere, so editing them cannot rebuild an artifact.
   shared = [
     ./cue.mod

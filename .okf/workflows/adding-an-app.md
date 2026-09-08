@@ -39,4 +39,4 @@ Flux finishes here; these do not happen on their own:
 
 # 7. Verify
 
-From `cue/`: `cue vet ./...`, then `./verify.sh`, then render the tier with `cue cmd --inject out=./out render ./<tree>/<tier>` and read what came out. `nix fmt` before committing. After reconciling, `flux get kustomizations -A` and `flux get helmreleases -A` — a level-3 Kustomization that never appears usually means the package was never added to its tier collector.
+From `cue/`: `cue vet ./...`, then render the tier with `cue cmd --inject out=./out render ./<tree>/<tier>` and read what came out. `nix fmt` before committing. After reconciling, `flux get kustomizations -A` and `flux get helmreleases -A` — a level-3 Kustomization that never appears usually means the package was never added to its tier collector.

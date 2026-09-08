@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T19:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -18,8 +18,8 @@ cue/
                             Flux definitions from cue get go
   render_tool.cue           package tier — the `cue cmd render` workflow
   render.nix                one derivation per tier, plus the bootstrap layer
-  verify.sh                 the house-style constraint checks
   generate.sh               regenerates cue.mod/gen from the running Flux versions
+  probe/                    package probe — mutation tests on the schema
   schema/                   package schema — #Release, #AppRelease, #Bundle,
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #ConfigMapFiles,
@@ -45,11 +45,11 @@ cue/
 cue cmd --inject out=./out render ./apps/media     # one tier
 cue cmd --inject out=.. bootstrap ./clusters/nyx/flux
 nix build .#cue-render-media                       # the same, hermetically
-./verify.sh                                        # do the house rules still hold?
+cue vet -c ./...                                   # includes probe/; also checks.cueVet
 ```
 
-`cue` comes from the dev shell so the scripts, `render.nix` and the artifacts all
-evaluate with one version; the scripts refuse to run without it. See
+`cue` comes from the dev shell so `generate.sh`, `render.nix`, `checks.cueVet` and
+the artifacts all evaluate with one version. See
 [the development environment](/workflows/dev-environment.md).
 
 **Every tier collector is `package tier`.** A workflow command only applies to
@@ -87,7 +87,7 @@ The annotations come from `#IngressAnnotations`, which derives the middleware re
 
 `#Bundle` takes `middlewares` (off where there is no ingress), `namespaceCert` (an in-cluster certificate off the private CA, for a workload that serves TLS to Traefik rather than plain HTTP), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
 
-`#VolsyncRestic` takes the SOPS manifest holding its credential Secret as an input — `<workload>/secrets/restic.secret.yaml`, which carries restic credentials and nothing else — so a [backup](/platform/backup-and-restore.md) and the credential it cannot run without are declared together. It exposes the `<app>-restic-<vol>` name that manifest and the `ReplicationSource` have to agree on. `#Bundle.secretFiles` is derived from it — the backups' files plus `extraSecretFiles`, deduplicated through a struct, because a workload usually keeps its restic credential in the same file as its other Secrets. CUE holds the path and never the ciphertext, so it can force the credential to be _named_ but not confirm the file contains it; `verify.sh` closes that half by grepping the file for the Secret, which the partial SOPS rule leaves in plaintext.
+`#VolsyncRestic` takes the SOPS manifest holding its credential Secret as an input — `<workload>/secrets/restic.secret.yaml`, which carries restic credentials and nothing else — so a [backup](/platform/backup-and-restore.md) and the credential it cannot run without are declared together. It exposes the `<app>-restic-<vol>` name that manifest and the `ReplicationSource` have to agree on. `#Bundle.secretFiles` is derived from it — the backups' files plus `extraSecretFiles`, deduplicated through a struct, because a workload usually keeps its restic credential in the same file as its other Secrets. CUE holds the path and never the ciphertext, so it can force the credential to be _named_ and its file shipped, but nothing confirms the file contains it.
 
 **No release takes its values from a Secret.** `spec.valuesFrom` merges the payload into the release, so the material stops being a Secret the moment the chart renders — loki's S3 credentials landed in a plain `ConfigMap` that way. Every workload uses its chart's own mechanism instead: `secretKeyRef` and `envFrom` where the chart offers them, pgadmin's `existingSecret`, and for loki `-config.expand-env=true` with the credentials injected per component. `#Release` carries no field for the old shape, so a bundle cannot reintroduce it.
 
@@ -137,6 +137,8 @@ Verified against cue v0.16.1. Each of these eliminated a layout that otherwise l
 | References resolve by declaration, not by embedding                                  | A derived definition must redeclare (`host: _`) every field it reads from the one it embeds.                                                                              |
 | A closed definition used as an element type rejects anything but itself              | Constrain a collection by what the consumer reads (`[...{out: #HelmRelease, ...}]`), not by the definition name. This bit `#Bundle.releases` and `#Tier.bundles` in turn. |
 | A `_tool.cue` only applies to instances sharing its package clause                   | One workflow across many directories means one package name across them. Hence `package tier` for all eight collectors.                                                   |
+| A disjunction discards bottom branches                                               | "This must be rejected" is expressible in CUE, so the schema's own tests are `cue vet` input rather than a shell harness. `probe/#Verdict` is the idiom.                  |
+| `cue vet` without `-c` reports incompleteness without naming the field               | `checks.cueVet` and the docs use `-c`. A container that never sets a hardening field is incomplete, not conflicting, so `-c=false` misses it entirely.                    |
 
 # Open
 

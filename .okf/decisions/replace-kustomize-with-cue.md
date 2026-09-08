@@ -112,7 +112,7 @@ resource turned out identical, so an exemption could not outlive what it excused
 Everything it excused was a manifest CUE renders per the fleet's own conventions
 while kustomize still rendered the divergence.
 
-The gate died with `apps/base/`, as designed. `cue/verify.sh` outlives it and
-covers the constraint and API-surface checks.
+The gate died with `apps/base/`, as designed. What outlives it is `cue/probe/`,
+which mutation-tests the constraints and the generated Flux surface.
 
 [^fluxcd-cues]: fluxcd/cues

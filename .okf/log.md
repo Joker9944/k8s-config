@@ -2,6 +2,9 @@
 
 ## 2026-09-08
 
+- `checks.cueVet` vets the CUE module, so `nix flake check` covers the house rules — [development environment](/workflows/dev-environment.md)
+- The house-style and Flux API-surface checks are CUE under `probe/`; `verify.sh` and the `backupSecrets` export it read are gone — [CUE layout](/architecture/cue-layout.md)
+- Nothing checks that a backup's credential file holds the Secret it names — [backup and restore](/platform/backup-and-restore.md)
 - CI publishes and cosign-signs one OCI artifact per tier, gated on a hash of the rendered tree — [images, CI and dependency updates](/workflows/images-and-ci.md)
 - A tier's derivation sees only `schema/` and its own directory, and `$out` is the artifact root — [CUE layout](/architecture/cue-layout.md)
 - `devShells.ci` gains `fluxcd` and has a second consumer — [development environment](/workflows/dev-environment.md)
