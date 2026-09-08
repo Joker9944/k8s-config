@@ -18,7 +18,7 @@ _certManager: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "cert-manager"
 	// renovate: datasource=helm packageName=cert-manager registryUrl=https://charts.jetstack.io
-	version:    "v1.21.0"
+	version:    "v1.21.1"
 	sourceName: "jetstack"
 	crds:       true
 
