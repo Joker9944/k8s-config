@@ -1,0 +1,128 @@
+name: cue-publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - flake.nix
+      - flake.lock
+      - cue/**
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  # Carries the hash of the rendered tree, so a run that renders nothing new
+  # publishes nothing. flux writes the commit into the manifest annotations,
+  # which would otherwise change the digest on every push.
+  HASH_ANNOTATION: online.vonarx.k8s-config.render-hash
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tier:
+          - controllers
+          - plugins
+          - observability
+          - security
+          - storage
+          - cloud
+          - media
+          - utility
+
+    steps:
+      - name: Repository checkout
+        id: git-checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Setup nix
+        id: nix-setup
+        uses: Joker9944/nix-config/.github/composites/nix-setup@main
+
+      - name: Render tier
+        id: nix-build
+        shell: bash
+
+        run: |
+          OUT="$(nix build -L --no-link --print-out-paths .#cue-render-${{ matrix.tier }})"
+
+          # flux writes its tarball beside --path, which the read-only store
+          # refuses. --resolve-symlinks stages into TMPDIR instead, where it
+          # faithfully preserves the read-only modes it then tries to write
+          # through. Impressive attention to detail. Hence the copy.
+          ARTIFACT="$RUNNER_TEMP/${{ matrix.tier }}"
+          cp -r --no-preserve=mode "$OUT" "$ARTIFACT"
+
+          echo "artifact-path=$ARTIFACT" >> "$GITHUB_OUTPUT"
+          echo "artifact-hash=$(nix hash path --algo sha256 --base32 "$OUT")" >> "$GITHUB_OUTPUT"
+          echo "artifact-dest=${{ env.REGISTRY }}/${GITHUB_REPOSITORY,,}/${{ matrix.tier }}" >> "$GITHUB_OUTPUT"
+          echo "artifact-tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Compare with published artifact
+        id: artifact-compare
+        shell: nix develop .#ci --command bash {0}
+
+        run: |
+          # a missing repository, tag or annotation all yield an empty string,
+          # so anything unrecognized publishes rather than skips
+          PUBLISHED="$(skopeo inspect \
+            --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            --raw "docker://${{ steps.nix-build.outputs.artifact-dest }}:latest" 2>/dev/null |
+            jq -r '.annotations["${{ env.HASH_ANNOTATION }}"] // ""')"
+
+          if [[ $PUBLISHED == "${{ steps.nix-build.outputs.artifact-hash }}" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish artifact
+        id: flux-push
+        if: steps.artifact-compare.outputs.changed == 'true'
+        shell: nix develop .#ci --command bash {0}
+
+        run: |
+          # a failed push must not be masked by jq's exit code
+          set -o pipefail
+
+          DIGEST="$(flux push artifact \
+            "oci://${{ steps.nix-build.outputs.artifact-dest }}:${{ steps.nix-build.outputs.artifact-tag }}" \
+            --path="${{ steps.nix-build.outputs.artifact-path }}" \
+            --source="${{ github.server_url }}/${{ github.repository }}" \
+            --revision="${{ github.ref_name }}@sha1:${{ github.sha }}" \
+            --annotations="${{ env.HASH_ANNOTATION }}=${{ steps.nix-build.outputs.artifact-hash }}" \
+            --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            --reproducible \
+            --output json | jq -r '.digest')"
+
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Tag artifact
+        id: flux-tag
+        if: steps.artifact-compare.outputs.changed == 'true'
+        shell: nix develop .#ci --command bash {0}
+
+        run: |
+          flux tag artifact \
+            "oci://${{ steps.nix-build.outputs.artifact-dest }}:${{ steps.nix-build.outputs.artifact-tag }}" \
+            --tag latest \
+            --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Sign artifact
+        id: cosign-sign
+        if: steps.artifact-compare.outputs.changed == 'true'
+        shell: nix develop .#ci --command bash {0}
+
+        run: |
+          cosign sign \
+            --registry-username "${{ github.actor }}" \
+            --registry-password "${{ secrets.GITHUB_TOKEN }}" \
+            --yes "${{ steps.nix-build.outputs.artifact-dest }}@${{ steps.flux-push.outputs.digest }}"

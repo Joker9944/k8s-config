@@ -35,9 +35,9 @@ _tiers: {
 
 // One artifact per tier, so an evaluation error in one cannot stall the others.
 //
-// spec.verify is deliberately absent: the decision is that artifacts are
-// cosign-signed and verified here, but nothing signs them yet, and a verify
-// block against unsigned artifacts fails the reconcile.
+// verify accepts only a keyless cosign signature made by cue-publish on main:
+// the certificate subject carries the ref, so a run from any other branch signs
+// with an identity this rejects.
 _source: {
 	name: string
 	out: fluxSource.#OCIRepository & {
@@ -48,6 +48,13 @@ _source: {
 			interval: "10m"
 			url:      "\(_registry)/\(name)"
 			ref: tag: "latest"
+			verify: {
+				provider: "cosign"
+				matchOIDCIdentity: [{
+					issuer:  "^https://token\\.actions\\.githubusercontent\\.com$"
+					subject: "^https://github\\.com/joker9944/k8s-config/\\.github/workflows/cue-publish\\.yaml@refs/heads/main$"
+				}]
+			}
 		}
 	}
 }

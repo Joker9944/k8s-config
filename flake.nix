@@ -175,6 +175,7 @@
               skopeo
               jq
               cosign
+              fluxcd
             ];
           };
         };

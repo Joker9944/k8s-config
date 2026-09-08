@@ -4,7 +4,7 @@ title: Replace kustomize with CUE
 description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as per-tier OCI artifacts.
 tags: [cue, kustomize, gitops, flux, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
 stale_after: 2027-03-05
 sources:
   - id: fluxcd-cues
@@ -65,7 +65,7 @@ evaluation error block updates to every workload; per-tier keeps the blast radiu
 where [the Flux topology](/architecture/flux-topology.md) already puts it. The
 artifact is cosign-signed by the same machinery that signs
 [the repo's images](/workflows/images-and-ci.md), and verified in-cluster via
-`OCIRepository.spec.verify` — the cluster currently verifies nothing.
+`OCIRepository.spec.verify`.
 
 **Secrets are passthrough files that CUE never reads.** Every secret takes the
 `manifests/secret.yaml` shape already used by most of them: a real Secret

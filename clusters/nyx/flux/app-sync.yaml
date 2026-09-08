@@ -8,6 +8,11 @@ spec:
   ref:
     tag: latest
   url: oci://ghcr.io/joker9944/k8s-config/cloud
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: ^https://token\.actions\.githubusercontent\.com$
+        subject: ^https://github\.com/joker9944/k8s-config/\.github/workflows/cue-publish\.yaml@refs/heads/main$
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -34,6 +39,11 @@ spec:
   ref:
     tag: latest
   url: oci://ghcr.io/joker9944/k8s-config/media
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: ^https://token\.actions\.githubusercontent\.com$
+        subject: ^https://github\.com/joker9944/k8s-config/\.github/workflows/cue-publish\.yaml@refs/heads/main$
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -60,6 +70,11 @@ spec:
   ref:
     tag: latest
   url: oci://ghcr.io/joker9944/k8s-config/utility
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: ^https://token\.actions\.githubusercontent\.com$
+        subject: ^https://github\.com/joker9944/k8s-config/\.github/workflows/cue-publish\.yaml@refs/heads/main$
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

@@ -1,10 +1,10 @@
 ---
 type: Reference
 title: Images, CI and dependency updates
-description: How this repo's OCI images are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
+description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
 ---
 
 # Images
@@ -24,7 +24,7 @@ Published: `abiotic-factor-server`, `steamcmd`, `gotify-custom`, `jinja-cli`, `p
 3. `skopeo copy` the archive to `ghcr.io/joker9944/<name>` for the first tag, capturing its digest; remaining tags are copied registry-to-registry by that digest so all four point at one manifest
 4. `cosign sign` every tag
 
-Steps 3 and 4 run under `shell: nix develop .#ci --command bash {0}`, which is the only consumer of that shell.
+Steps 3 and 4 run under `shell: nix develop .#ci --command bash {0}`, as do the registry steps of the artifact workflow below.
 
 # pkgs/
 
@@ -61,6 +61,17 @@ Four regex managers do the work instead:
 
 CUE comments are `//`; `#` is the definition sigil, so the YAML manager's pattern cannot be reused as-is. The `.cue` comment carries an optional `registryUrl=` because a chart's repository lives in a `#HelmRepo` elsewhere in the file — 18 foreign charts each need one, and `schema/bundle.cue`'s `_appTemplateVersion` covers every app-template release at once. The same manager keeps the [Traefik plugin versions](/platform/networking-and-ingress.md) updated; the YAML one keeps [Talos and Kubernetes](/platform/talos-nyx.md).
 
-# Artifacts are not published
+# Publishing artifacts
 
-The [per-tier OCI artifacts](/architecture/flux-topology.md) the cluster reconciles from have no workflow behind them. `nix build .#cue-render-<tier>` produces an artifact root, and `flux push artifact` plus `cosign sign` would mirror what `docker-publish.yaml` already does for images — but neither exists yet, so level 2 points at tags that do not resolve.
+`.github/workflows/cue-publish.yaml` fires on pushes to `main` touching `cue/**`, `flake.nix` or `flake.lock`, one matrix job per [tier](/architecture/flux-topology.md):
+
+1. `nix build .#cue-render-<tier>`, copied out of the store into `$RUNNER_TEMP`
+2. compare `nix hash path` of that tree against the `online.vonarx.k8s-config.render-hash` annotation on `:latest`; equal means the job stops here
+3. `flux push artifact` to the short commit SHA carrying that annotation, then `flux tag artifact --tag latest` onto the same digest
+4. `cosign sign` the digest, which covers both tags
+
+The annotation is what makes step 2 possible, and it is not optional bookkeeping: `flux push artifact` writes the commit into `org.opencontainers.image.revision`, so a republish changes the digest even when no manifest changed, and every tier would reconcile on every push. It hashes the built tree rather than the derivation's store path because a `schema/` edit moves every tier's derivation while leaving most tiers' manifests byte-identical.
+
+Step 1 copies out of the store, and none of the three ways around it work. `flux push artifact` writes its tarball beside `--path`, which the read-only store refuses. `--resolve-symlinks` stages into `TMPDIR` instead, but reproduces the store's `r-xr-xr-x` directories and then cannot write into them. An out-link is worse than either: flux does not descend into a symlinked root, so it publishes an **empty** artifact rather than failing, and `prune: true` applies that. What all three want is `cp --no-preserve=mode`, and the [render derivation](/architecture/cue-layout.md) checks its own shape so the empty case would be loud.
+
+The eight packages are pulled anonymously, since the `OCIRepository`s carry no `secretRef`, so each has to be public in GHCR.

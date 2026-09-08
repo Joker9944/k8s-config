@@ -1,5 +1,12 @@
 # Update Log
 
+## 2026-09-08
+
+- CI publishes and cosign-signs one OCI artifact per tier, gated on a hash of the rendered tree — [images, CI and dependency updates](/workflows/images-and-ci.md)
+- A tier's derivation sees only `schema/` and its own directory, and `$out` is the artifact root — [CUE layout](/architecture/cue-layout.md)
+- `devShells.ci` gains `fluxcd` and has a second consumer — [development environment](/workflows/dev-environment.md)
+- Level 2 verifies each artifact against the publishing workflow's keyless cosign identity on `main` — [Flux topology](/architecture/flux-topology.md)
+
 ## 2026-09-07
 
 - kustomize deleted; the CUE module is the tree, under `cue/` — [repo layout](/architecture/repo-layout.md)

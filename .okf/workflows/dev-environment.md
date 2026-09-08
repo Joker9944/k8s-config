@@ -5,7 +5,7 @@ description: What the Nix flake provides — the envParts list that drives both 
 tags: [nix, flake, dev-shell, tooling]
 resource: flake.nix
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T09:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
 ---
 
 # The dev shell
@@ -32,7 +32,7 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 # Other shells
 
 - `devShells.preCommitHooks` — derived from `checks.preCommitHooks`, see [formatting and cspell](/workflows/formatting-and-cspell.md).
-- `devShells.ci` — `skopeo`, `jq`, `cosign`. Entered explicitly by the publish workflow as `nix develop .#ci`; see [images and CI](/workflows/images-and-ci.md).
+- `devShells.ci` — `skopeo`, `jq`, `cosign`, `fluxcd`. Entered explicitly by both publish workflows as `nix develop .#ci`; see [images and CI](/workflows/images-and-ci.md). `fluxcd` is here as well as in `envParts` because the shells share nixpkgs, so CI pushes artifacts with the version the repo develops against.
 
 # Flake outputs
 

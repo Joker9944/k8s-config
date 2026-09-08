@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -107,6 +107,8 @@ nothing in the workflow to edit.
   <bundle>/*.secret.yaml    copied byte for byte
 ```
 
+`nix build .#cue-render-<tier>` runs the same command hermetically and lands `<tree>/<tier>` at `$out`, so the derivation output is itself an artifact root and [the publish workflow](/workflows/images-and-ci.md) needs no path surgery. Each tier's source is `cue.mod`, `schema/` and its own directory — nothing imports across a tier boundary — so editing one workload rebuilds one tier. Its `checkPhase` asserts the rendered subtree holds `sync/` before anything is installed, because a render that lost that subtree still produces a pushable artifact — one that reconciles as an empty tier and prunes the workloads in it.
+
 The sync manifests sit in `sync/` rather than at the artifact root because
 [a generated kustomization walks subdirectories](/architecture/flux-topology.md).
 `#Tier.sync` generates them, which is what retires `common-sync-patch`: interval,
@@ -138,6 +140,4 @@ Verified against cue v0.16.1. Each of these eliminated a layout that otherwise l
 
 # Open
 
-How the artifact reaches the registry. The rendered tree is complete and `flux build` walks it, but nothing pushes it: there is no CI job, and `OCIRepository.spec.verify` is deliberately absent because nothing signs the artifacts yet. Both belong with [the signing machinery the images already use](/workflows/images-and-ci.md).
-
-The rendered bytes also depend on the `cue` version — 0.16.1 and 0.17.1 order YAML keys differently, so a toolchain bump changes every artifact digest without changing any resource. Worth pinning deliberately before digests start mattering.
+The rendered bytes depend on the `cue` version, which comes unpinned from nixpkgs: 0.16.1 and 0.17.1 order YAML keys differently, so a `flake.lock` bump republishes every tier without changing any resource.
