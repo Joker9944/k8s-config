@@ -126,7 +126,10 @@ import "list"
 		"dest-\(vol)": {
 			apiVersion: "volsync.backube/v1alpha1"
 			kind:       "ReplicationDestination"
-			enabled:    false // restore is deliberate; see the runbook
+			// BOOTSTRAP: every destination is enabled so a fresh cluster restores
+			// rather than starting empty. Revert to `false` once all nine volumes
+			// have restored — see /platform/backup-and-restore.md.
+			enabled: true
 			spec: spec: {
 				trigger: manual: "restore-once"
 				restic: {
@@ -237,6 +240,8 @@ import "list"
 #MediaData: {
 	type:   "nfs"
 	server: "192.168.0.24"
-	path:   "/mnt/chronos/media-data"
+	// no /mnt prefix: the pool has no local mountpoint, and TrueNAS only showed
+	// one because it imported with altroot=/mnt
+	path: "/chronos/media-data"
 	...
 }

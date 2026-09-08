@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-09-09
+
+- The GPU reaches pods via CDI; the `nvidia` RuntimeClass is k3s's and the handler does not exist — [the nyx cluster](/platform/cluster-nyx.md)
+- Media NFS export is `/chronos/media-data`; the `/mnt` prefix was a TrueNAS altroot artefact — [storage](/platform/storage.md)
+- Every replication destination is enabled for the bootstrap restore, and what leaving one enabled actually costs — [backup and restore](/platform/backup-and-restore.md)
+
 ## 2026-09-08
 
 - Renovate's flux manager is enabled and owns `gotk-components.yaml`, which `generate.sh` also reads — [images, CI and dependency updates](/workflows/images-and-ci.md)

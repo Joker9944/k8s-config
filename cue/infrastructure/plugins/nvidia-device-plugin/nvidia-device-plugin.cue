@@ -15,17 +15,7 @@ bundle: schema.#Bundle & {
 		"pod-security.kubernetes.io/warn":    "privileged"
 		"pod-security.kubernetes.io/audit":   "privileged"
 	}
-	before: [_runtimeClass]
 	releases: [_nvidia]
-}
-
-// The node's container runtime registers the nvidia handler; the chart only
-// references the class, it does not create it.
-_runtimeClass: {
-	apiVersion: "node.k8s.io/v1"
-	kind:       "RuntimeClass"
-	metadata: name: "nvidia"
-	handler: "nvidia"
 }
 
 _nvidia: schema.#Release & {
@@ -39,7 +29,20 @@ _nvidia: schema.#Release & {
 	crds:       true
 
 	values: {
-		runtimeClassName: _runtimeClass.metadata.name
+		// CDI rather than a containerd runtime handler. k3s registers an `nvidia`
+		// handler only when it finds nvidia-container-runtime on its own PATH,
+		// which nix-config does not put there; containerd 2.x reads the CDI spec
+		// nvidia-container-toolkit writes to /run/cdi instead. A cluster-scoped
+		// RuntimeClass named `nvidia` does exist, but k3s owns it as an Addon —
+		// this bundle must not create it.
+		deviceListStrategy: "cdi-annotations"
+
+		// the plugin and gfd have to see the GPU to enumerate it, and the
+		// NVIDIA_VISIBLE_DEVICES the chart sets means nothing without the runtime
+		// hook they no longer pass through. This annotation is what injects the
+		// driver into their own pods; `all` is a device the spec declares.
+		podAnnotations: "cdi.k8s.io/gpu": "nvidia.com/gpu=all"
+
 		gfd: enabled: true
 		nfd: {
 			enableNodeFeatureApi: true

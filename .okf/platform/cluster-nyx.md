@@ -4,7 +4,7 @@ title: The nyx cluster
 description: Node inventory, the label and taint scheme workloads schedule against, and what the cluster gets from nix-config rather than this repo.
 tags: [cluster, nodes, scheduling]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T10:00:00Z }
 ---
 
 # Nodes
@@ -19,6 +19,8 @@ Four k3s nodes. Three are control planes that also run workloads; `mother` is th
 | `mother` | worker        | 8   | 64G    | `nfs-host` |
 
 `mother` holds the ZFS pool, exports it over NFS at `192.168.0.24`, and is the only GPU node.
+
+The GPU reaches pods through **CDI, not a containerd runtime handler**. `nvidia-container-toolkit` writes a spec to `/run/cdi` declaring `nvidia.com/gpu=0` and `=all`, and containerd 2.x reads it. k3s registers an `nvidia` runtime handler only when `nvidia-container-runtime` is on its own PATH, which it is not — `runtimeClassName: nvidia` would fail admission on every node. The cluster-scoped `nvidia` RuntimeClass that does exist is a k3s Addon and must not be recreated from this repo.
 
 # Labels and taints
 

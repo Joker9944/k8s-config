@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T08:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -24,7 +24,9 @@ A backed-up app declares a `#VolsyncRestic`, which emits two objects into the re
 
 The PVC references the destination through `dataSourceRef`, and the mover runs under the app's own uid/gid so restored files keep their ownership.
 
-**Restore is deliberately two-step and manual.** The destination ships disabled, so a normal reconcile never restores. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for.
+**Restore is deliberately two-step and manual.** The destination normally ships disabled, so a reconcile never restores by itself. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for — the manual trigger fires once, but a PVC recreated later restores from that stale snapshot instead of starting empty.
+
+`#VolsyncRestic` currently enables every destination, so the cluster being bootstrapped restores all nine volumes rather than coming up blank. That default reverts once they have.
 
 `dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted.
 
