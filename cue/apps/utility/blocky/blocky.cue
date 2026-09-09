@@ -34,7 +34,7 @@ _redis: schema.#Release & {
 	namespace: "blocky"
 	chart:     "redis"
 	// renovate: datasource=helm packageName=redis registryUrl=https://ot-container-kit.github.io/helm-charts
-	version:    "0.16.9"
+	version:    "0.16.10"
 	sourceName: "ot-helm"
 	hasValues:  false
 }
