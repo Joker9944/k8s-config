@@ -56,7 +56,7 @@ _nextcloud: schema.#Release & {
 	namespace: "nextcloud"
 	chart:     "nextcloud"
 	// renovate: datasource=helm packageName=nextcloud registryUrl=https://nextcloud.github.io/helm/
-	version:    "8.0.2"
+	version:    "9.2.6"
 	sourceName: "nextcloud"
 
 	host: nextcloudHost
