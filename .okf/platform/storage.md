@@ -4,7 +4,7 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T10:35:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T19:00:00Z }
 ---
 
 # Longhorn classes
@@ -25,9 +25,9 @@ A `VolumeSnapshotClass` named `longhorn` backs volsync's `copyMethod: Snapshot`;
 
 # NFS
 
-Bulk media is not in Longhorn at all. Workloads mount it straight off `mother` through [`#MediaData`](/architecture/cue-layout.md) — `type: nfs`, `server: 192.168.0.24`, `/chronos/media-data` — which exists so the address moves in one edit when the host does. The export has no `/mnt` prefix — the pool sets no local mountpoint, and TrueNAS only displayed one because it imported with `altroot=/mnt`. Nothing in this repo backs it up or provisions it; the pool belongs to [nix-config](/platform/cluster-nyx.md).
+Bulk media is not in Longhorn at all. It is the `chronos/media-data` dataset on `mother`, mounted flat at `/chronos/media-data` — no `/mnt` prefix, because the pool sets no local mountpoint and TrueNAS only displayed one because it imported with `altroot=/mnt`. Nothing in this repo backs it up or provisions it; the pool belongs to [nix-config](/platform/cluster-nyx.md).
 
-Only jellyfin declares the preferred `vonarx.online/nfs-host` affinity, because `mother` is reserved and jellyfin is the one media workload that tolerates the taint.
+Two definitions in [the CUE tree](/architecture/cue-layout.md) share that path, so it moves in one edit. `#MediaData` is the NFS mount at `192.168.0.24`, used by five workloads. jellyfin is the one that tolerates `mother`'s reserved taint and the only one placed there, so it takes `#MediaDataHost` instead — a `hostPath` on the dataset itself rather than a loop back through the host's own nfsd. That makes the node a hard requirement, so jellyfin's `vonarx.online/nfs-host` affinity is required rather than preferred, and `hostPathType: Directory` fails the pod when the dataset is not mounted instead of binding an empty path. The namespace declares `pod-security.kubernetes.io/enforce: privileged`, because [nothing below that level admits a hostPath](/platform/cluster-nyx.md).
 
 # Garage
 

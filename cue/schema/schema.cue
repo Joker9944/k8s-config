@@ -235,15 +235,27 @@ import "list"
 }
 
 // ------------------------------------------------------------------ media data
-// The NFS export every media workload reads, in one place because the address
+// The media tree every media workload reads, in one place because the address
 // moves with the host. Open, so a workload can add its own mounts.
+
+// no /mnt prefix: the pool has no local mountpoint, and TrueNAS only showed one
+// because it imported with altroot=/mnt
+_mediaDataPath: "/chronos/media-data"
 
 #MediaData: {
 	type:   "nfs"
 	server: "192.168.0.24"
-	// no /mnt prefix: the pool has no local mountpoint, and TrueNAS only showed
-	// one because it imported with altroot=/mnt
-	path: "/chronos/media-data"
+	path:   _mediaDataPath
+	...
+}
+
+// For a workload placed on the NFS host itself, which reads the dataset off the
+// local pool instead of looping through nfsd. `Directory` makes kubelet fail the
+// pod when the dataset is not mounted, rather than bind an empty path.
+#MediaDataHost: {
+	type:         "hostPath"
+	hostPath:     _mediaDataPath
+	hostPathType: "Directory"
 	...
 }
 

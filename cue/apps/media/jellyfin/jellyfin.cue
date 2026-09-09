@@ -4,6 +4,8 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "jellyfin"
+	// baseline forbids hostPath volumes, and the media mount is one
+	namespaceLabels: "pod-security.kubernetes.io/enforce": "privileged"
 	releases: [_jellyfin]
 }
 
@@ -49,9 +51,8 @@ _jellyfin: schema.#AppRelease & {
 					{key: "nvidia.com/gpu", operator: "Exists", effect: "NoSchedule"},
 					schema.#Reserved.storage,
 				]
-				affinity: nodeAffinity: preferredDuringSchedulingIgnoredDuringExecution: [{
-					weight: 10
-					preference: matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
+				affinity: nodeAffinity: requiredDuringSchedulingIgnoredDuringExecution: nodeSelectorTerms: [{
+					matchExpressions: [{key: "vonarx.online/nfs-host", operator: "Exists"}]
 				}]
 			}
 			containers: jellyfin: schema.#Hardened & {
@@ -110,7 +111,7 @@ _jellyfin: schema.#AppRelease & {
 			}
 			transcodes: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/config/transcodes"}]}
 			cache: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/cache"}]}
-			media: schema.#MediaData & {
+			media: schema.#MediaDataHost & {
 				advancedMounts: jellyfin: jellyfin: [{path: "/mnt/media-data"}]
 			}
 			tmp: type: "emptyDir"

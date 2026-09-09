@@ -233,7 +233,7 @@ _appTemplateVersion: "4.6.2"
 	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
 	healthChecks: [...] | *[]
 
-	// Pod Security admission levels and the like. Seven namespaces in the fleet
+	// Pod Security admission levels and the like. Eight namespaces in the fleet
 	// carry one; the rest render a bare Namespace.
 	namespaceLabels: [string]: string
 

@@ -4,7 +4,7 @@ title: The nyx cluster
 description: Node inventory, the label and taint scheme workloads schedule against, and what the cluster gets from nix-config rather than this repo.
 tags: [cluster, nodes, scheduling]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T19:00:00Z }
 ---
 
 # Nodes
@@ -28,11 +28,17 @@ k3s's `runtimes` Addon ships RuntimeClasses for `nvidia`, `crun` and the wasm ha
 
 # Labels and taints
 
-Node labels live in the `vonarx.online/` namespace. Only `nfs-host` is consumed by anything in this repo — jellyfin's preferred affinity.
+Node labels live in the `vonarx.online/` namespace. Only `nfs-host` is consumed by anything in this repo — jellyfin's required affinity, which pins it here for a [hostPath on the pool](/platform/storage.md) rather than for NFS locality.
 
 `mother` carries `vonarx.online/reserved=storage:NoSchedule`, keeping its capacity for ZFS and NFS. [`#Reserved`](/architecture/cue-layout.md) supplies both answers to it: infrastructure that has to cover every node tolerates the key with `Exists`, and a workload deliberately placed there matches `value: storage`, so `grep` finds every such placement. Today that is jellyfin alone.
 
 The taint comes from nix-config and is **not** reconciled by Flux.
+
+# Pod Security
+
+A workload that needs a hostPath or a root container needs `pod-security.kubernetes.io/enforce: privileged` on its namespace, set through `#Bundle`'s `namespaceLabels`.
+
+Talos applied its admission configuration from its own defaults rather than from anything checked in here, and the retired `clusters/nyx/talos/` tree never mentioned it — so grepping this repo for what these labels answer to finds nothing. Treat them as deliberate; do not prune them as cargo cult.
 
 # Machine configuration lives in nix-config
 

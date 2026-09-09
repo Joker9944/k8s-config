@@ -2,6 +2,8 @@
 
 ## 2026-09-09
 
+- A hostPath or root container needs `enforce: privileged` on its namespace; the fleet's labels answer to Talos and are not cargo cult — [the nyx cluster](/platform/cluster-nyx.md)
+- jellyfin reads `chronos/media-data` through `#MediaDataHost`, a hostPath, instead of looping back through `mother`'s own nfsd — [storage](/platform/storage.md)
 - `safeNaming` is on: kubernetesCRD-generated names join with `_`, and the chart emits the flag only when true — [networking and ingress](/platform/networking-and-ingress.md)
 - The startup error burst and the encoded-characters warning are both noise that no configuration removes — [networking and ingress](/platform/networking-and-ingress.md)
 - kanidm's ServersTransport moved off the deprecated `rootCAsSecrets` to `rootCAs` — [identity — kanidm](/platform/identity-kanidm.md)
