@@ -80,8 +80,22 @@ _loki: schema.#Release & {
 		}
 
 		deploymentMode: "SimpleScalable"
-		backend: {replicas: 3, extraEnvFrom: _s3Env}
+
+		// Loki replicates above the volume — replication_factor 3 puts every line on
+		// three ingesters, and everything durable is in Garage — so a replica
+		// underneath would pay for the same bytes twice. max_chunk_age bounds the
+		// ingester WAL at roughly two hours of ingest, which is why these sit far
+		// below the chart's 10Gi default.
+		backend: {
+			replicas:     3
+			extraEnvFrom: _s3Env
+			persistence: {storageClass: "longhorn-local-strict", size: "2Gi"}
+		}
 		read: {replicas: 3, extraEnvFrom: _s3Env}
-		write: {replicas: 3, extraEnvFrom: _s3Env}
+		write: {
+			replicas:     3
+			extraEnvFrom: _s3Env
+			persistence: {storageClass: "longhorn-local-strict", size: "4Gi"}
+		}
 	}
 }

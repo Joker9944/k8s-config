@@ -4,20 +4,22 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T09:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T09:43:00Z }
 ---
 
 # Longhorn classes
 
 The chart's default `longhorn` class is replicated. `cue/infrastructure/controllers/longhorn-config` adds two single-replica classes, both `allowVolumeExpansion: true`:
 
-| Class                   | `dataLocality` | Replicas | Intended for                                                                                       |
-| ----------------------- | -------------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `longhorn`              | default        | default  | volsync restore targets and mover caches — data that is transient or already backed up elsewhere   |
-| `longhorn-local-strict` | `strict-local` | 1        | data with its own replication above the volume: CNPG instances and their WAL, Garage meta and data |
-| `longhorn-local-lax`    | `best-effort`  | 1        | volsync `Clone` sources, where a scheduling failure must not block the backup                      |
+| Class                   | `dataLocality` | Replicas | Intended for                                                                                                                                  |
+| ----------------------- | -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `longhorn`              | default        | default  | volsync restore targets and mover caches — data that is transient or already backed up elsewhere                                              |
+| `longhorn-local-strict` | `strict-local` | 1        | data with its own replication above the volume: CNPG instances and their WAL, Garage meta and data, Loki's ingester WAL and compactor scratch |
+| `longhorn-local-lax`    | `best-effort`  | 1        | volsync `Clone` sources, where a scheduling failure must not block the backup                                                                 |
 
-The single-replica classes are a deliberate trade: replication is delegated to the application (three CNPG instances with required anti-affinity, Garage's own redundancy) instead of being paid for twice. Putting an app with no replication of its own on `longhorn-local-strict` means one node loss is data loss.
+The single-replica classes are a deliberate trade: replication is delegated to the application (three CNPG instances with required anti-affinity, Garage's own redundancy, Loki's `replication_factor: 3`) instead of being paid for twice. Putting an app with no replication of its own on `longhorn-local-strict` means one node loss is data loss.
+
+Longhorn schedules against reserved size, never used size, and `storage-over-provisioning-percentage` is 100 against a `storageReserved` of 0 — so each node's ceiling is its whole disk, and `spec.size × numberOfReplicas` counts against it from the moment a volume exists, however empty it stays. A claim size is therefore a capacity decision rather than a limit, and the chart default is rarely the right one. `strict-local` sharpens this: its replica is placed when the pod attaches, not when the PVC binds, so an oversized volume provisions cleanly and only fails once its pod lands on a node without room. `mother`'s headroom is reachable only by replicated volumes, since Longhorn tolerates its `reserved=storage` taint but [almost no workload does](/platform/cluster-nyx.md).
 
 A `VolumeSnapshotClass` named `longhorn` backs volsync's `copyMethod: Snapshot`; see [backup and restore](/platform/backup-and-restore.md).
 

@@ -2,6 +2,7 @@
 
 ## 2026-09-09
 
+- Loki's volumes join `longhorn-local-strict`, and scheduling counts reserved size against a whole-disk ceiling — [storage](/platform/storage.md)
 - GPU injection moved to the `nvidia-cdi` handler; the annotation path and the phantom GPU taint recorded — [the nyx cluster](/platform/cluster-nyx.md)
 - `generic-device-plugin` advertises `devic.es/tun`, not the `squat.ai` name upstream renamed away from — [the nyx cluster](/platform/cluster-nyx.md)
 - An automerged digest bump on a `latest` pin is an unreviewed upstream change — [images, CI and dependency updates](/workflows/images-and-ci.md)
