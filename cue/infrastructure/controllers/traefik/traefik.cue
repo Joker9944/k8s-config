@@ -93,7 +93,7 @@ _oidcRedis: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "redis-replication"
 	// renovate: datasource=helm packageName=redis-replication registryUrl=https://ot-container-kit.github.io/helm-charts
-	version:    "0.17.0"
+	version:    "0.17.1"
 	sourceName: "ot-helm"
 
 	values: redisReplication: redisSecret: {
