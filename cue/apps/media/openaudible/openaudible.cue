@@ -54,7 +54,7 @@ _openaudible: schema.#AppRelease & {
 			containers: openaudible: schema.#HardenedWritableRoot & {
 				image: {
 					repository: "ghcr.io/lanjelin/openaudible-docker"
-					tag:        "4.8.7@sha256:9096572063e7294634f2fa3a11a138952eb394c4a08abadd33b26440b77151ab"
+					tag:        "4.8.8@sha256:3736ff851754d9017db02cebd3445d7b10e733fae149df1cbbd7af9068ed3f95"
 				}
 				securityContext: capabilities: add: ["CHOWN", "SETUID", "SETGID", "FOWNER", "DAC_OVERRIDE"]
 				env: {
