@@ -36,5 +36,11 @@
       matchFileNames: ["cue/probe/**"],
       enabled: false,
     },
+    {
+      description: "metallb through 0.16.1 hot-loops the ServiceL2Status reconciler (metallb/metallb#3063); the fix in #3079 is merged but unreleased, so hold until it ships",
+      matchDatasources: ["helm"],
+      matchPackageNames: ["metallb"],
+      allowedVersions: ">0.16.1",
+    },
   ],
 }

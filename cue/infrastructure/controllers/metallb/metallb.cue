@@ -21,7 +21,7 @@ _metallb: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "metallb"
 	// renovate: datasource=helm packageName=metallb registryUrl=https://metallb.github.io/metallb
-	version:    "0.16.1"
+	version:    "0.15.3"
 	sourceName: "metallb"
 	interval:   "5m"
 	crds:       true

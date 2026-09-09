@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T19:18:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T19:42:00Z }
 ---
 
 # The tier
@@ -43,10 +43,6 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 **v3 configures from the environment only, and a list value is one bare CSV line.** The v2 `[a,b]` form still parses — as a single element with the brackets in it. That is silent both ways: gin discards the error from `SetTrustedProxies`, so a bracketed CIDR just leaves `X-Forwarded-For` unread, and CORS origins are unanchored regexes, where `[gotify.vonarx.online]` is a character class that matches almost any origin.
 
 # Coverage gaps
-
-- **Only `kipp` reports node metrics.** Prometheus runs there and reaches node-exporter on `:9100` for its own node only; `up` is `0` for `tars`, `case` and `mother` across the whole TSDB, while all four pods are `Ready` with no restarts. Cross-node kubelet scrapes on `:10250` succeed, so the block is port-specific and belongs to the host firewall, which comes from nix-config. `TargetDown` is the symptom.
-- **`NodeClockNotSynchronising` can only ever name `kipp`**, for the same reason — it is the one node whose `node_timex_sync_status` is collected, so the other three drift invisibly. Skew there also shifts rule evaluation, Prometheus and Alertmanager both sitting on that node.
-- **kube-proxy has no pod to select.** k3s runs it inside the agent, so the chart's `k8s-app: kube-proxy` Service selector matches nothing and `KubeProxyDown`, an `absent()` rule, fires forever. `kubeProxy.endpoints` names the four node IPs to build the Endpoints by hand; it still needs `metrics-bind-address=0.0.0.0` on the agents from nix-config, and it inherits the firewall constraint above.
 
 Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/alertmanager/health` answers `HTTP 500 plugin.unavailable` every time ([grafana#83794](https://github.com/grafana/grafana/issues/83794)). The datasource provisions and works in the browser; only the server-side health API is unimplemented for this type. A health sweep — `check_datasources_health` on the MCP server — therefore reports it broken on a healthy cluster. Not a fault to chase.
 

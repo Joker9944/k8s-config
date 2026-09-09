@@ -2,7 +2,9 @@
 
 ## 2026-09-09
 
-- Only `kipp` reports node metrics, which is what shapes `TargetDown` and `NodeClockNotSynchronising` — [observability](/platform/observability.md)
+- Renovate holds metallb at `>0.16.1` until the merged upstream ServiceL2Status fix ships — [networking and ingress](/platform/networking-and-ingress.md)
+- node-exporter and kube-proxy are scraped over the host network, so a firewall rule blinds whole nodes while their pods stay `Ready` — [observability](/platform/observability.md)
+- No node's clock is disciplined; `NodeClockNotSynchronising` is fleet-wide, not a `kipp` fault — [observability](/platform/observability.md)
 - kube-proxy is scraped through hand-built Endpoints; k3s leaves no pod for the chart to select — [observability](/platform/observability.md)
 - Grafana's Alertmanager datasource has no backend, so a server-side health check always 500s — [observability](/platform/observability.md)
 - MetalLB's `servicel2status` controller loops permanently and drives the API error-budget burn — [networking and ingress](/platform/networking-and-ingress.md)
