@@ -66,7 +66,7 @@ _gotify: schema.#AppRelease & {
 					GOTIFY_SERVER_KEEPALIVEPERIODSECONDS:   0
 					GOTIFY_SERVER_LISTENADDR:               null
 					GOTIFY_SERVER_SSL_ENABLED:              false
-					GOTIFY_SERVER_TRUSTEDPROXIES:           "[10.244.0.0/16]"
+					GOTIFY_SERVER_TRUSTEDPROXIES:           "[\(schema.#PodCIDR)]"
 					GOTIFY_SERVER_CORS_ALLOWORIGINS:        "[gotify.vonarx.online]"
 					GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
 					GOTIFY_DATABASE_DIALECT:                "postgres"

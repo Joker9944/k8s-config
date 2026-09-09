@@ -98,7 +98,7 @@ _nextcloud: schema.#Release & {
 					"""
 			}
 			extraEnv: [
-				{name: "TRUSTED_PROXIES", value: "10.244.0.0/16"},
+				{name: "TRUSTED_PROXIES", value: schema.#PodCIDR},
 				{name: "OVERWRITEPROTOCOL", value: "https"},
 			]
 		}

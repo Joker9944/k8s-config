@@ -96,7 +96,7 @@ _qbittorrent: schema.#AppRelease & {
 						QBT_BitTorrent__Session__TempPath:                  "/mnt/media-data/.staging/qbittorrent/incomplete"
 						QBT_Preferences__WebUI__LocalHostAuth:              false
 						QBT_Preferences__WebUI__ReverseProxySupportEnabled: true
-						QBT_Preferences__WebUI__TrustedReverseProxiesList:  "10.244.0.0/16"
+						QBT_Preferences__WebUI__TrustedReverseProxiesList:  schema.#PodCIDR
 					}
 					probes: {
 						liveness: probe & {spec: failureThreshold: 6}
@@ -122,7 +122,7 @@ _qbittorrent: schema.#AppRelease & {
 					env: {
 						FIREWALL_INPUT_PORTS:      portHTTP
 						VPN_INTERFACE:             vpnInterface
-						FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16,10.96.0.0/12"
+						FIREWALL_OUTBOUND_SUBNETS: "\(schema.#PodCIDR),\(schema.#ServiceCIDR)"
 						BLOCK_MALICIOUS:           "off"
 					}
 					envFrom: [{secretRef: name: vpnSecret}]

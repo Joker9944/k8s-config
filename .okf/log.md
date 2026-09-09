@@ -2,6 +2,11 @@
 
 ## 2026-09-09
 
+- The cluster networks are k3s's `10.42`/`10.43`, and the Talos-era kubeadm defaults had survived in five places — [networking and ingress](/platform/networking-and-ingress.md)
+- `bootstrap.sh` is a working procedure again, with the version literal and the re-run caveat that matter — [Flux topology](/architecture/flux-topology.md)
+- The snapshot-CRD edge, the discovery cache that outlives it, and the critical path a cold bootstrap walks — [Flux topology](/architecture/flux-topology.md)
+- The apex and wildcard ACME challenges share one TXT name and are validated in sequence — [certificates and PKI](/platform/certificates-and-pki.md)
+- What `dependsOn` does not guarantee, the undeclared CRD edges a cold bootstrap trips, and the retry cadence — [Flux topology](/architecture/flux-topology.md)
 - The cosign identity regex needs GitHub's owner casing, unlike the GHCR path beside it — [Flux topology](/architecture/flux-topology.md)
 - The GPU reaches pods via CDI; the `nvidia` RuntimeClass is k3s's and the handler does not exist — [the nyx cluster](/platform/cluster-nyx.md)
 - Media NFS export is `/chronos/media-data`; the `/mnt` prefix was a TrueNAS altroot artefact — [storage](/platform/storage.md)

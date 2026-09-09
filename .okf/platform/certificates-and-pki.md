@@ -5,7 +5,7 @@ description: The two issuance paths — public ACME wildcard and a private root/
 tags: [cert-manager, tls, pki, trust-manager]
 resource: cue/infrastructure/controllers/certs-config
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T13:00:00Z }
 ---
 
 # Public path
@@ -13,6 +13,8 @@ generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
 `cloudflare-production` (and an unused `cloudflare-staging`) are ACME `ClusterIssuer`s solving DNS-01 against Cloudflare, with the API token in `cloudflare-secret.sops.yaml`. They issue a single Certificate, `wildcard-vonarx-online` in the `cert-manager` namespace, covering `vonarx.online`, `*.vonarx.online`, `*.s3.vonarx.online` and `*.web.vonarx.online`.
 
 Every public ingress in the repo references `secretName: wildcard-vonarx-online-cert` — the one wildcard is the whole public TLS story.
+
+**It is the slowest thing in a cold bootstrap, by construction.** `vonarx.online` and `*.vonarx.online` are separate ACME challenges sharing one TXT name, `_acme-challenge.vonarx.online`, so cert-manager validates them in sequence: the wildcard first, then its record is torn down and the apex's published, which only then starts its own propagation clock. The other names finish long before it, so `Waiting for DNS-01 challenge propagation` on the last challenge is the normal state rather than a fault — check `dig TXT _acme-challenge.vonarx.online` against the pending challenge's `spec.key` before touching anything. Because [`certs-config`](/architecture/flux-topology.md) health-checks this Certificate, the entire controllers tier waits on that last challenge.
 
 # Private path
 

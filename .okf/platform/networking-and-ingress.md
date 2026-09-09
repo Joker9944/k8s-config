@@ -4,7 +4,7 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T14:00:00Z }
 ---
 
 # Address allocation
@@ -30,7 +30,9 @@ Two experimental plugins are loaded, both tracked by renovate against github-tag
 | `chain-network-internal-whitelist` | `network-internal-whitelist` + the three basic middlewares                                                                               |
 | `chain-country-whitelist`          | `country-whitelist` + the three basic middlewares                                                                                        |
 
-`network-internal-whitelist` admits the LAN (`192.168.1.0/23`, `fe80::/10`), the tailnet (`100.0.0.0/8`, `fd7a:115c:a1e0::/48`) and the pod network (`10.244.0.0/16`). `country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries.
+`network-internal-whitelist` admits the LAN (`192.168.0.0/23`, `fe80::/10`), the tailnet (`100.0.0.0/8`, `fd7a:115c:a1e0::/48`) and the pod network, which comes from [`#PodCIDR`](/architecture/cue-layout.md).
+
+**The cluster networks are k3s's, not kubeadm's**: pods are `10.42.0.0/16` and services `10.43.0.0/16`, against the `10.244.0.0/16` and `10.96.0.0/12` a kubeadm cluster would use. The move off Talos changed both, and the old values survived in five places — the allow-list itself plus every workload that trusts the reverse proxy or firewalls its own egress. A wrong pod CIDR here rejects any in-cluster caller of an internally-whitelisted ingress, silently and with a plain 403; Traefik's JSON access log is what names the `ClientHost` it actually saw. `country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries.
 
 The chain is selected per-service: infrastructure dashboards (Longhorn, Prometheus, Alertmanager) take the internal whitelist; public-facing apps take the country whitelist. There is no third option: `#Release` has no field for a bare middleware, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed.
 

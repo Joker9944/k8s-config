@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T14:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -24,7 +24,7 @@ cue/
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #ConfigMapFiles,
                             #NamespaceCert, #VolsyncRestic, #Reserved,
-                            #MediaData
+                            #MediaData, #PodCIDR, #ServiceCIDR
   infrastructure/
     controllers/
       controllers.cue       package controllers — the tier collector
@@ -92,7 +92,7 @@ The annotations come from `#IngressAnnotations`, which derives the middleware re
 
 **No release takes its values from a Secret.** `spec.valuesFrom` merges the payload into the release, so the material stops being a Secret the moment the chart renders — loki's S3 credentials landed in a plain `ConfigMap` that way. Every workload uses its chart's own mechanism instead: `secretKeyRef` and `envFrom` where the chart offers them, pgadmin's `existingSecret`, and for loki `-config.expand-env=true` with the credentials injected per component. `#Release` carries no field for the old shape, so a bundle cannot reintroduce it.
 
-`#Reserved` holds the one node taint and the three shapes that answer it — an `Exists` toleration, an `Equal` one, and the taint string longhorn takes instead of a pod-spec toleration. `#MediaData` is the NFS export the media tier reads, declared open so a workload can add its own mounts. Both exist to keep a cluster address out of eight files; see [the cluster](/platform/cluster-nyx.md).
+`#Reserved` holds the one node taint and the three shapes that answer it — an `Exists` toleration, an `Equal` one, and the taint string longhorn takes instead of a pod-spec toleration. `#MediaData` is the NFS export the media tier reads, declared open so a workload can add its own mounts. `#PodCIDR` and `#ServiceCIDR` are the cluster's own networks, named once because a workload that trusts the reverse proxy or firewalls its egress has to repeat them. All exist to keep a cluster address out of many files; see [the cluster](/platform/cluster-nyx.md).
 
 Exceptions are named definitions rather than softened constraints, so `grep` finds every one: `#HardenedWritableRoot` for a container that cannot run on a read-only root, and `#HardenedPrivileged` for one that must run privileged — Kubernetes rejects `privileged: true` together with `allowPrivilegeEscalation: false`, so that definition drops the field rather than the constraint. Both are policy. There are no others: a workload that would need one is a workload that has to change.
 

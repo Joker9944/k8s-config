@@ -96,9 +96,10 @@ import "list"
 			silentStartUp:             true
 			unknownCountryApiResponse: "nil"
 		}},
+		// LAN, link-local, both tailnet families, and the pod network
 		{_m, metadata: {name: "network-internal-whitelist", namespace: ns}, spec: ipAllowList: {
 			ipStrategy: depth: 0
-			sourceRange: ["192.168.1.0/23", "fe80::/10", "100.0.0.0/8", "fd7a:115c:a1e0::/48", "10.244.0.0/16"]
+			sourceRange: ["192.168.0.0/23", "fe80::/10", "100.0.0.0/8", "fd7a:115c:a1e0::/48", #PodCIDR]
 		}},
 	]
 }
@@ -245,3 +246,11 @@ import "list"
 	path: "/chronos/media-data"
 	...
 }
+
+// ------------------------------------------------------------ cluster networks
+// k3s's defaults, which are not kubeadm's — a workload that trusts the reverse
+// proxy or firewalls its own egress has to name them, and naming them here is
+// what stops the next migration from missing a copy.
+
+#PodCIDR:     "10.42.0.0/16"
+#ServiceCIDR: "10.43.0.0/16"

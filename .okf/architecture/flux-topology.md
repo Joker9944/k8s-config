@@ -5,7 +5,7 @@ description: The three-level Kustomization graph that reconciles nyx, and the or
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T11:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T13:00:00Z }
 ---
 
 # Three levels
@@ -41,9 +41,44 @@ Level-3 `dependsOn` edges exist where a workload needs a CRD, a Secret or a Stor
 
 `certs-config` also declares `healthChecks` on the `wildcard-vonarx-online` and `nyx-intermediate-ca` Certificates, so the controllers tier blocks until [PKI](/platform/certificates-and-pki.md) is actually issued rather than merely applied.
 
+# What dependsOn does not buy
+
+**An edge is satisfied when the other bundle's manifests apply, not when its controller runs.** A bundle whose content is a HelmRelease goes Ready as soon as that object exists, so the chart may not have installed and its CRDs may not be established. `healthChecks` are the only thing that closes the gap, and `certs-config` is the only bundle using them — which is why `traefik → certs-config` is the one edge in the fleet that genuinely waits for a working controller.
+
+`longhorn-config → longhorn` shows how little a declared edge buys: the CRDs it needs come from `snapshot-crds` and `snapshot-controller`, two Kustomizations the longhorn bundle _creates_, so the edge is satisfied the moment those objects are applied — long before they have reconciled anything.
+
+Every other cross-bundle CRD need is undeclared and resolved by retrying until the CRD appears. On a cold cluster that surfaces as `dry-run failed: no matches for kind …`:
+
+| CR emitted            | CRD comes from                                                           | Trips                                              |
+| --------------------- | ------------------------------------------------------------------------ | -------------------------------------------------- |
+| `Middleware`          | traefik                                                                  | every bundle with `#Bundle.middlewares` on         |
+| `Certificate`         | cert-manager                                                             | every bundle with `namespaceCert` on               |
+| `Bundle`              | trust-manager, a cert-manager release                                    | `certs-config` — its own `dependsOn` cannot help   |
+| `Cluster`             | cnpg                                                                     | nextcloud, servarr                                 |
+| `ObjectStore`         | the cnpg barman plugin                                                   | servarr                                            |
+| `L2Advertisement`     | metallb                                                                  | `metallb-config`, declared but still webhook-raced |
+| `VolumeSnapshotClass` | external-snapshotter, via two Kustomizations the longhorn bundle creates | `longhorn-config`, declared and still no help      |
+
+A `no matches for kind` message outlives its cause: kustomize-controller's discovery cache keeps failing the dry-run for a while after the CRD is established, so the fix is a reconcile rather than more waiting. Compare the CRD's `creationTimestamp` with the condition's `lastTransitionTime` before believing the message.
+
+Level-3 Kustomizations set `interval: 10m` and no `retryInterval`, so every hop of a chain costs up to ten minutes and a cold bootstrap takes far longer to settle than to succeed. Forcing the whole set is one command, and repeating it each minute walks the graph as fast as the CRDs establish:
+
+```sh
+kubectl annotate kustomization -n flux-system --all \
+  reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
+```
+
+The critical path a cold bootstrap walks, each hop gated on the previous one's CRDs or health:
+
+`cert-manager` → `certs-config` (blocks on real ACME issuance) → `traefik` → Middleware CRDs → every bundle with middlewares → `longhorn` → snapshot CRDs → `longhorn-config` → StorageClasses → every stateful workload.
+
+Only the first hop is a `healthChecks` gate; the rest are retries. Expect three or four forced rounds end to end.
+
+The `sops-age` Secret is not read until level 3, so levels 1 and 2 going Ready proves nothing about whether the key is right or even parseable. `age-keygen -y` against the Secret's data is the cheap check; it prints only public keys.
+
 # Traps
 
 - **Only level-3 Kustomizations can decrypt.** `#Tier.sync` is what sets `decryption`, so a SOPS file must live in a bundle directory inside the artifact, never at the artifact root.
 - **A generated `kustomization.yaml` walks subdirectories.** Where `spec.path` holds no `kustomization.yaml`, kustomize-controller generates one — and it collects manifests from nested directories too, verified with `flux build`. This is why the render puts the level-3 manifests in `sync/` rather than at the artifact root: from the root, the level-2 Kustomization would apply every bundle a second time, without the decryption only level 3 carries.
 - **`gotk-components.yaml` has two writers.** Renovate bumps the controller images in place; `flux bootstrap` regenerates the whole file from whatever version its CLI asks for. Re-running bootstrap without `--version` matching what is committed silently reverts the upgrade — the flag downloads the manifests for the version named, so the dev shell's CLI need not match.
-- **`clusters/nyx/bootstrap.sh` is stale.** It bootstraps `--branch=cluster-migration` while `gotk-sync.yaml` tracks `main`. The script is a one-time record of how the cluster was stood up, not a re-runnable procedure.
+- **`clusters/nyx/bootstrap.sh` is the whole manual procedure.** It creates the `flux-system` namespace and the `sops-age` Secret from stdin, then runs `flux bootstrap github`. Its `--version` is a literal that has to track `gotk-components.yaml`, or bootstrapping silently downgrades the controllers. It is not idempotent: `set -e` plus an already-present `sops-age` aborts it. The node taint is not its job — that comes from [nix-config](/platform/cluster-nyx.md).
