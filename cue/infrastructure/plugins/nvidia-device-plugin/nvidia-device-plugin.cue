@@ -15,7 +15,20 @@ bundle: schema.#Bundle & {
 		"pod-security.kubernetes.io/warn":    "privileged"
 		"pod-security.kubernetes.io/audit":   "privileged"
 	}
+	before: [_runtimeClass]
 	releases: [_nvidia]
+}
+
+// k3s's `runtimes` Addon ships a RuntimeClass for the `nvidia` handler but none
+// for `nvidia-cdi`. Only the CDI handler works here: the plain one runs
+// nvidia-container-runtime in auto mode, which reaches for a legacy
+// libnvidia-container driver tree a NixOS host does not have, and fails the
+// container with exit status 2.
+_runtimeClass: {
+	apiVersion: "node.k8s.io/v1"
+	kind:       "RuntimeClass"
+	metadata: name: "nvidia-cdi"
+	handler: "nvidia-cdi"
 }
 
 _nvidia: schema.#Release & {
@@ -29,19 +42,16 @@ _nvidia: schema.#Release & {
 	crds:       true
 
 	values: {
-		// CDI rather than a containerd runtime handler. k3s registers an `nvidia`
-		// handler only when it finds nvidia-container-runtime on its own PATH,
-		// which nix-config does not put there; containerd 2.x reads the CDI spec
-		// nvidia-container-toolkit writes to /run/cdi instead. A cluster-scoped
-		// RuntimeClass named `nvidia` does exist, but k3s owns it as an Addon —
-		// this bundle must not create it.
-		deviceListStrategy: "cdi-annotations"
+		// the plugin and gfd need NVML to enumerate the GPU, which arrives with the
+		// driver the handler injects. The chart puts this on the device-plugin,
+		// gfd and mps-control DaemonSets; the NFD workers never touch the GPU.
+		runtimeClassName: "nvidia-cdi"
 
-		// the plugin and gfd have to see the GPU to enumerate it, and the
-		// NVIDIA_VISIBLE_DEVICES the chart sets means nothing without the runtime
-		// hook they no longer pass through. This annotation is what injects the
-		// driver into their own pods; `all` is a device the spec declares.
-		podAnnotations: "cdi.k8s.io/gpu": "nvidia.com/gpu=all"
+		// the default envvar strategy hands the allocated device to the runtime as
+		// NVIDIA_VISIBLE_DEVICES, which CDI mode resolves against /run/cdi. That
+		// spec names its devices `0` and `all`, so the id has to be the index —
+		// the chart's `uuid` default would ask for a device it does not declare.
+		deviceIDStrategy: "index"
 
 		gfd: enabled: true
 		nfd: {

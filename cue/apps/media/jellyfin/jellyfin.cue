@@ -36,6 +36,7 @@ _jellyfin: schema.#AppRelease & {
 		controllers: jellyfin: {
 			type: "statefulset"
 			pod: {
+				runtimeClassName: "nvidia-cdi"
 				securityContext: {
 					runAsUser:    uid
 					runAsGroup:   gid
