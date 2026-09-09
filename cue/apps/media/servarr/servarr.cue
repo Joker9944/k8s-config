@@ -351,6 +351,14 @@ _recyclarr: schema.#AppRelease & {
 	}
 }
 
+// A recovery bootstrap requires its own archive destination to be empty, so the
+// two names can never be the same. Every restore moves _archiveTo's old value
+// into _recoverFrom and picks an unused name for _archiveTo; the counter is a
+// token, not arithmetic. Reversing these two is what makes a restore fail with
+// "Expected empty archive".
+_archiveTo:   "servarr-cnpg-6"
+_recoverFrom: "servarr-cnpg"
+
 _cnpgCluster: {
 	apiVersion: "postgresql.cnpg.io/v1"
 	kind:       "Cluster"
@@ -367,7 +375,7 @@ _cnpgCluster: {
 		plugins: [{
 			name:          "barman-cloud.cloudnative-pg.io"
 			isWALArchiver: true
-			parameters: {barmanObjectName: "storj", serverName: "servarr-cnpg"}
+			parameters: {barmanObjectName: "storj", serverName: _archiveTo}
 		}]
 		storage: {size: "3Gi", storageClass: "longhorn-local-strict"}
 		walStorage: {size: "3Gi", storageClass: "longhorn-local-strict"}
@@ -377,7 +385,7 @@ _cnpgCluster: {
 			name: "clusterBackup"
 			plugin: {
 				name: "barman-cloud.cloudnative-pg.io"
-				parameters: {barmanObjectName: "storj", serverName: "servarr-cnpg-restored-5"}
+				parameters: {barmanObjectName: "storj", serverName: _recoverFrom}
 			}
 		}]
 		// Roles are derived from _arrs: adding an app cannot forget its role.

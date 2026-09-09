@@ -2,6 +2,9 @@
 
 ## 2026-09-09
 
+- Restores rotate `_archiveTo` into `_recoverFrom`; the recovery bootstrap needs its own archive destination empty — [backup and restore](/platform/backup-and-restore.md)
+- Only servarr backs Postgres up; blocky, gotify and nextcloud have no off-cluster copy — [backup and restore](/platform/backup-and-restore.md)
+- A `ScheduledBackup` can fail for months while the `Cluster` stays `Ready` — [backup and restore](/platform/backup-and-restore.md)
 - The cluster networks are k3s's `10.42`/`10.43`, and the Talos-era kubeadm defaults had survived in five places — [networking and ingress](/platform/networking-and-ingress.md)
 - `bootstrap.sh` is a working procedure again, with the version literal and the re-run caveat that matter — [Flux topology](/architecture/flux-topology.md)
 - The snapshot-CRD edge, the discovery cache that outlives it, and the critical path a cold bootstrap walks — [Flux topology](/architecture/flux-topology.md)

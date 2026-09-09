@@ -32,6 +32,13 @@
             '';
           }
           {
+            package = pkgs.kubectl-cnpg;
+
+            shellHook = ''
+              source <(kubectl cnpg completion bash)
+            '';
+          }
+          {
             package = pkgs.fluxcd;
 
             shellHook = ''
