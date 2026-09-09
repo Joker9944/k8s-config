@@ -2,6 +2,8 @@
 
 ## 2026-09-09
 
+- The gotify receiver's URL carries a `?token=`, so it lives in a mounted SOPS Secret read via `url_file` — [observability](/platform/observability.md)
+- The bridge's `GOTIFY_TOKEN` is mandatory at startup but unread once receivers carry their own token — [observability](/platform/observability.md)
 - Gotify authenticates against kanidm natively; local auth stays on as break-glass — [observability](/platform/observability.md)
 - v3 list env vars are bare CSV, so the v2 `[a,b]` form silently became one bracketed element — [observability](/platform/observability.md)
 - kanidm matches a custom-scheme redirect as an opaque origin, on confidential clients too — [identity — kanidm](/platform/identity-kanidm.md)

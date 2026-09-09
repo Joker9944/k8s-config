@@ -6,7 +6,10 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "kube-prometheus-stack"
-	extraSecretFiles: ["infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml"]
+	extraSecretFiles: [
+		"infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml",
+		"infrastructure/observability/kube-prometheus-stack/secrets/joker9944.secret.yaml",
+	]
 	repositories: [_prometheusCommunity]
 	namespaceLabels: {
 		// required for node-exporter
@@ -43,8 +46,16 @@ _kps: schema.#Release & {
 
 	let tlsSecret = "wildcard-vonarx-online-cert"
 
+	// The bridge picks its Gotify application from a ?token= on the webhook URL,
+	// so the URL is a credential. url_file keeps it out of the artifact: the
+	// operator models the field and alertmanager re-reads the file per
+	// notification, so rotating the Secret needs no restart.
+	let gotifyURLSecret = "alertmanager-gotify-joker9944-url"
+
 	values: {
 		alertmanager: {
+			alertmanagerSpec: secrets: [gotifyURLSecret]
+
 			config: {
 				route: receiver: "gotify-joker9944"
 				receivers: [
@@ -53,7 +64,7 @@ _kps: schema.#Release & {
 						name: "gotify-joker9944"
 						webhook_configs: [{
 							send_resolved: false
-							url:           "http://gotify-alertmanager-bridge.gotify.svc.cluster.local/webhook"
+							url_file:      "/etc/alertmanager/secrets/\(gotifyURLSecret)/url"
 						}]
 					},
 				]

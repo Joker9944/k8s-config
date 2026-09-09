@@ -203,7 +203,6 @@ _bridge: schema.#AppRelease & {
 					WEBHOOK_PATH:        "/webhook"
 					PRIORITY_ANNOTATION: "severity"
 				}
-				envFrom: [{secretRef: name: "gotify-alertmanager-bridge-default-token"}]
 				probes: {
 					liveness: {enabled: true, port: portHTTP, spec: failureThreshold: 6}
 					readiness: {enabled: true, port: portHTTP}
