@@ -5,7 +5,7 @@ description: What the Nix flake provides — the envParts list that drives both 
 tags: [nix, flake, dev-shell, tooling]
 resource: flake.nix
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T21:50:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T23:30:00Z }
 ---
 
 # The dev shell
@@ -22,6 +22,9 @@ Tools are declared **once** in the `envParts` list — a package plus an optiona
 | `sops`, `age`     | —                                                                         |
 | `cue`             | —                                                                         |
 | `grafana-alloy`   | —                                                                         |
+| `mcp-grafana`     | reads a gitignored `.env` when one exists                                 |
+
+`.env` is the one file the shell reads that git does not track: it holds the Grafana credential the MCP server in `.mcp.json` expands, and nothing else consumes it.
 
 `cue` is here because it has to be single-sourced: [the render](/architecture/cue-layout.md) and its scripts must all evaluate with one version, since two versions order YAML keys differently and would produce artifacts that differ byte for byte without differing in any resource. `generate.sh` takes `cue` from this shell; `checks.cueVet` takes the same one from the flake.
 

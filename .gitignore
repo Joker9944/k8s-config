@@ -3,4 +3,5 @@
 /.cspellcache
 /.pre-commit-config.yaml
 /.direnv
+/.env
 /.claude/worktrees

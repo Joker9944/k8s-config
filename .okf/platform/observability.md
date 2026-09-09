@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T23:30:00Z }
 ---
 
 # The tier
@@ -26,6 +26,10 @@ kube-prometheus-stack → gotify
 
 `cue/infrastructure/observability/alloy/files/config.alloy` is a `#ConfigMapFiles` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`.
 
+Two sources feed one `loki.write.default`: those pod logs, and cluster events through `loki.source.kubernetes_events` (`job_name` `kubernetes/events`, JSON). Both stamp a static `cluster: nyx`; the pod branch additionally derives `container_runtime` from the scheme prefix of the container id.
+
+The pod branch is not generic. Its `loki.process` carries per-app stages — healthcheck drops for kanidm (`| uri: /status |`) and audiobookshelf (`Received ping`), and `stage.regex` pulling `level` and `message` out of kanidm, audiobookshelf and servarr lines, the last needing `stage.multiline` because those logs wrap. Onboarding a noisy app means adding a `stage.match` here, not changing the discovery rules.
+
 The dev shell ships `grafana-alloy` so this file can be checked with `alloy fmt`/`alloy validate` before committing.
 
 # Alerting path
@@ -41,3 +45,5 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 # Dashboards
 
 Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/security/kanidm/files/kanidm-logs.json` is the worked example.
+
+That is not just a convention — Grafana runs with no persistence, its `storage` volume an `emptyDir`, so `grafana.db` dies with the pod. Dashboards and datasources are re-provisioned at start-up and the admin user is re-created from the `grafana-admin` Secret, but everything else held in that database — service accounts and their tokens, silences, stars, preferences — is gone. A dashboard authored in the UI is a scratch buffer, not a change, and the read-only MCP server's service account has to be re-minted by hand after every restart — Grafana provisions no service accounts ([grafana#82987](https://github.com/grafana/grafana/issues/82987)), so `kube-prometheus-stack/grafana-service-account.txt` carries the procedure.

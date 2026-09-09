@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "grafana": {
+      "type": "stdio",
+      "command": "mcp-grafana",
+      "args": [
+        "-t",
+        "stdio",
+        "--disable-write",
+        "--enabled-tools",
+        "search,datasource,dashboard,folder,prometheus,loki,navigation"
+      ],
+      "env": {
+        "GRAFANA_URL": "https://grafana.vonarx.online",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+      }
+    }
+  }
+}

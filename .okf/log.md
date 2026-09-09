@@ -2,6 +2,9 @@
 
 ## 2026-09-09
 
+- Alloy runs two sources into one writer, and the pod branch carries per-app drop and regex stages — [observability](/platform/observability.md)
+- Grafana has no persistence: a UI-authored dashboard is a scratch buffer and the MCP service account dies with the pod — [observability](/platform/observability.md)
+- `mcp-grafana` joins the dev shell, which parses a gitignored `.env` as data — [dev environment](/workflows/dev-environment.md)
 - The gotify receiver's URL carries a `?token=`, so it lives in a mounted SOPS Secret read via `url_file` — [observability](/platform/observability.md)
 - The bridge's `GOTIFY_TOKEN` is mandatory at startup but unread once receivers carry their own token — [observability](/platform/observability.md)
 - Gotify authenticates against kanidm natively; local auth stays on as break-glass — [observability](/platform/observability.md)

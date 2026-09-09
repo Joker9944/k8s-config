@@ -64,6 +64,23 @@
           {
             package = pkgs.grafana-alloy;
           }
+          {
+            package = pkgs.mcp-grafana;
+
+            shellHook = ''
+              # .env is data, not shell: split on the first =, never evaluate it.
+              # Anything that is not a bare identifier is a comment or junk.
+              if [ -f .env ]; then
+                while IFS='=' read -r key value; do
+                  case "$key" in
+                    "" | *[!A-Za-z0-9_]*) continue ;;
+                  esac
+                  export "$key=$value"
+                done < .env
+                unset key value
+              fi
+            '';
+          }
         ];
         cueRender = pkgs.callPackage ./cue/render.nix { };
       in

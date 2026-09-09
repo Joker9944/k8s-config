@@ -1,6 +1,6 @@
 package kubeprometheusstack
 
-// cSpell:ignore Kanidm kubeprometheusstack lokiexplore pkce
+// cSpell:ignore Kanidm kubeprometheusstack lokiexplore mcp pkce
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -78,6 +78,11 @@ _kps: schema.#Release & {
 			}
 		}
 
+		// HACK the read-only MCP server's service account is created by hand,
+		// see grafana-service-account.txt. Grafana provisions datasources,
+		// dashboards and plugins but not service accounts or their tokens
+		// (https://github.com/grafana/grafana/issues/82987), and with no
+		// persistence here the account does not outlive the pod.
 		grafana: {
 			admin: {
 				existingSecret: "grafana-admin"
