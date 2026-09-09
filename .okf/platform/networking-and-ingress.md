@@ -4,7 +4,7 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T15:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T16:00:00Z }
 ---
 
 # Address allocation
@@ -21,6 +21,8 @@ Two experimental plugins are loaded, both tracked by renovate against github-tag
 
 - `geoblock` (`github.com/PascalMinder/geoblock`) — backs the country whitelist.
 - `oidc` (`github.com/lukaszraczylo/traefikoidc`) <!-- cSpell:ignore lukaszraczylo --> — puts [kanidm](/platform/identity-kanidm.md) in front of apps that have no OIDC support of their own. Session state lives in a dedicated `traefik-oidc-redis` replication cluster from the ot-helm Redis operator, which is why `traefik` `dependsOn` `redis-operator`.
+
+A `Middleware` names a plugin by its **registration key** — the `experimental.plugins.<name>` key, not the module path. `spec.plugin.traefikoidc` against a plugin registered as `oidc` builds nothing: Traefik logs `unknown plugin type` once as the router is built, leaves that router unmounted, and every request to it gets a plain 404 with `RouterName: "-"` in the access log. It never logs again, so a quiet log is not evidence the chain works — `geoblock` is the control, keyed consistently and therefore fine.
 
 # Middleware chains
 

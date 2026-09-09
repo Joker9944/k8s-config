@@ -2,6 +2,7 @@
 
 ## 2026-09-09
 
+- A plugin Middleware is keyed by the static registration name, not the module path; a mismatch 404s silently — [networking and ingress](/platform/networking-and-ingress.md)
 - The traefik chart's values schema is closed, so a key a chart major renamed away fails the release — [networking and ingress](/platform/networking-and-ingress.md)
 - kanidm's ServersTransport stays on the deprecated `rootCAsSecrets`, which lives as long as Traefik v3 — [identity — kanidm](/platform/identity-kanidm.md)
 - Selkies images need `MAX_RES`; Xvfb's shm framebuffer leaks into the pod-scoped IPC namespace across restarts — [app-template pattern](/architecture/app-template-pattern.md)

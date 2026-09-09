@@ -182,7 +182,7 @@ _cnpgSecretRef: {
 				oidc: {
 					apiVersion: "traefik.io/v1alpha1"
 					kind:       "Middleware"
-					spec: spec: plugin: traefikoidc: {
+					spec: spec: plugin: oidc: {
 						providerURL:          "https://idm.vonarx.online/oauth2/openid/\(name)"
 						clientID:             name
 						clientSecret:         "urn:k8s:secret:\(name)-oidc:CLIENT_SECRET"
