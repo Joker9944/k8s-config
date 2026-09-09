@@ -48,7 +48,7 @@ _longhorn: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "longhorn"
 	// renovate: datasource=helm packageName=longhorn registryUrl=https://charts.longhorn.io
-	version:    "1.12.0"
+	version:    "1.12.1"
 	sourceName: "longhorn"
 
 	host:  "longhorn.vonarx.online"
