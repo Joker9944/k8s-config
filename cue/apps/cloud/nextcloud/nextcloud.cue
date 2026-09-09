@@ -103,7 +103,13 @@ _nextcloud: schema.#Release & {
 			]
 		}
 
-		persistence: {enabled: true, size: "2Gi", nextcloudData: enabled: true}
+		// /var/www/html holds the ~900MB server tree plus custom_apps; user data
+		// lives in S3, so no separate data volume is warranted.
+		persistence: {enabled: true, size: "3Gi"}
+
+		// Liveness allows ~40s; a first install or major upgrade takes longer and
+		// would be killed mid-run, leaving config.php half-written.
+		startupProbe: enabled: true
 
 		internalDatabase: enabled: false
 		externalDatabase: {
