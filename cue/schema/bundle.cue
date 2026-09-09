@@ -28,7 +28,7 @@ import (
 			"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
 		}
 		"traefik.ingress.kubernetes.io/router.middlewares": strings.Join([
-			for m in list.Concat([[chain], extra]) {"\(ns)-\(m)@kubernetescrd"},
+			for m in list.Concat([[chain], extra]) {"\(ns)_\(m)@kubernetescrd"},
 		], ",")
 	}
 }

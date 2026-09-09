@@ -4,7 +4,7 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T16:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T17:30:00Z }
 ---
 
 # Address allocation
@@ -23,6 +23,8 @@ Two experimental plugins are loaded, both tracked by renovate against github-tag
 - `oidc` (`github.com/lukaszraczylo/traefikoidc`) <!-- cSpell:ignore lukaszraczylo --> — puts [kanidm](/platform/identity-kanidm.md) in front of apps that have no OIDC support of their own. Session state lives in a dedicated `traefik-oidc-redis` replication cluster from the ot-helm Redis operator, which is why `traefik` `dependsOn` `redis-operator`.
 
 A `Middleware` names a plugin by its **registration key** — the `experimental.plugins.<name>` key, not the module path. `spec.plugin.traefikoidc` against a plugin registered as `oidc` builds nothing: Traefik logs `unknown plugin type` once as the router is built, leaves that router unmounted, and every request to it gets a plain 404 with `RouterName: "-"` in the access log. It never logs again, so a quiet log is not evidence the chain works — `geoblock` is the control, keyed consistently and therefore fine.
+
+The converse also holds. Every Traefik pod logs a burst of `middleware ... does not exist` and `servers transport not found` within a few seconds of its own start: the Ingress provider builds routers before the kubernetesCRD provider has finished its first sync. It resolves itself and there is nothing to configure. Read those errors against the pod's `status.startTime` before believing them. One warning is likewise not actionable: Traefik logs the encoded-characters advisory unconditionally at start-up, before it reads any configuration, so no values change silences it.
 
 # Middleware chains
 
@@ -44,7 +46,9 @@ The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept 
 
 # Naming the chain from an ingress
 
-Middleware references are namespace-qualified (`<namespace>-<chain>@kubernetescrd`). `#IngressAnnotations` derives the prefix from the namespace it is handed and no call site writes the string, so an ingress cannot name a middleware that does not exist in its own namespace. That used to be the most common source of breakage here.
+Middleware references are namespace-qualified (`<namespace>_<chain>@kubernetescrd`). `#IngressAnnotations` derives the prefix from the namespace it is handed, so an ingress cannot name a middleware that does not exist in its own namespace. That used to be the most common source of breakage here.
+
+The underscore is `safeNaming`, on in the chart values. It applies to every name the **kubernetesCRD** provider generates — middlewares and the [kanidm](/platform/identity-kanidm.md) ServersTransport — joining namespace and name with `_` and skipping the normalization the legacy scheme applied; only that first separator changes, so `chain-country-whitelist` keeps its own dashes. Routers and services from the Ingress provider (`@kubernetes`) are untouched. The chart emits the flag only when it is true, so returning to the legacy `-` scheme means a raw `additionalArguments` entry, not `safeNaming: false` — that renders nothing and Traefik warns that the option is unset. Two sites write a reference outside `#IngressAnnotations`: the kanidm Service annotation, and a `mustReject` fixture in `cue/probe`.
 
 # DNS
 

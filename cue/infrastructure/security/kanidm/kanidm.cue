@@ -107,7 +107,7 @@ _kanidm: schema.#AppRelease & {
 				// Traefik has to speak HTTPS to this service and verify the private
 				// CA, which is what the ServersTransport below configures.
 				annotations: "traefik.ingress.kubernetes.io/service.serverstransport":
-					"\(namespace)-\(name)-transport@kubernetescrd"
+					"\(namespace)_\(name)-transport@kubernetescrd"
 				ports: https: {primary: true, port: 443, targetPort: 8443}
 			}
 			ldaps: {
@@ -151,7 +151,7 @@ _kanidm: schema.#AppRelease & {
 			kind:       "ServersTransport"
 			spec: spec: {
 				serverName: "\(name).\(namespace)"
-				rootCAsSecrets: ["nyx-ca-cert-bundle"]
+				rootCAs: [{secret: "nyx-ca-cert-bundle"}]
 			}
 		}
 	}

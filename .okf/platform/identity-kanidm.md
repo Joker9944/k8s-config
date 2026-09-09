@@ -5,14 +5,14 @@ description: The cluster's OIDC/LDAP provider, and why every consumer ships a ka
 tags: [kanidm, oidc, sso, identity]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T15:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T17:30:00Z }
 ---
 
 # Deployment
 
 kanidm is the sole member of the `security` tier. It runs as a StatefulSet from `app-template` at `idm.vonarx.online`, HTTPS on 8443 and LDAP on 3636.
 
-It is the only workload that terminates TLS itself: `KANIDM_TLS_CHAIN`/`KANIDM_TLS_KEY` point at a wildcard certificate minted into its own namespace by [`#NamespaceCert`](/architecture/cue-layout.md), and a Traefik `ServersTransport` (declared through `rawResources`, trusting `nyx-ca-cert-bundle`) makes Traefik accept that certificate on the backend hop. The namespace reaches the transport, the annotations and the `serverName` as an ordinary field reference. It names the bundle through `rootCAsSecrets`, which `rootCAs` (secrets or ConfigMaps) deprecates; both ship in the CRD, but `rootCAsSecrets` works for the whole Traefik v3 line and is only removed in v4, so it stays until then.
+It is the only workload that terminates TLS itself: `KANIDM_TLS_CHAIN`/`KANIDM_TLS_KEY` point at a wildcard certificate minted into its own namespace by [`#NamespaceCert`](/architecture/cue-layout.md), and a Traefik `ServersTransport` (declared through `rawResources`, trusting `nyx-ca-cert-bundle`) makes Traefik accept that certificate on the backend hop. The namespace reaches the transport, the annotations and the `serverName` as an ordinary field reference. It names the bundle through `rootCAs`, one entry per Secret or ConfigMap, each holding its certificate under `tls.ca` or `ca.crt`.
 
 `KANIDM_TRUST_X_FORWARD_FOR: true` is what makes rate limiting and audit logs see real client addresses behind Traefik. Health probes exec `kanidmd scripting healthcheck` rather than hitting HTTP.
 

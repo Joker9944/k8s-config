@@ -66,7 +66,7 @@ mustReject: {
 	}}).accepted
 
 	"middleware from another namespace": (#Verdict & {probe: _base & {
-		values: ingress: probe: annotations: "traefik.ingress.kubernetes.io/router.middlewares": "komga-chain-country-whitelist@kubernetescrd"
+		values: ingress: probe: annotations: "traefik.ingress.kubernetes.io/router.middlewares": "komga_chain-country-whitelist@kubernetescrd"
 	}}).accepted
 
 	"middleware chain that does not exist": (#Verdict & {probe: _base & {

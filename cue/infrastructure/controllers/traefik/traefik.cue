@@ -42,6 +42,22 @@ _traefik: schema.#Release & {
 
 		ingressClass: enabled: false
 
+		// Generated CRD names join namespace and name with an underscore, which
+		// every `@kubernetescrd` reference in the fleet spells out. The chart only
+		// ever emits this flag when true, so returning to the legacy `-` scheme
+		// needs a raw additionalArguments entry, not `safeNaming: false`.
+		providers: kubernetesCRD: safeNaming: true
+
+		// Backends that derive variable names from header names (nextcloud and
+		// collabora on PHP-FPM, pgadmin on WSGI) read `X_Auth_User` as
+		// `X-Auth-User`, so a client can spoof what Traefik manages.
+		ports: {
+			web: http: aliasHeadersStrategy:       "delete"
+			websecure: http: aliasHeadersStrategy: "delete"
+			traefik: http: aliasHeadersStrategy:   "delete"
+			metrics: http: aliasHeadersStrategy:   "delete"
+		}
+
 		// the two plugins #Middlewares references: geoblock backs the country
 		// whitelist, oidc backs the forward-auth chain
 		experimental: plugins: {
