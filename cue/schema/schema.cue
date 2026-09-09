@@ -130,7 +130,7 @@ import "list"
 			// BOOTSTRAP: every destination is enabled so a fresh cluster restores
 			// rather than starting empty. Revert to `false` once all nine volumes
 			// have restored — see /platform/backup-and-restore.md.
-			enabled: true
+			enabled: false
 			spec: spec: {
 				trigger: manual: "restore-once"
 				restic: {
