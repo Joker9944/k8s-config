@@ -1,5 +1,7 @@
 package qbittorrent
 
+// cSpell:ignore devic
+
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
@@ -131,7 +133,7 @@ _qbittorrent: schema.#AppRelease & {
 						readiness: gluetunProbe
 						startup: gluetunProbe & {spec: {failureThreshold: 30, periodSeconds: 5}}
 					}
-					resources: limits: "squat.ai/tun": 1
+					resources: limits: "devic.es/tun": 1
 				}
 			}
 		}

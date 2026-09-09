@@ -2,6 +2,8 @@
 
 ## 2026-09-09
 
+- `generic-device-plugin` advertises `devic.es/tun`, not the `squat.ai` name upstream renamed away from — [the nyx cluster](/platform/cluster-nyx.md)
+- An automerged digest bump on a `latest` pin is an unreviewed upstream change — [images, CI and dependency updates](/workflows/images-and-ci.md)
 - Restores rotate `_archiveTo` into `_recoverFrom`; the recovery bootstrap needs its own archive destination empty — [backup and restore](/platform/backup-and-restore.md)
 - Only servarr backs Postgres up; blocky, gotify and nextcloud have no off-cluster copy — [backup and restore](/platform/backup-and-restore.md)
 - A `ScheduledBackup` can fail for months while the `Cluster` stays `Ready` — [backup and restore](/platform/backup-and-restore.md)

@@ -4,7 +4,7 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T22:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T12:00:00Z }
 ---
 
 # Images
@@ -46,6 +46,8 @@ Non-image derivations:
 | ------------------------- | ---------------------------------- |
 | minor, patch, pin, digest | `automerge`                        |
 | major                     | dashboard approval, no `automerge` |
+
+**Trap:** a `tag: "latest@sha256:…"` pin is a digest update, so renovate automerges it — the digest is reproducible but says nothing about what changed upstream. `generic-device-plugin` renamed its resource domain across such a bump and the break only surfaced at the next reschedule. A moving tag under this rule wants a real version or a `packageRules` exclusion.
 
 The stock **flux manager reads `clusters/nyx/flux/flux-system/`**, which is the one tree flux writes rather than CUE — so a flux release lands as a controller bump in `gotk-components.yaml`. That file is also what [`cue/generate.sh`](/architecture/cue-layout.md) reads its versions from, so a flux PR and a `cue.mod/gen` regeneration belong in the same change.
 
