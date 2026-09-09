@@ -94,7 +94,7 @@ _blocky: schema.#AppRelease & {
 				jinja: schema.#Hardened & {
 					image: {
 						repository: "ghcr.io/joker9944/jinja-cli"
-						tag:        "4.0.0@sha256:7e5498571eb6cb33605297d9a91eadf1fe3b89937a770f2f9863f29a25cbb580"
+						tag:        "4.0.0@sha256:81cd8cd0daa0baab6b1994d6b0c14c88ba812faa5c740f3637295f31b8f20479"
 					}
 					env: {
 						PGURI: valueFrom: secretKeyRef: {name: cnpgSecret, key: "uri"}
