@@ -30,7 +30,7 @@ _pgadmin: schema.#Release & {
 	namespace: "pgadmin"
 	chart:     "pgadmin4"
 	// renovate: datasource=helm packageName=pgadmin4 registryUrl=https://helm.runix.net
-	version:    "1.65.0"
+	version:    "1.66.0"
 	sourceName: "runix"
 	interval:   "5m"
 
