@@ -101,6 +101,7 @@ _komga: schema.#AppRelease & {
 				globalMounts: [{path: "/config/application.yml", subPath: "application.yml"}]
 			}
 			data: schema.#MediaData
+			tmp: type: "emptyDir"
 		}
 	}
 }
