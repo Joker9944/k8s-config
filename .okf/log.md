@@ -2,6 +2,8 @@
 
 ## 2026-09-09
 
+- The traefik chart's values schema is closed, so a key a chart major renamed away fails the release — [networking and ingress](/platform/networking-and-ingress.md)
+- kanidm's ServersTransport stays on the deprecated `rootCAsSecrets`, which lives as long as Traefik v3 — [identity — kanidm](/platform/identity-kanidm.md)
 - Selkies images need `MAX_RES`; Xvfb's shm framebuffer leaks into the pod-scoped IPC namespace across restarts — [app-template pattern](/architecture/app-template-pattern.md)
 - nextcloud is a Garage consumer; S3 is its primary object store, so its Longhorn volume holds only the server tree — [storage](/platform/storage.md)
 - Loki's volumes join `longhorn-local-strict`, and scheduling counts reserved size against a whole-disk ceiling — [storage](/platform/storage.md)

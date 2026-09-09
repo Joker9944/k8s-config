@@ -57,13 +57,11 @@ _traefik: schema.#Release & {
 			}
 		}
 
-		logs: {
-			general: {level: "INFO", format: "json"}
-			access: {
-				enabled: true
-				format:  "json"
-				fields: headers: defaultmode: "keep"
-			}
+		log: {level: "INFO", format: "json"}
+		accessLog: {
+			enabled: true
+			format:  "json"
+			fields: headers: defaultMode: "keep"
 		}
 
 		service: {

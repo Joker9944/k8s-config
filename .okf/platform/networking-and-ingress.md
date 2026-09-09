@@ -4,7 +4,7 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T14:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T15:00:00Z }
 ---
 
 # Address allocation
@@ -14,6 +14,8 @@ MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, adve
 # Traefik
 
 Ingress is HTTPS-only through the `websecure` entrypoint. Every `Ingress` sets `traefik.ingress.kubernetes.io/router.tls: "true"`, names an entrypoint, names a middleware chain, and references the wildcard TLS secret from [PKI](/platform/certificates-and-pki.md).
+
+The chart's `values.schema.json` closes the top level, so a values key a chart major has renamed away fails the HelmRelease outright rather than being ignored. That is what makes a major bump here a values migration rather than a version bump.
 
 Two experimental plugins are loaded, both tracked by renovate against github-tags:
 
