@@ -31,7 +31,7 @@ _traefik: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "traefik"
 	// renovate: datasource=helm packageName=traefik registryUrl=https://traefik.github.io/charts
-	version:    "39.0.9"
+	version:    "41.5.0"
 	sourceName: _traefikRepo.name
 	crds:       true
 
@@ -53,17 +53,15 @@ _traefik: schema.#Release & {
 			oidc: {
 				moduleName: "github.com/lukaszraczylo/traefikoidc"
 				// renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced
-				version: "v0.8.27"
+				version: "v1.0.35"
 			}
 		}
 
-		logs: {
-			general: {level: "INFO", format: "json"}
-			access: {
-				enabled: true
-				format:  "json"
-				fields: headers: defaultmode: "keep"
-			}
+		log: {level: "INFO", format: "json"}
+		accessLog: {
+			enabled: true
+			format:  "json"
+			fields: headers: defaultMode: "keep"
 		}
 
 		service: {
