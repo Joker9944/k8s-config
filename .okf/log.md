@@ -2,6 +2,9 @@
 
 ## 2026-09-09
 
+- Gotify authenticates against kanidm natively; local auth stays on as break-glass — [observability](/platform/observability.md)
+- v3 list env vars are bare CSV, so the v2 `[a,b]` form silently became one bracketed element — [observability](/platform/observability.md)
+- kanidm matches a custom-scheme redirect as an opaque origin, on confidential clients too — [identity — kanidm](/platform/identity-kanidm.md)
 - A hostPath or root container needs `enforce: privileged` on its namespace; the fleet's labels answer to Talos and are not cargo cult — [the nyx cluster](/platform/cluster-nyx.md)
 - jellyfin reads `chronos/media-data` through `#MediaDataHost`, a hostPath, instead of looping back through `mother`'s own nfsd — [storage](/platform/storage.md)
 - `safeNaming` is on: kubernetesCRD-generated names join with `_`, and the chart emits the flag only when true — [networking and ingress](/platform/networking-and-ingress.md)

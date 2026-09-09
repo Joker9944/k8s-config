@@ -1,6 +1,6 @@
 package gotify
 
-// cSpell:ignore ALLOWORIGINS druggeri KEEPALIVEPERIODSECONDS LISTENADDR PINGPERIODSECONDS PLUGINSDIR trixie TRUSTEDPROXIES UPLOADEDIMAGESDIR
+// cSpell:ignore ALLOWORIGINS CLIENTID druggeri KEEPALIVEPERIODSECONDS LISTENADDR PINGPERIODSECONDS PLUGINSDIR REDIRECTURL SECURECOOKIE trixie TRUSTEDPROXIES UPLOADEDIMAGESDIR
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -66,16 +66,28 @@ _gotify: schema.#AppRelease & {
 					GOTIFY_SERVER_KEEPALIVEPERIODSECONDS:   0
 					GOTIFY_SERVER_LISTENADDR:               null
 					GOTIFY_SERVER_SSL_ENABLED:              false
-					GOTIFY_SERVER_TRUSTEDPROXIES:           "[\(schema.#PodCIDR)]"
-					GOTIFY_SERVER_CORS_ALLOWORIGINS:        "[gotify.vonarx.online]"
+					GOTIFY_SERVER_TRUSTEDPROXIES:           schema.#PodCIDR
+					GOTIFY_SERVER_CORS_ALLOWORIGINS:        "^https://gotify\\.vonarx\\.online$"
+					GOTIFY_SERVER_SECURECOOKIE:             true
 					GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
 					GOTIFY_DATABASE_DIALECT:                "postgres"
 					GOTIFY_UPLOADEDIMAGESDIR:               "/data/images"
 					GOTIFY_PLUGINSDIR:                      "/plugins"
+
+					GOTIFY_OIDC_ENABLED:      true
+					GOTIFY_OIDC_ISSUER:       "https://idm.vonarx.online/oauth2/openid/gotify"
+					GOTIFY_OIDC_CLIENTID:     "gotify"
+					GOTIFY_OIDC_REDIRECTURL:  "https://\(host)/auth/oidc/callback"
+					GOTIFY_OIDC_IDP_NAME:     "kanidm"
+					GOTIFY_OIDC_SCOPES:       "openid,groups"
+					GOTIFY_OIDC_GROUPS_CLAIM: "groups"
+					GOTIFY_OIDC_GROUPS_ADMIN: "gotify_admins@idm.vonarx.online"
+					GOTIFY_OIDC_GROUPS_USER:  "gotify_users@idm.vonarx.online"
 				}
 				envFrom: [
 					{secretRef: name: "gotify-default-user"},
 					{secretRef: name: "gotify-custom-cnpg-connection"},
+					{secretRef: name: "gotify-oidc"},
 				]
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}

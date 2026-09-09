@@ -1,0 +1,20 @@
+# Group Setup
+
+kanidm group create gotify_admins
+kanidm group add-members gotify_admins monitoring_admins
+kanidm group create gotify_users
+kanidm group add-members gotify_users monitoring_users
+
+# OIDC Setup
+
+kanidm system oauth2 create gotify "Gotify" https://gotify.vonarx.online/
+
+kanidm system oauth2 prefer-short-username gotify
+
+kanidm system oauth2 set-landing-url gotify https://gotify.vonarx.online/auth/oidc/login
+
+kanidm system oauth2 add-redirect-url gotify https://gotify.vonarx.online/auth/oidc/callback
+kanidm system oauth2 add-redirect-url gotify gotify://oidc/callback
+
+kanidm system oauth2 update-scope-map gotify gotify_admins openid groups
+kanidm system oauth2 update-scope-map gotify gotify_users openid groups
