@@ -2,6 +2,10 @@
 
 ## 2026-09-09
 
+- Only `kipp` reports node metrics, which is what shapes `TargetDown` and `NodeClockNotSynchronising` — [observability](/platform/observability.md)
+- kube-proxy is scraped through hand-built Endpoints; k3s leaves no pod for the chart to select — [observability](/platform/observability.md)
+- Grafana's Alertmanager datasource has no backend, so a server-side health check always 500s — [observability](/platform/observability.md)
+- MetalLB's `servicel2status` controller loops permanently and drives the API error-budget burn — [networking and ingress](/platform/networking-and-ingress.md)
 - Alloy runs two sources into one writer, and the pod branch carries per-app drop and regex stages — [observability](/platform/observability.md)
 - Grafana has no persistence: a UI-authored dashboard is a scratch buffer and the MCP service account dies with the pod — [observability](/platform/observability.md)
 - `mcp-grafana` joins the dev shell, which parses a gitignored `.env` as data — [dev environment](/workflows/dev-environment.md)

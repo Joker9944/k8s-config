@@ -4,12 +4,14 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T17:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T19:18:00Z }
 ---
 
 # Address allocation
 
 MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (for example jellyfin's DLNA autodiscovery service on `192.168.0.130`). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
+
+**The `servicel2status` controller is in a permanent reconcile loop** (chart 0.16.1). For every L2-announced service — traefik, blocky-dns, jellyfin-autodiscovery — it alternates `servicel2statuses.metallb.io "l2-xxxxx" not found` with `resourceVersion should not be set on objects to be created`, at a few failed `POST`s per second after peaking above 40/s. That makes it the sole driver of `KubeAPIErrorBudgetBurn` and the dominant source of Loki ingest for `metallb-system`. Announcement is unaffected; only the status CR fails to write. Upstream has several open `ServiceL2Status` bugs ([#2930](https://github.com/metallb/metallb/issues/2930), [#2705](https://github.com/metallb/metallb/issues/2705)), though not this pairing.
 
 # Traefik
 

@@ -159,5 +159,19 @@ _kps: schema.#Release & {
 		// directly
 		kubeScheduler: enabled:         false
 		kubeControllerManager: enabled: false
+
+		// k3s runs kube-proxy inside the agent process, so nothing carries the
+		// k8s-app: kube-proxy label the chart's Service selects on. With no
+		// endpoints the target never exists and KubeProxyDown, an absent()
+		// rule, fires forever. Naming the nodes builds the Endpoints by hand.
+		// Requires metrics-bind-address=0.0.0.0 on the k3s agents from
+		// nix-config; the 127.0.0.1 default is unreachable from the Prometheus
+		// pod.
+		kubeProxy: endpoints: [
+			"192.168.0.21",
+			"192.168.0.22",
+			"192.168.0.23",
+			"192.168.0.24",
+		]
 	}
 }

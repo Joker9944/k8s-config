@@ -203,6 +203,9 @@ _bridge: schema.#AppRelease & {
 					WEBHOOK_PATH:        "/webhook"
 					PRIORITY_ANNOTATION: "severity"
 				}
+				// Never read: the ?token= on the webhook URL selects the Gotify
+				// application. Present because the bridge exits 1 when it is unset.
+				envFrom: [{secretRef: name: "gotify-alertmanager-bridge-default-token"}]
 				probes: {
 					liveness: {enabled: true, port: portHTTP, spec: failureThreshold: 6}
 					readiness: {enabled: true, port: portHTTP}
