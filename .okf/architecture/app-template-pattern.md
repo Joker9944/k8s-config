@@ -4,7 +4,7 @@ title: App-template pattern
 description: The bjw-s app-template idioms every workload follows, the chart sources, and the OIDC runbooks that sit beside them.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-09T11:00:00Z }
 ---
 
 # Package shape
@@ -26,6 +26,7 @@ Almost every workload uses the bjw-s `app-template` chart through `#AppRelease`,
 
 - **Values reused within a release are `let` bindings** — `uid`/`gid` for the pod security context and the volsync mover, `portHTTP` for probes and services, `host` for the ingress rule and its TLS entry, `configSize` for the PVC and its `ReplicationDestination`. These were YAML anchors.
 - **Hardening is uniform and enforced by the type checker**: `#Hardened` pins `runAsNonRoot`, `seccompProfile: RuntimeDefault`, `readOnlyRootFilesystem: true`, `allowPrivilegeEscalation: false` and `capabilities.drop: [ALL]`, with `emptyDir` volumes wherever the app insists on writing.
+- **Selkies desktop images set `MAX_RES`** (openaudible). Xvfb's framebuffer is a SysV shm segment charged to the pod cgroup, and the image default of `15360x8640` reserves 506Mi of the memory limit on its own. The IPC namespace belongs to the pod sandbox rather than the container, so a SIGKILLed Xvfb orphans its segment and every restart leaks another — once the cgroup fills, the container OOMs within a second and only deleting the pod clears it.
 - **`rawResources`** embeds non-chart objects in the release — volsync pairs (spliced in by `#AppRelease` from `backups`, see [backup and restore](/platform/backup-and-restore.md)), CNPG clusters, Traefik `ServersTransport`.
 - Image tags are pinned by tag **and** digest (`10.11.11@sha256:…`), which `#Digest` requires and renovate maintains.
 

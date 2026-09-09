@@ -62,6 +62,9 @@ _openaudible: schema.#AppRelease & {
 					UMASK:       "0002"
 					PUID:        uid
 					PGID:        gid
+					// Xvfb's framebuffer is a SysV shm segment charged to the pod cgroup;
+					// the image's 15360x8640 default reserves 506Mi of the memory limit
+					MAX_RES: "1920x1080"
 				}
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}

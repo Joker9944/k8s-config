@@ -2,6 +2,7 @@
 
 ## 2026-09-09
 
+- Selkies images need `MAX_RES`; Xvfb's shm framebuffer leaks into the pod-scoped IPC namespace across restarts — [app-template pattern](/architecture/app-template-pattern.md)
 - nextcloud is a Garage consumer; S3 is its primary object store, so its Longhorn volume holds only the server tree — [storage](/platform/storage.md)
 - Loki's volumes join `longhorn-local-strict`, and scheduling counts reserved size against a whole-disk ceiling — [storage](/platform/storage.md)
 - GPU injection moved to the `nvidia-cdi` handler; the annotation path and the phantom GPU taint recorded — [the nyx cluster](/platform/cluster-nyx.md)
