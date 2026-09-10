@@ -23,6 +23,10 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Backup and restore](platform/backup-and-restore.md) - volsync/restic for PVCs, CNPG/barman-cloud for Postgres.
 - [Observability](platform/observability.md) - Prometheus, Loki, Alloy, and the Gotify alerting path.
 
+# Reference
+
+- [kanidm OIDC claim mapping](reference/oidc-claim-mapping.md) - which claim carries which attribute, and what never leaves kanidm.
+
 # Decisions
 
 - [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.

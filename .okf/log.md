@@ -2,6 +2,8 @@
 
 ## 2026-09-10
 
+- A `reference/` tree holds upstream behaviour read off pinned source, and makes `sources` mandatory for what lands there — [reference](/reference/index.md)
+- kanidm's scope-to-claim mapping is documented from source; `legalname` reaches no claim and claim maps are group-keyed — [kanidm OIDC claim mapping](/reference/oidc-claim-mapping.md)
 - The loki gateway is quietened at the chart and classified by Loki itself, so it needs no pipeline — [observability](/platform/observability.md)
 - gotify parses as zerolog console; its own `/health` suppression is loopback-only, so the probes always logged — [observability](/platform/observability.md)
 - klog is parsed by format rather than by claim label, so one pipeline covers every k8s controller — [observability](/platform/observability.md)
