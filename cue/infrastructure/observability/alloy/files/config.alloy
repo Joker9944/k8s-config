@@ -89,7 +89,7 @@ loki.process "common" {
 
 loki.source.kubernetes "k8s_pod_logs" {
 	targets    = discovery.relabel.k8s_pod_logs_default.output
-	forward_to = [loki.process.common.receiver]
+	forward_to = [loki.process.klog.receiver]
 
 	// Discovery is cluster-wide, so without the ring every DaemonSet replica
 	// tails every pod and pushes the same lines.

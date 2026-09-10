@@ -22,14 +22,20 @@ _grafana: schema.#HelmRepo & {name: "grafana", url: "https://grafana.github.io/h
 // Plaintext config, read from disk at evaluation time. @embed cannot escape the
 // package directory, which is why this file lives here.
 _configAlloy: _ @embed(file="files/config.alloy", type=text)
+_klogAlloy:   _ @embed(file="files/klog.alloy", type=text)
 
 // Delivered into /etc/alloy.d by the same sidecar that carries the workload
-// files, so the base and the pipelines that reference it arrive together.
+// files, so the base and the pipelines that reference it arrive together. Both
+// keys ride the one ConfigMap, which is what stops config.alloy's reference into
+// klog.alloy from ever resolving against a directory that lacks it.
 _config: schema.#ConfigMapFiles & {
 	name: "alloy-config"
 	ns:   bundle.namespace
-	labels: alloy_config:  "1"
-	files: "config.alloy": _configAlloy
+	labels: alloy_config: "1"
+	files: {
+		"config.alloy": _configAlloy
+		"klog.alloy":   _klogAlloy
+	}
 }
 
 // Watches every namespace for ConfigMaps carrying alloy_config and writes each

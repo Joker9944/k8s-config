@@ -1,0 +1,67 @@
+// A parser for klog, the format k8s.io/klog/v2 emits. It belongs to the logging
+// library rather than to any one workload — six containers across four charts
+// carry it — so it is selected by format and lives beside the base config rather
+// than in an app package. The generic branch forwards through it.
+
+// cSpell:ignore klog leaderelection
+
+loki.process "klog" {
+	forward_to = [loki.process.common.receiver]
+
+	// A claim label cannot express this. The emitter set is discovered from
+	// content and grows whenever a chart adds a sidecar, and the largest of them,
+	// snapshot-controller, is a raw upstream Kustomization with no values to hang
+	// a pod label on.
+	//
+	// The stream selector has to name a label that exists at this point in the
+	// graph: `cluster` is stamped downstream in loki.process.common, while
+	// `namespace` comes from discovery.relabel.k8s_pod_logs and is always set.
+	// Carrying the time as well as the severity and MMDD is what stops a line
+	// that merely begins `E404 ` from matching.
+	//
+	// Nothing can fold multiline in here: a stack-trace continuation carries no
+	// header, so it never matches the filter, never enters the block, and cannot
+	// be folded into the line above it.
+	stage.match {
+		selector = "{namespace=~\".+\"} |~ \"^[IWEF][0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}\""
+
+		// The three steady-state lease messages, which are the whole of
+		// snapshot-controller's leaderelection output. Named one by one rather
+		// than dropping the file, so that acquiring a lease, losing one or failing
+		// to renew one — the events worth having — still arrive. First, so a line
+		// headed for the bin is never parsed.
+		stage.drop {
+			expression          = "leaderelection\\.go:[0-9]+\\] \"(Failed to acquire lease|Lease is held by and has not yet expired|Successfully renewed lease)\""
+			drop_counter_reason = "leader_election_steady_state"
+		}
+
+		// The header alone: `I0910 17:11:22.832408       1 leaderelection.go:267]`.
+		// The message is deliberately not captured — nothing downstream reads it,
+		// and an unused capture is what hid the defect in audiobookshelf's regex.
+		// The timestamp is matched but not captured either: the container runtime
+		// supplies one and klog's carries no year. Nothing here matches to end of
+		// line, so neither (?s) nor a `$` anchor applies.
+		stage.regex {
+			expression = "^(?P<level>[IWEF])[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6} +[0-9]+ (?P<caller>[^ \\]]+)\\]"
+		}
+
+		// stage.template creates its source field when that field is absent, so
+		// this runs with an empty value on any line that passed the filter but
+		// failed the regex. The final else is what keeps such a line from being
+		// stamped with whichever severity the fallthrough branch happens to name.
+		stage.template {
+			source   = "level"
+			template = "{{ if eq .Value \"I\" }}info{{ else if eq .Value \"W\" }}warn{{ else if eq .Value \"E\" }}error{{ else if eq .Value \"F\" }}critical{{ else }}unknown{{ end }}"
+		}
+
+		// caller is the call site, `leaderelection.go:267` — a stable identifier
+		// with no analogue in the per-app pipelines, and what `sum by (caller)`
+		// groups on to name the line of code that is flooding.
+		stage.structured_metadata {
+			values = {
+				level  = "level",
+				caller = "caller",
+			}
+		}
+	}
+}
