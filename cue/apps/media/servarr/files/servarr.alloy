@@ -40,6 +40,11 @@ loki.process "servarr" {
 		expression = "(?s)^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+?)\\s*$"
 	}
 
+	stage.template {
+		source   = "level"
+		template = "{{ ToLower .Value }}"
+	}
+
 	stage.structured_metadata {
 		values = {
 			level = "level",

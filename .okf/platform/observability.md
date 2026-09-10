@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T17:35:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T17:55:00Z }
 ---
 
 # The tier
@@ -45,6 +45,8 @@ The claim label is the destructive half: a pod carrying it leaves the generic br
 # Log levels
 
 kanidm and audiobookshelf still parse in the base config's `loki.process`, and their `stage.regex` captures go nowhere — no `stage.labels` or `stage.structured_metadata` follows them. **Those two expressions also never match.** Lines arrive with a trailing newline and RE2's `$` matches only end-of-text — unlike Perl it does not match before a final newline — so `.+$` never reaches its anchor. A `stage.regex` that matches nothing is silent: it populates no captures and raises nothing. The defect stayed invisible for as long as the captures were unused, and surfaced the moment servarr's pipeline added a `stage.structured_metadata` for them to feed. Any expression here wants `(?s)` and a `\s*$` tail; servarr's carries both, so it is the one workload whose `level` and `unit` reach Loki.
+
+**A `level` that reaches Loki has to be lowercase.** `discover_log_levels` prefers the field over its own heuristic and copies the case it is given, and the [logs dashboard](/platform/observability.md) matches `detected_level` against a hardcoded lowercase list with `=~`, which is case-sensitive — so an `Info` is a line the dashboard silently cannot see. A `stage.template` with `ToLower` between the regex and the structured-metadata stage is what keeps a workload inside that convention.
 
 Everywhere else the only log level is Loki's own — `detected_level` structured metadata, from `discover_log_levels`, which nothing here disables. It is uniform across every namespace, at the price of being a heuristic: `unknown` covers roughly half the volume. Structured metadata is invisible to the label API (`label_values(detected_level)` is empty), so a level picker has to carry a hardcoded list.
 
