@@ -1,0 +1,65 @@
+// The kanidm log pipeline. Loaded into alloy's config graph by the sidecar that
+// watches ConfigMaps labelled alloy_config; the base config lives with alloy and
+// supplies loki.process.common and the labelled target set read below.
+
+// cSpell:ignore kopid
+
+discovery.relabel "kanidm" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "kanidm"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "kanidm" {
+	targets    = discovery.relabel.kanidm.output
+	forward_to = [loki.process.kanidm.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "kanidm" {
+	forward_to = [loki.process.common.receiver]
+
+	stage.drop {
+		expression          = "\\| uri: /status \\|"
+		drop_counter_reason = "healthcheck_call"
+	}
+
+	// Every real line opens with the kopid, so this folds only what kanidm writes
+	// outside the tracing layer, such as a bare {CredentialUpdate}.
+	stage.multiline {
+		firstline = "^[0-9a-f-]{36} \\w+"
+	}
+
+	// tracing-forest pads the level to a fixed column and indents children three
+	// further, so the gap after it is variable — a fixed count fits INFO at depth
+	// zero and nothing else. (?s) with a \s*$ tail is what makes the anchor
+	// reachable: lines carry a trailing newline and RE2's `$` is end-of-text only.
+	stage.regex {
+		expression = "(?s)^(?P<event_id>[0-9a-f-]{36}) (?P<level>\\w+)\\s+(?P<message>.+?)\\s*$"
+	}
+
+	// Loki copies `level` into detected_level verbatim, and the global logs
+	// dashboard matches that against a lowercase list with a case-sensitive =~.
+	stage.template {
+		source   = "level"
+		template = "{{ ToLower .Value }}"
+	}
+
+	// event_id is the kopid kanidm's own error text tells you to search for.
+	// Structured metadata rather than a label: it is one value per request.
+	stage.structured_metadata {
+		values = {
+			level    = "level",
+			event_id = "event_id",
+		}
+	}
+}

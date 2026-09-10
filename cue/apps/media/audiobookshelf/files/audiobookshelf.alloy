@@ -1,0 +1,71 @@
+// The audiobookshelf log pipeline. Loaded into alloy's config graph by the
+// sidecar that watches ConfigMaps labelled alloy_config; the base config lives
+// with alloy and supplies loki.process.common and the target set read below.
+
+discovery.relabel "audiobookshelf" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "audiobookshelf"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "audiobookshelf" {
+	targets    = discovery.relabel.audiobookshelf.output
+	forward_to = [loki.process.audiobookshelf.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "audiobookshelf" {
+	forward_to = [loki.process.common.receiver]
+
+	stage.drop {
+		expression          = "Received ping"
+		drop_counter_reason = "healthcheck_call"
+	}
+
+	// Arguments are printed as given, so a pretty-printed object arrives one line
+	// per brace.
+	stage.multiline {
+		firstline = "^\\[\\d{4}-\\d{2}-\\d{2} "
+	}
+
+	// The timestamp is matched but not captured: the container runtime already
+	// supplies one, and an unused capture is what hid the defect here before.
+	// (?s) with a \s*$ tail is what makes the anchor reachable — lines carry a
+	// trailing newline and RE2's `$` is end-of-text only.
+	stage.regex {
+		expression = "(?s)^\\[[^\\]]+\\] (?P<level>\\w+): (?P<message>.+?)\\s*$"
+	}
+
+	// The bracketed unit is a convention in audiobookshelf's own call sites, not
+	// part of the format, so plenty of lines carry none. A second pass leaves
+	// those untouched — a stage.regex that does not match writes nothing — where
+	// one expression with an optional group would stamp an empty unit on all of
+	// them.
+	stage.regex {
+		source     = "message"
+		expression = "(?s)^\\[(?P<unit>[^\\]]+)\\] (?P<message>.+)"
+	}
+
+	// Loki copies `level` into detected_level verbatim, and the global logs
+	// dashboard matches that against a lowercase list with a case-sensitive =~.
+	stage.template {
+		source   = "level"
+		template = "{{ ToLower .Value }}"
+	}
+
+	stage.structured_metadata {
+		values = {
+			level = "level",
+			unit  = "unit",
+		}
+	}
+}

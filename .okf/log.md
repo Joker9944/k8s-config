@@ -2,6 +2,7 @@
 
 ## 2026-09-10
 
+- kanidm and audiobookshelf move to their own pipelines, emptying the base config of app-specific stages — [observability](/platform/observability.md)
 - A parsed `level` must be lowercased before it becomes structured metadata; detected_level copies its case and the dashboard's matcher is case-sensitive — [observability](/platform/observability.md)
 - RE2's `$` does not match before a trailing newline, so every `stage.regex` in the fleet had silently never matched — [observability](/platform/observability.md)
 - `alloy fmt -w` joins pre-commit, so .alloy formatting is canonical rather than hand-matched — [observability](/platform/observability.md)

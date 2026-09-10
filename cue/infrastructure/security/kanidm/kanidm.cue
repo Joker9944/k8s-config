@@ -1,3 +1,5 @@
+@extern(embed)
+
 package kanidm
 
 // cSpell:ignore BINDADDRESS kanidmd LDAPBINDADDRESS ldaps serverstransport
@@ -13,7 +15,17 @@ bundle: schema.#Bundle & {
 
 	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
 
+	before: [_logs.out]
 	releases: [_kanidm]
+}
+
+_kanidmLogs: _ @embed(file="files/kanidm.alloy", type=text)
+
+// kanidm's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "kanidm"
+	ns:     bundle.namespace
+	config: _kanidmLogs
 }
 
 _kanidm: schema.#AppRelease & {
@@ -45,6 +57,8 @@ _kanidm: schema.#AppRelease & {
 	_cert: (schema.#NamespaceCert & {ns: namespace}).out
 
 	values: {
+		defaultPodOptions: labels: _logs.podLabels
+
 		controllers: kanidm: {
 			type: "statefulset"
 			pod: securityContext: {

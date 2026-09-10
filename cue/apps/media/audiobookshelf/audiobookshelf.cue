@@ -1,3 +1,5 @@
+@extern(embed)
+
 package audiobookshelf
 
 // cSpell:ignore advplyr
@@ -6,7 +8,17 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "audiobookshelf"
+	before: [_logs.out]
 	releases: [_audiobookshelf]
+}
+
+_audiobookshelfLogs: _ @embed(file="files/audiobookshelf.alloy", type=text)
+
+// audiobookshelf's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "audiobookshelf"
+	ns:     bundle.namespace
+	config: _audiobookshelfLogs
 }
 
 _audiobookshelf: schema.#AppRelease & {
@@ -42,6 +54,8 @@ _audiobookshelf: schema.#AppRelease & {
 	backups: [_backupConfig, _backupMetadata]
 
 	values: {
+		defaultPodOptions: labels: _logs.podLabels
+
 		controllers: audiobookshelf: {
 			type: "statefulset"
 			pod: {

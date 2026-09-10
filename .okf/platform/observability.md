@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T17:55:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T18:40:00Z }
 ---
 
 # The tier
@@ -44,7 +44,7 @@ The claim label is the destructive half: a pod carrying it leaves the generic br
 
 # Log levels
 
-kanidm and audiobookshelf still parse in the base config's `loki.process`, and their `stage.regex` captures go nowhere — no `stage.labels` or `stage.structured_metadata` follows them. **Those two expressions also never match.** Lines arrive with a trailing newline and RE2's `$` matches only end-of-text — unlike Perl it does not match before a final newline — so `.+$` never reaches its anchor. A `stage.regex` that matches nothing is silent: it populates no captures and raises nothing. The defect stayed invisible for as long as the captures were unused, and surfaced the moment servarr's pipeline added a `stage.structured_metadata` for them to feed. Any expression here wants `(?s)` and a `\s*$` tail; servarr's carries both, so it is the one workload whose `level` and `unit` reach Loki.
+**Every `stage.regex` here wants `(?s)` and a `\s*$` tail.** Lines arrive with a trailing newline and RE2's `$` matches only end-of-text — unlike Perl it does not match before a final newline — so `.+$` never reaches its anchor, and a `stage.regex` that matches nothing is silent: no captures, no error. The defect survives as long as the captures are unused and surfaces the moment a `stage.structured_metadata` is added for them to feed. That same silence is useful: a miss leaves the extracted map untouched, so an **optional** field belongs in a second pass over `message` rather than an optional group, which writes the empty string and stamps it on every line that lacks the field. Fixed widths are the related trap — kanidm's tracing-forest output pads the level out to a column and indents children past it, so only `\s+` fits every depth.
 
 **A `level` that reaches Loki has to be lowercase.** `discover_log_levels` prefers the field over its own heuristic and copies the case it is given, and the [logs dashboard](/platform/observability.md) matches `detected_level` against a hardcoded lowercase list with `=~`, which is case-sensitive — so an `Info` is a line the dashboard silently cannot see. A `stage.template` with `ToLower` between the regex and the structured-metadata stage is what keeps a workload inside that convention.
 
