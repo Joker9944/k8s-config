@@ -2,6 +2,7 @@
 
 ## 2026-09-10
 
+- RE2's `$` does not match before a trailing newline, so every `stage.regex` in the fleet had silently never matched — [observability](/platform/observability.md)
 - `alloy fmt -w` joins pre-commit, so .alloy formatting is canonical rather than hand-matched — [observability](/platform/observability.md)
 - The claim label's fail-closed behaviour is accepted rather than inverted; the cost is permanent, the exposure only edit-sized — [observability](/platform/observability.md)
 - Alloy loads a directory as one graph, so a workload's log pipeline ships in its own package and a sidecar collects it — [observability](/platform/observability.md)
