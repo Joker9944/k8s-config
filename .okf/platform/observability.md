@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T09:05:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T11:25:00Z }
 ---
 
 # The tier
@@ -18,7 +18,7 @@ kube-prometheus-stack → gotify
 ```
 
 - **kube-prometheus-stack** — Prometheus, Alertmanager and Grafana. Grafana authenticates against [kanidm](/platform/identity-kanidm.md); the Prometheus and Alertmanager UIs sit behind `chain-network-internal-whitelist` while Grafana takes the country whitelist.
-- **loki** — chunks and indexes in Garage over the in-cluster endpoint, `s3ForcePathStyle: true`.
+- **loki** — `SimpleScalable`, chunks and indexes in Garage over the in-cluster endpoint, `s3ForcePathStyle: true`. Grafana and Alloy both address it through `loki-gateway`, because the split targets put the ruler on `loki-backend`: a `loki-read` URL serves every query path and so looks correct, but 404s the alerting page's `/prometheus/api/v1/rules`.
 - **alloy** — the log shipper.
 - **gotify** — the notification sink. It authenticates against [kanidm](/platform/identity-kanidm.md) natively, with local password auth left on as break-glass.
 

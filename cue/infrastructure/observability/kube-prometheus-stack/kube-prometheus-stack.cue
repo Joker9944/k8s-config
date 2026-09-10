@@ -120,7 +120,7 @@ _kps: schema.#Release & {
 				name:   "loki"
 				type:   "loki"
 				access: "proxy"
-				url:    "http://loki-read.loki.svc.cluster.local:3100"
+				url:    "http://loki-gateway.loki.svc.cluster.local"
 			}]
 
 			ingress: {

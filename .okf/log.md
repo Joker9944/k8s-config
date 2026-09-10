@@ -2,6 +2,7 @@
 
 ## 2026-09-10
 
+- Grafana's Loki datasource moves to `loki-gateway`; a `loki-read` URL 404s the ruler the alerting page reads — [observability](/platform/observability.md)
 - `NodeMemoryHighUtilization` is replaced locally: `MemAvailable` omits the ZFS ARC, so the stock rule reads 95% on an 11%-used `mother` — [observability](/platform/observability.md)
 - The mixin dashboards keep reading `MemAvailable` and disagreeing with the alert; the divergence is accepted rather than fixed — [observability](/platform/observability.md)
 - Naming `route.routes` replaces the chart's default list, taking the Watchdog null route with it — [observability](/platform/observability.md)
