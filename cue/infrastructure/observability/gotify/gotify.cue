@@ -1,3 +1,5 @@
+@extern(embed)
+
 package gotify
 
 // cSpell:ignore ALLOWORIGINS CLIENTID druggeri KEEPALIVEPERIODSECONDS LISTENADDR PINGPERIODSECONDS PLUGINSDIR REDIRECTURL SECURECOOKIE trixie TRUSTEDPROXIES UPLOADEDIMAGESDIR
@@ -8,7 +10,17 @@ bundle: schema.#Bundle & {
 	namespace: "gotify"
 	dependsOn: ["kube-prometheus-stack"]
 	extraSecretFiles: ["infrastructure/observability/gotify/secrets/gotify.secret.yaml"]
+	before: [_logs.out]
 	releases: [_gotify, _bridge]
+}
+
+_gotifyLogs: _ @embed(file="files/gotify.alloy", type=text)
+
+// gotify's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "gotify"
+	ns:     bundle.namespace
+	config: _gotifyLogs
 }
 
 let uid = 568
@@ -52,7 +64,7 @@ _gotify: schema.#AppRelease & {
 	backups: [_backup]
 
 	values: {
-		defaultPodOptions: podOptions
+		defaultPodOptions: podOptions & {labels: _logs.podLabels}
 
 		controllers: gotify: {
 			type: "deployment"

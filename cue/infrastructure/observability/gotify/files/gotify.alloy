@@ -1,0 +1,97 @@
+// The gotify log pipeline. Loaded into alloy's config graph by the sidecar that
+// watches ConfigMaps labelled alloy_config; the base config lives with alloy and
+// supplies loki.process.common and the labelled target set read below.
+
+// cSpell:ignore logfmt zerolog
+
+discovery.relabel "gotify" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch. Only the gotify release
+	// carries it — the alertmanager bridge shares a namespace but not a format.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "gotify"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "gotify" {
+	targets    = discovery.relabel.gotify.output
+	forward_to = [loki.process.gotify.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "gotify" {
+	forward_to = [loki.process.common.receiver]
+
+	// gotify suppresses this itself, but only when the client address is loopback
+	// (router.go:276), and the kubelet's probes arrive from the node — so the
+	// suppression never fires and 94% of the output is one repeated line.
+	// `status=200` is what keeps a probe that starts failing.
+	stage.drop {
+		expression          = "path=/health status=200"
+		drop_counter_reason = "healthcheck_call"
+	}
+
+	// zerolog's console writer, `<RFC3339> <LVL> <message> <k=v...>`. Colour would
+	// break this, and cannot occur: gotify sets NoColor from !isatty(stdout) and a
+	// container's stdout is a pipe. The timestamp is matched but not captured —
+	// the container runtime already supplies one. `.` cannot cross a newline, so
+	// the message needs neither (?s) nor an anchor.
+	stage.regex {
+		expression = "^\\S+ (?P<level>[A-Z?]{3}) (?P<message>.+)"
+	}
+
+	// Only the access log carries fields; websocket and startup lines do not. A
+	// second pass leaves those untouched — a stage.regex that misses writes
+	// nothing — where one expression with an optional group would stamp an empty
+	// field on every one of them.
+	stage.regex {
+		source     = "message"
+		expression = "^HTTP (?P<fields>.+)"
+	}
+
+	// The tail is already logfmt, so parsing it beats hand-rolling a regex per
+	// field: durations arrive as both `1.7ms` and `"824µs"` — quoted because the
+	// micro sign is not ASCII — and this reads either without being told which.
+	stage.logfmt {
+		source  = "fields"
+		mapping = {
+			ip     = "",
+			method = "",
+			path   = "",
+			status = "",
+		}
+	}
+
+	// gotify appends the query string to the path (router.go:280), having first
+	// masked any token in it. The path alone is the part worth grouping by.
+	stage.regex {
+		source     = "path"
+		expression = "^(?P<path>[^?]+)"
+	}
+
+	// zerolog's console vocabulary (FormattedLevels, globals.go), plus the `???`
+	// it writes for a nil level. The final else is not decoration: stage.template
+	// creates its source field when absent, so it runs with an empty value on any
+	// line the header regex could not parse.
+	stage.template {
+		source   = "level"
+		template = "{{ if eq .Value \"INF\" }}info{{ else if eq .Value \"WRN\" }}warn{{ else if eq .Value \"ERR\" }}error{{ else if eq .Value \"DBG\" }}debug{{ else if eq .Value \"TRC\" }}trace{{ else if eq .Value \"FTL\" }}critical{{ else if eq .Value \"PNC\" }}critical{{ else }}unknown{{ end }}"
+	}
+
+	stage.structured_metadata {
+		values = {
+			level  = "level",
+			ip     = "ip",
+			method = "method",
+			path   = "path",
+			status = "status",
+		}
+	}
+}
