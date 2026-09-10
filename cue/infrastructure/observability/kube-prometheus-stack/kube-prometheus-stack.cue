@@ -1,6 +1,6 @@
 package kubeprometheusstack
 
-// cSpell:ignore Kanidm kubeprometheusstack lokiexplore mcp pkce
+// cSpell:ignore Kanidm kubeprometheusstack lokiexplore mcp Mem nodememoryhighutilization pkce runbook zfs
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -150,6 +150,39 @@ _kps: schema.#Release & {
 				tls: [{secretName: tlsSecret, hosts: ["prometheus.vonarx.online"]}]
 			}
 		}
+
+		// The stock NodeMemoryHighUtilization reads node_memory_MemAvailable_bytes,
+		// which Linux computes without the ZFS ARC: mother caches ~54 of its 62 GiB
+		// there and so reports 95% used at 11% real usage. `customRules` reaches
+		// only `for` and `severity`, never the expression, so correcting it means
+		// replacing the rule. ARC is reclaimable down to arc_c_min; the `or` arm
+		// supplies 0 on the three nodes that have no ARC, keeping one rule for the
+		// whole fleet.
+		defaultRules: disabled: NodeMemoryHighUtilization: true
+		additionalPrometheusRulesMap: "node-exporter-zfs": groups: [{
+			name: "node-exporter-zfs"
+			rules: [{
+				alert: "NodeMemoryHighUtilization"
+				expr: """
+					100 - (
+					  (
+					    node_memory_MemAvailable_bytes{job="node-exporter"}
+					    + (
+					        clamp_min(node_zfs_arc_size{job="node-exporter"} - node_zfs_arc_c_min{job="node-exporter"}, 0)
+					        or node_memory_MemAvailable_bytes{job="node-exporter"} * 0
+					      )
+					  ) / node_memory_MemTotal_bytes{job="node-exporter"} * 100
+					) > 90
+					"""
+				"for": "15m"
+				labels: severity: "warning"
+				annotations: {
+					summary:     "Host is running out of memory."
+					runbook_url: "https://runbooks.prometheus-operator.dev/runbooks/node/nodememoryhighutilization"
+					description: #"Memory is filling up at {{ $labels.instance }}, has been above 90% for the last 15 minutes, is currently at {{ printf "%.2f" $value }}%. Reclaimable ZFS ARC already counts as available."#
+				}
+			}]
+		}]
 
 		// the node exporter is a DaemonSet; without this a reserved node reports
 		// no metrics at all

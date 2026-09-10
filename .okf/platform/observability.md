@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T19:42:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T09:05:00Z }
 ---
 
 # The tier
@@ -36,6 +36,8 @@ The dev shell ships `grafana-alloy` so this file can be checked with `alloy fmt`
 
 Alertmanager → `gotify-alertmanager-bridge` (`ghcr.io/druggeri/alertmanager_gotify_bridge`) <!-- cSpell:ignore druggeri --> → Gotify.
 
+The route tree is the chart's: naming `route.routes` replaces the default list wholesale, so Watchdog — the heartbeat that must never stop firing — has to be re-declared to `null` beside any addition.
+
 The bridge chooses its Gotify application from a `?token=` on the webhook URL, so the receiver's URL is a credential and is not written in the release. It sets `url_file` instead, against a SOPS Secret named in `alertmanagerSpec.secrets`, which the operator mounts at `/etc/alertmanager/secrets/<name>/`. prometheus-operator re-marshals the raw config through its own structs and silently drops what it does not model: it does model `url_file`, but strips it below Alertmanager 0.26.0 and discards it outright when `url` is set alongside. Alertmanager reads the file inside each notification rather than at config load, so rotating the Secret needs no restart. The bridge's own `GOTIFY_TOKEN` is only the fallback for a request that carries no `?token=`; it holds a literal placeholder because the bridge exits 1 when it is unset, not because anything reads it.
 
 Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this repo** so that the `gotify-slack-webhook` Go plugin is compiled against a matching gotify-server ABI. That constraint is the reason `pkgs/gomod-cap.nix` exists — see [images and CI](/workflows/images-and-ci.md). Gotify keeps state in its own CNPG cluster and uses `ghcr.io/joker9944/postgresql-client`, another repo-built image, as a helper container.
@@ -43,6 +45,8 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 **v3 configures from the environment only, and a list value is one bare CSV line.** The v2 `[a,b]` form still parses — as a single element with the brackets in it. That is silent both ways: gin discards the error from `SetTrustedProxies`, so a bracketed CIDR just leaves `X-Forwarded-For` unread, and CORS origins are unanchored regexes, where `[gotify.vonarx.online]` is a character class that matches almost any origin.
 
 # Coverage gaps
+
+**`NodeMemoryHighUtilization` is a local rule, not the chart's.** Linux does not count the ZFS ARC in `MemAvailable`, and [mother](/platform/cluster-nyx.md) holds ~54 of its 62 GiB there, so the stock expression reads 95% on a host that is 11% used; the replacement adds back ARC above `arc_c_min` and contributes 0 where there is no ARC, so one rule still covers the fleet. `defaultRules` reaches `for` and `severity` per rule but never the expression, so a wrong default can only be disabled and re-declared — `defaultRules.disabled` alongside `additionalPrometheusRulesMap`, whose PrometheusRule carries the `release` label the default `ruleSelector` wants and a hand-written one would not. The node-exporter-mixin dashboards read `MemAvailable` directly, so they still show that node near 95% and disagree with the alert. That divergence is accepted — they are chart-rendered with no per-dashboard toggle, and correcting them means owning a replacement node dashboard.
 
 Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/alertmanager/health` answers `HTTP 500 plugin.unavailable` every time ([grafana#83794](https://github.com/grafana/grafana/issues/83794)). The datasource provisions and works in the browser; only the server-side health API is unimplemented for this type. A health sweep — `check_datasources_health` on the MCP server — therefore reports it broken on a healthy cluster. Not a fault to chase.
 

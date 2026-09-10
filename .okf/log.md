@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-09-10
+
+- `NodeMemoryHighUtilization` is replaced locally: `MemAvailable` omits the ZFS ARC, so the stock rule reads 95% on an 11%-used `mother` — [observability](/platform/observability.md)
+- The mixin dashboards keep reading `MemAvailable` and disagreeing with the alert; the divergence is accepted rather than fixed — [observability](/platform/observability.md)
+- Naming `route.routes` replaces the chart's default list, taking the Watchdog null route with it — [observability](/platform/observability.md)
+
 ## 2026-09-09
 
 - Renovate holds metallb at `>0.16.1` until the merged upstream ServiceL2Status fix ships — [networking and ingress](/platform/networking-and-ingress.md)
