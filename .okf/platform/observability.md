@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T11:25:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T14:20:00Z }
 ---
 
 # The tier
@@ -30,6 +30,8 @@ Two sources feed one `loki.write.default`: those pod logs, and cluster events th
 
 The pod branch is not generic. Its `loki.process` carries per-app stages — healthcheck drops for kanidm (`| uri: /status |`) and audiobookshelf (`Received ping`), and `stage.regex` pulling `level` and `message` out of kanidm, audiobookshelf and servarr lines, the last needing `stage.multiline` because those logs wrap. Onboarding a noisy app means adding a `stage.match` here, not changing the discovery rules.
 
+**Those `stage.regex` captures are discarded.** No `stage.labels` or `stage.structured_metadata` follows them, so `level`, `message` and the rest never leave the extracted map. The fleet's only log level is therefore Loki's own — `detected_level` structured metadata, from `discover_log_levels`, which nothing here disables. It is uniform across every namespace, at the price of being a heuristic: `unknown` covers roughly half the volume. Structured metadata is invisible to the label API (`label_values(detected_level)` is empty), so a level picker has to carry a hardcoded list.
+
 The dev shell ships `grafana-alloy` so this file can be checked with `alloy fmt`/`alloy validate` before committing.
 
 # Alerting path
@@ -52,6 +54,6 @@ Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/a
 
 # Dashboards
 
-Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/security/kanidm/files/kanidm-logs.json` is the worked example.
+Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/observability/loki/files/logs.json` is the worked example, and the exception that proves the rule: it filters every namespace by `detected_level`, so it describes Loki's contents rather than any one app and lives with Loki.
 
 That is not just a convention — Grafana runs with no persistence, its `storage` volume an `emptyDir`, so `grafana.db` dies with the pod. Dashboards and datasources are re-provisioned at start-up and the admin user is re-created from the `grafana-admin` Secret, but everything else held in that database — service accounts and their tokens, silences, stars, preferences — is gone. A dashboard authored in the UI is a scratch buffer, not a change, and the read-only MCP server's service account has to be re-minted by hand after every restart — Grafana provisions no service accounts ([grafana#82987](https://github.com/grafana/grafana/issues/82987)), so `kube-prometheus-stack/grafana-service-account.txt` carries the procedure.

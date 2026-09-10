@@ -1,3 +1,5 @@
+@extern(embed)
+
 package loki
 
 // cSpell:ignore tsdb
@@ -10,7 +12,26 @@ bundle: schema.#Bundle & {
 	middlewares: false
 	extraSecretFiles: ["infrastructure/observability/loki/secrets/loki.secret.yaml"]
 	repositories: [_grafana]
+	before: [_dashboards.out]
 	releases: [_loki]
+}
+
+// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
+// the package directory, which is why this file lives here.
+_logs: _ @embed(file="files/logs.json", type=text)
+
+// Fleet-wide, so it belongs to the store the panels read rather than to any one
+// app. Grafana's sidecar searches every namespace, so the label is what places
+// it, not the namespace.
+_dashboards: schema.#ConfigMapFiles & {
+	name: "loki-dashboards"
+	ns:   bundle.namespace
+	labels: {
+		grafana_dashboard:            "1"
+		"app.kubernetes.io/name":     "loki"
+		"app.kubernetes.io/instance": "loki"
+	}
+	files: "logs.json": _logs
 }
 
 _grafana: schema.#HelmRepo & {name: "grafana", url: "https://grafana.github.io/helm-charts"}

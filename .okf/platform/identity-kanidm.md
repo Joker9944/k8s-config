@@ -5,7 +5,7 @@ description: The cluster's OIDC/LDAP provider, and why every consumer ships a ka
 tags: [kanidm, oidc, sso, identity]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T21:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T14:20:00Z }
 ---
 
 # Deployment
@@ -23,7 +23,3 @@ Ten workloads ship a `kanidm-oidc.txt` beside their package: audiobookshelf, got
 **Nothing in the repo applies them.** No package reads them, and kanidm has no declarative client CRD here. Deploying an app with SSO therefore takes two steps: reconcile the manifests, then replay the file by hand against a running kanidm. The client secret then has to be put into the app's [SOPS secret](/workflows/secrets-sops.md) separately — the file does not record where it goes.
 
 Apps with no OIDC support of their own are fronted by Traefik's `oidc` plugin instead; see [ingress](/platform/networking-and-ingress.md).
-
-# Observability
-
-A Grafana dashboard for kanidm's logs ships as `files/kanidm-logs.json`, turned into a ConfigMap labelled `grafana_dashboard: "1"` by `#ConfigMapFiles` in the app's own package. That is the repo-wide convention for dashboards — see [observability](/platform/observability.md).

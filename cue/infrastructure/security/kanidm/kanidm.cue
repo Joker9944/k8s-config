@@ -1,5 +1,3 @@
-@extern(embed)
-
 package kanidm
 
 // cSpell:ignore BINDADDRESS kanidmd LDAPBINDADDRESS ldaps serverstransport
@@ -15,23 +13,7 @@ bundle: schema.#Bundle & {
 
 	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
 
-	before: [_dashboards.out]
 	releases: [_kanidm]
-}
-
-// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
-// the package directory, which is why this file lives here.
-_kanidmLogs: _ @embed(file="files/kanidm-logs.json", type=text)
-
-_dashboards: schema.#ConfigMapFiles & {
-	name: "kanidm-dashboards"
-	ns:   bundle.namespace
-	labels: {
-		grafana_dashboard:            "1"
-		"app.kubernetes.io/name":     "kanidm"
-		"app.kubernetes.io/instance": "kanidm"
-	}
-	files: "kanidm-logs.json": _kanidmLogs
 }
 
 _kanidm: schema.#AppRelease & {

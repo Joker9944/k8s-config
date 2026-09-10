@@ -2,6 +2,9 @@
 
 ## 2026-09-10
 
+- The kanidm logs dashboard is retired for a fleet-wide one under loki, filtered by namespace and level — [observability](/platform/observability.md)
+- Alloy's `stage.regex` captures reach no labels stage, so `detected_level` is the only log level — and the label API cannot enumerate it — [observability](/platform/observability.md)
+- An unstaged new file is invisible to `nix build` but not to `cue cmd`, so a fresh `files/` entry fails as a missing `@embed` — [CUE layout](/architecture/cue-layout.md)
 - Grafana's Loki datasource moves to `loki-gateway`; a `loki-read` URL 404s the ruler the alerting page reads — [observability](/platform/observability.md)
 - `NodeMemoryHighUtilization` is replaced locally: `MemAvailable` omits the ZFS ARC, so the stock rule reads 95% on an 11%-used `mother` — [observability](/platform/observability.md)
 - The mixin dashboards keep reading `MemAvailable` and disagreeing with the alert; the divergence is accepted rather than fixed — [observability](/platform/observability.md)
