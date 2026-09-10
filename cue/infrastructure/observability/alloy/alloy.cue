@@ -37,10 +37,17 @@ _alloy: schema.#Release & {
 	// The chart is pointed at the ConfigMap above rather than templating its own;
 	// upstream asks for exactly this when the config is managed outside the chart.
 	values: {
-		alloy: configMap: {
-			create: false
-			name:   _config.name
-			key:    "config.alloy"
+		alloy: {
+			configMap: {
+				create: false
+				name:   _config.name
+				key:    "config.alloy"
+			}
+
+			// Builds the alloy-cluster headless Service and passes
+			// --cluster.enabled. The config's clustering blocks are inert without
+			// it, which is what let four replicas ship the same lines.
+			clustering: enabled: true
 		}
 		controller: tolerations: [schema.#Reserved.any]
 	}

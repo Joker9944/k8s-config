@@ -2,6 +2,7 @@
 
 ## 2026-09-10
 
+- Alloy's clustering ring is switched on; without it every DaemonSet replica tailed every pod and Loki's duplicate-drop hid the 4× push — [observability](/platform/observability.md)
 - The kanidm logs dashboard is retired for a fleet-wide one under loki, filtered by namespace and level — [observability](/platform/observability.md)
 - Alloy's `stage.regex` captures reach no labels stage, so `detected_level` is the only log level — and the label API cannot enumerate it — [observability](/platform/observability.md)
 - An unstaged new file is invisible to `nix build` but not to `cue cmd`, so a fresh `files/` entry fails as a missing `@embed` — [CUE layout](/architecture/cue-layout.md)

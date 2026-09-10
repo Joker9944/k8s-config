@@ -71,6 +71,12 @@ discovery.relabel "k8s_pod_logs" {
 loki.source.kubernetes "k8s_pod_logs" {
   targets    = discovery.relabel.k8s_pod_logs.output
   forward_to = [ loki.process.k8s_pod_logs.receiver ]
+
+  // Discovery is cluster-wide, so without the ring every DaemonSet replica
+  // tails every pod and pushes the same lines.
+  clustering {
+    enabled = true
+  }
 }
 
 loki.process "k8s_pod_logs" {
@@ -137,6 +143,12 @@ loki.source.kubernetes_events "k8s_events" {
 
   job_name   = "kubernetes/events"
   log_format = "json"
+
+  // Sharding is per namespace, and `namespaces` is empty: every replica holds
+  // the same all-namespaces target, so exactly one of them wins it.
+  clustering {
+    enabled = true
+  }
 }
 
 loki.process "k8s_events" {

@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T14:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T14:35:00Z }
 ---
 
 # The tier
@@ -27,6 +27,8 @@ kube-prometheus-stack → gotify
 `cue/infrastructure/observability/alloy/files/config.alloy` is a `#ConfigMapFiles` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`.
 
 Two sources feed one `loki.write.default`: those pod logs, and cluster events through `loki.source.kubernetes_events` (`job_name` `kubernetes/events`, JSON). Both stamp a static `cluster: nyx`; the pod branch additionally derives `container_runtime` from the scheme prefix of the container id.
+
+**Both sources need the clustering ring, and it takes two halves.** Alloy is a DaemonSet and `discovery.kubernetes` carries no node filter, so every replica sees every pod. `loki.source.kubernetes` shards targets across peers only when the component's `clustering` block is on *and* `alloy.clustering.enabled` is set, which is what builds the `alloy-cluster` headless Service the chart's `--cluster.join-addresses` names; either half alone is inert. With the ring off, four replicas shipped identical lines and nothing downstream showed it — Loki silently drops an exact duplicate of `(timestamp, line)` within a stream, and the pod branch labels `node` from the target rather than the shipper, so the four copies land in one stream. `loki.source.kubernetes_events` shards per namespace and `namespaces` is empty, so all replicas hold the same all-namespaces target and the ring is the only thing electing a single collector. The tell is `loki_write_sent_entries_total`, near-equal across all four pods.
 
 The pod branch is not generic. Its `loki.process` carries per-app stages — healthcheck drops for kanidm (`| uri: /status |`) and audiobookshelf (`Received ping`), and `stage.regex` pulling `level` and `message` out of kanidm, audiobookshelf and servarr lines, the last needing `stage.multiline` because those logs wrap. Onboarding a noisy app means adding a `stage.match` here, not changing the discovery rules.
 
