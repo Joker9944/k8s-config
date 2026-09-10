@@ -2,6 +2,7 @@
 
 ## 2026-09-10
 
+- The loki gateway is quietened at the chart and classified by Loki itself, so it needs no pipeline — [observability](/platform/observability.md)
 - gotify parses as zerolog console; its own `/health` suppression is loopback-only, so the probes always logged — [observability](/platform/observability.md)
 - klog is parsed by format rather than by claim label, so one pipeline covers every k8s controller — [observability](/platform/observability.md)
 - kanidm's lines fold into one record per kopid, so its detected_level is the worst level in a request — [observability](/platform/observability.md)

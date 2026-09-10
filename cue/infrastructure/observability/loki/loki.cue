@@ -107,6 +107,46 @@ _loki: schema.#Release & {
 		// underneath would pay for the same bytes twice. max_chunk_age bounds the
 		// ingester WAL at roughly two hours of ingest, which is why these sit far
 		// below the chart's 10Gi default.
+		// The gateway was the single largest log source in the cluster — a third of
+		// everything nyx shipped, and all of it 2xx: kube-probes, the canary, and
+		// alloy's own pushes. Loki logs its own requests in logfmt with the query,
+		// byte counts and cache statistics attached, so the access log only
+		// duplicated the successful half of that.
+		gateway: {
+			// "Enable logging of 2xx and 3xx HTTP requests", and on by default. Off,
+			// the chart wraps access_log in `if=$loggable` so only the rest survives.
+			verboseLogging: false
+
+			nginxConfig: {
+				// A JSON line carrying `level` is classified by loki's own distributor
+				// (DefaultAllowedLevelFields), so this needs no alloy pipeline at all.
+				//
+				// The name has to stay `main`: the chart hardcodes `access_log … main`,
+				// so renaming the format stops nginx at startup. escape=json is what
+				// keeps a quote in a URI or user agent from breaking the object, and
+				// $upstream_status is quoted because it is empty when no upstream was
+				// reached — where $status and $request_time are always present.
+				logFormat: #"""
+					main escape=json '{"level":"$log_level","status":$status,"method":"$request_method",'
+					  '"path":"$uri","query":"$args","duration":$request_time,'
+					  '"upstream_status":"$upstream_status","remote_addr":"$remote_addr",'
+					  '"user_agent":"$http_user_agent"}';
+					"""#
+
+				// Injected into the http block, which is where a map has to live. It is
+				// read by a log_format parsed earlier in the file; nginx resolves
+				// variable names after the whole config is loaded, so the forward
+				// reference holds. 4xx/5xx split the way gotify splits its own.
+				httpSnippet: #"""
+					map $status $log_level {
+					  ~^5  error;
+					  ~^4  warn;
+					  default info;
+					}
+					"""#
+			}
+		}
+
 		backend: {
 			replicas:     3
 			extraEnvFrom: _s3Env
