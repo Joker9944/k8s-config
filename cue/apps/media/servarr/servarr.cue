@@ -67,6 +67,8 @@ _cnpgSecretRef: {
 		extraMiddlewares: ["\(name)-oidc"]
 
 		values: _servarrPod & {
+			defaultPodOptions: labels: _logs.podLabels
+
 			controllers: (app): {
 				pod: securityContext: {
 					runAsUser:    uid
@@ -255,6 +257,16 @@ _arrs: [
 // the package directory, which is why these files live here.
 _recyclarrConfig:   _ @embed(file="files/recyclarr.yml", type=text)
 _recyclarrSettings: _ @embed(file="files/settings.yml", type=text)
+_servarrLogs:       _ @embed(file="files/servarr.alloy", type=text)
+
+// The *arr log pipeline, shipped with the apps rather than with alloy. Claims
+// only the four #Arr pods: flaresolverr and recyclarr share _servarrPod but log
+// nothing like an *arr, so the label goes on #Arr and not on the shared block.
+_logs: schema.#AlloyPipeline & {
+	app:    "servarr"
+	ns:     bundle.namespace
+	config: _servarrLogs
+}
 
 _flaresolverr: schema.#AppRelease & {
 	name:      "flaresolverr"
@@ -453,6 +465,7 @@ bundle: schema.#Bundle & {
 			}
 		},
 		_objectStore,
+		_logs.out,
 	]
 	releases: list.Concat([
 		[_flaresolverr],

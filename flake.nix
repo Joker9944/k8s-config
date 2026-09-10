@@ -189,6 +189,23 @@
             installPhase = "mkdir $out";
           };
 
+          alloyValidate = pkgs.stdenvNoCC.mkDerivation {
+            name = "alloy-validate";
+            src = lib.fileset.toSource {
+              root = ./cue;
+              fileset = lib.fileset.fileFilter (f: f.hasExt "alloy") ./cue;
+            };
+            nativeBuildInputs = [ pkgs.grafana-alloy ];
+            doCheck = true;
+            checkPhase = ''
+              mkdir alloy.d
+              find . -name '*.alloy' -exec cp {} alloy.d/ \;
+              test -n "$(ls -A alloy.d)" || { echo "no .alloy files found"; exit 1; }
+              alloy validate alloy.d/
+            '';
+            installPhase = "mkdir $out";
+          };
+
           preCommitHooks = inputs.pre-commit-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
@@ -221,6 +238,20 @@
 
               # CUE
               cue-fmt.enable = true;
+
+              # Alloy
+              alloy-fmt = {
+                enable = true;
+
+                name = "alloy-fmt";
+                # alloy fmt takes at most one file; pre-commit passes the whole batch.
+                entry = "${pkgs.writeShellScript "alloy-fmt" ''
+                  for f in "$@"; do
+                    ${lib.getExe pkgs.grafana-alloy} fmt -w "$f"
+                  done
+                ''}";
+                files = "\\.alloy$";
+              };
 
               # Custom
               sops-pre-commit = {

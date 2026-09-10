@@ -1,168 +1,158 @@
 loki.write "default" {
-  endpoint {
-    url = "http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push"
-  }
+	endpoint {
+		url = "http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push"
+	}
 }
 
 // Pod logs
 
 discovery.kubernetes "k8s_pod" {
-  role = "pod"
+	role = "pod"
 }
 
 discovery.relabel "k8s_pod_logs" {
-  targets = discovery.kubernetes.k8s_pod.targets
+	targets = discovery.kubernetes.k8s_pod.targets
 
-  rule {
-    source_labels = ["__meta_kubernetes_namespace"]
-    action = "replace"
-    target_label = "namespace"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_namespace"]
+		action        = "replace"
+		target_label  = "namespace"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_name"]
-    action = "replace"
-    target_label = "pod"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_pod_name"]
+		action        = "replace"
+		target_label  = "pod"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_container_name"]
-    action = "replace"
-    target_label = "container"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_pod_container_name"]
+		action        = "replace"
+		target_label  = "container"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_node_name"]
-    action = "replace"
-    target_label = "node"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_pod_node_name"]
+		action        = "replace"
+		target_label  = "node"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
-    action = "replace"
-    target_label = "app"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+		action        = "replace"
+		target_label  = "app"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
-    action = "replace"
-    target_label = "job"
-    separator = "/"
-    replacement = "$1"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+		action        = "replace"
+		target_label  = "job"
+		separator     = "/"
+		replacement   = "$1"
+	}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
-    action = "replace"
-    target_label = "__path__"
-    separator = "/"
-    replacement = "/var/log/pods/*$1/*.log"
-  }
+	rule {
+		source_labels = ["__meta_kubernetes_pod_container_id"]
+		action        = "replace"
+		target_label  = "container_runtime"
+		regex         = "^(\\S+):\\/\\/.+$"
+		replacement   = "$1"
+	}
+}
 
-  rule {
-    source_labels = ["__meta_kubernetes_pod_container_id"]
-    action = "replace"
-    target_label = "container_runtime"
-    regex = "^(\\S+):\\/\\/.+$"
-    replacement = "$1"
-  }
+// Everything a workload pipeline needs: the standard labels, written once.
+// A per-app file reads discovery.relabel.k8s_pod_logs.output and narrows it.
+
+discovery.relabel "k8s_pod_logs_default" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// An empty claim label means no workload file has taken this pod, so the
+	// generic branch keeps it. This is the only thing that keeps the two branches
+	// from shipping the same line twice.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = ""
+		action        = "keep"
+	}
+}
+
+// The one place `cluster` is stamped. Every branch, generic or per-app, ends here.
+loki.process "common" {
+	forward_to = [loki.write.default.receiver]
+
+	stage.static_labels {
+		values = {
+			cluster = "nyx",
+		}
+	}
 }
 
 loki.source.kubernetes "k8s_pod_logs" {
-  targets    = discovery.relabel.k8s_pod_logs.output
-  forward_to = [ loki.process.k8s_pod_logs.receiver ]
+	targets    = discovery.relabel.k8s_pod_logs_default.output
+	forward_to = [loki.process.k8s_pod_logs.receiver]
 
-  // Discovery is cluster-wide, so without the ring every DaemonSet replica
-  // tails every pod and pushes the same lines.
-  clustering {
-    enabled = true
-  }
+	// Discovery is cluster-wide, so without the ring every DaemonSet replica
+	// tails every pod and pushes the same lines.
+	clustering {
+		enabled = true
+	}
 }
 
 loki.process "k8s_pod_logs" {
-  forward_to = [ loki.write.default.receiver ]
+	forward_to = [loki.process.common.receiver]
 
-  stage.static_labels {
-    values = {
-      cluster = "nyx",
-    }
-  }
+	// Kanidm
+	stage.match {
+		selector            = "{container=\"kanidm\"} |= \"| uri: /status |\""
+		action              = "drop"
+		drop_counter_reason = "healthcheck_call"
+	}
 
-  // Kanidm
-  stage.match {
-    selector            = "{container=\"kanidm\"} |= \"| uri: /status |\""
-    action              = "drop"
-    drop_counter_reason = "healthcheck_call"
-  }
+	stage.match {
+		selector = "{container=\"kanidm\"}"
 
-  stage.match {
-    selector     = "{container=\"kanidm\"}"
+		stage.regex {
+			expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+?) {5}(?P<message>.+)$"
+		}
+	}
 
-    stage.regex {
-      expression = "^(?P<event_id>[a-z0-9\\-]{36}) (?P<level>\\w+?) {5}(?P<message>.+)$"
-    }
-  }
+	// Audiobookshelf
+	stage.match {
+		selector            = "{app=\"audiobookshelf\"} |= \"Received ping\""
+		action              = "drop"
+		drop_counter_reason = "healthcheck_call"
+	}
 
-  // Audiobookshelf
-  stage.match {
-    selector            = "{app=\"audiobookshelf\"} |= \"Received ping\""
-    action              = "drop"
-    drop_counter_reason = "healthcheck_call"
-  }
+	stage.match {
+		selector = "{container=\"audiobookshelf\"}"
 
-  stage.match {
-    selector = "{container=\"audiobookshelf\"}"
-
-    stage.regex {
-      expression = "^\\[(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2}) (?P<hour>\\d{2}):(?P<minute>\\d{2}):(?P<second>\\d{2}).(?P<millisecond>\\d{3})\\] (?P<level>\\w+?): \\[(?P<unit>\\w+?)\\] (?P<message>.+)$"
-    }
-  }
-
-  // Servarr
-  stage.match {
-    selector = "{container=~\"prowlarr|radarr|sonarr\"}"
-
-    stage.drop {
-      expression = "^\\n$"
-    }
-
-    stage.multiline {
-      firstline = "^\\[\\w+?\\] .+?:.*$"
-    }
-
-    stage.regex {
-      expression = "^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+)$"
-    }
-  }
+		stage.regex {
+			expression = "^\\[(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2}) (?P<hour>\\d{2}):(?P<minute>\\d{2}):(?P<second>\\d{2}).(?P<millisecond>\\d{3})\\] (?P<level>\\w+?): \\[(?P<unit>\\w+?)\\] (?P<message>.+)$"
+		}
+	}
 }
 
 // Cluster events
 
 loki.source.kubernetes_events "k8s_events" {
-  forward_to = [ loki.process.k8s_events.receiver ]
+	forward_to = [loki.process.k8s_events.receiver]
 
-  job_name   = "kubernetes/events"
-  log_format = "json"
+	job_name   = "kubernetes/events"
+	log_format = "json"
 
-  // Sharding is per namespace, and `namespaces` is empty: every replica holds
-  // the same all-namespaces target, so exactly one of them wins it.
-  clustering {
-    enabled = true
-  }
+	// Sharding is per namespace, and `namespaces` is empty: every replica holds
+	// the same all-namespaces target, so exactly one of them wins it.
+	clustering {
+		enabled = true
+	}
 }
 
 loki.process "k8s_events" {
-  forward_to = [ loki.write.default.receiver ]
+	forward_to = [loki.process.common.receiver]
 
-  stage.static_labels {
-    values = {
-      cluster = "nyx",
-    }
-  }
-
-  stage.labels {
-    values = {
-      kubernetes_cluster_events = "job",
-    }
-  }
+	stage.labels {
+		values = {
+			kubernetes_cluster_events = "job",
+		}
+	}
 }

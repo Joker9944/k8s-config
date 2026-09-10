@@ -191,6 +191,35 @@ import "list"
 	}
 }
 
+// --------------------------------------------------------------- log pipelines
+// A workload's own Alloy config. Alloy loads /etc/alloy.d as one graph, so a
+// file dropped in by the sidecar is live config; see /platform/observability.md.
+//
+// The two halves have to agree and are therefore produced together: `podLabels`
+// goes on the workload's pods and is what its own `discovery.relabel` keeps on,
+// while the same name keys the ConfigMap the sidecar delivers. Deriving the key
+// from `app` is also what stops two workloads from writing the same filename
+// into the shared directory.
+
+#AlloyPipeline: {
+	app:    string // also the value of the claim label
+	ns:     string
+	config: string // the @embed'd .alloy text
+
+	claim: "logs.vonarx.online/pipeline"
+	podLabels: (claim): app
+
+	// The base config keeps every pod whose claim label is empty, so carrying
+	// one is the whole opt-out: alloy never learns a workload's name.
+	_cm: #ConfigMapFiles & {
+		name: "\(app)-alloy"
+		"ns": ns
+		labels: alloy_config:  "1"
+		files: "\(app).alloy": config
+	}
+	out: _cm.out
+}
+
 // ------------------------------------------------------------ namespace certs
 // Replaces components/namespace-cert together with its kanidm-specific twin,
 // which differed only by a hardcoded `namespace:` working around

@@ -2,6 +2,10 @@
 
 ## 2026-09-10
 
+- `alloy fmt -w` joins pre-commit, so .alloy formatting is canonical rather than hand-matched — [observability](/platform/observability.md)
+- The claim label's fail-closed behaviour is accepted rather than inverted; the cost is permanent, the exposure only edit-sized — [observability](/platform/observability.md)
+- Alloy loads a directory as one graph, so a workload's log pipeline ships in its own package and a sidecar collects it — [observability](/platform/observability.md)
+- `#AlloyPipeline` emits the claim label and the pipeline ConfigMap together, keying both off the app name — [CUE layout](/architecture/cue-layout.md)
 - Alloy's clustering ring is switched on; without it every DaemonSet replica tailed every pod and Loki's duplicate-drop hid the 4× push — [observability](/platform/observability.md)
 - The kanidm logs dashboard is retired for a fleet-wide one under loki, filtered by namespace and level — [observability](/platform/observability.md)
 - Alloy's `stage.regex` captures reach no labels stage, so `detected_level` is the only log level — and the label API cannot enumerate it — [observability](/platform/observability.md)

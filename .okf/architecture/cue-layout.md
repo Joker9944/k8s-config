@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T14:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-10T15:40:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -23,8 +23,8 @@ cue/
   schema/                   package schema — #Release, #AppRelease, #Bundle,
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #ConfigMapFiles,
-                            #NamespaceCert, #VolsyncRestic, #Reserved,
-                            #MediaData, #PodCIDR, #ServiceCIDR
+                            #NamespaceCert, #VolsyncRestic, #AlloyPipeline,
+                            #Reserved, #MediaData, #PodCIDR, #ServiceCIDR
   infrastructure/
     controllers/
       controllers.cue       package controllers — the tier collector
@@ -87,6 +87,8 @@ The annotations come from `#IngressAnnotations`, which derives the middleware re
 `#Release.crds` switches on the `install`/`upgrade` block every CRD-shipping chart carries — `crds: CreateReplace` with three remediation retries, byte-identical across the ten releases that have it. `#GitRepo` takes `branch` or `tag` plus an optional `ignore`, because two of the three git-sourced charts pin a tag and ship one directory out of a whole repository.
 
 `#Bundle` takes `middlewares` (off where there is no ingress), `namespaceCert` (an in-cluster certificate off the private CA, for a workload that serves TLS to Traefik rather than plain HTTP), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
+
+`#AlloyPipeline` is the same shape for logs: it takes a workload's `.alloy` file and emits both the ConfigMap the alloy sidecar collects and the `logs.vonarx.online/pipeline` label the workload's pods have to carry, because a pipeline that claims pods no pod claims back is silently dead. See [observability](/platform/observability.md).
 
 `#VolsyncRestic` takes the SOPS manifest holding its credential Secret as an input — `<workload>/secrets/restic.secret.yaml`, which carries restic credentials and nothing else — so a [backup](/platform/backup-and-restore.md) and the credential it cannot run without are declared together. It exposes the `<app>-restic-<vol>` name that manifest and the `ReplicationSource` have to agree on. `#Bundle.secretFiles` is derived from it — the backups' files plus `extraSecretFiles`, deduplicated through a struct, because a workload usually keeps its restic credential in the same file as its other Secrets. CUE holds the path and never the ciphertext, so it can force the credential to be _named_ and its file shipped, but nothing confirms the file contains it.
 

@@ -1,0 +1,49 @@
+// The *arr log pipeline. Loaded into alloy's config graph by the sidecar that
+// watches ConfigMaps labelled alloy_config; the base config lives with alloy and
+// supplies loki.process.common and the labelled target set read below.
+
+discovery.relabel "servarr" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "servarr"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "servarr" {
+	targets    = discovery.relabel.servarr.output
+	forward_to = [loki.process.servarr.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "servarr" {
+	forward_to = [loki.process.common.receiver]
+
+	stage.drop {
+		expression = "^\\n$"
+	}
+
+	// These logs wrap, so the regex below only sees a whole record once the
+	// continuation lines have been folded back into it.
+	stage.multiline {
+		firstline = "^\\[\\w+?\\] .+?:.*$"
+	}
+
+	stage.regex {
+		expression = "^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+)$"
+	}
+
+	stage.structured_metadata {
+		values = {
+			level = "level",
+			unit  = "unit",
+		}
+	}
+}
