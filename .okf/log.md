@@ -2,6 +2,8 @@
 
 ## 2026-09-10
 
+- kanidm's lines fold into one record per kopid, so its detected_level is the worst level in a request — [observability](/platform/observability.md)
+- Migrating a workload onto a pipeline double-ships once; the newline strip defeats Loki's duplicate drop — [observability](/platform/observability.md)
 - kanidm and audiobookshelf move to their own pipelines, emptying the base config of app-specific stages — [observability](/platform/observability.md)
 - A parsed `level` must be lowercased before it becomes structured metadata; detected_level copies its case and the dashboard's matcher is case-sensitive — [observability](/platform/observability.md)
 - RE2's `$` does not match before a trailing newline, so every `stage.regex` in the fleet had silently never matched — [observability](/platform/observability.md)

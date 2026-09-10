@@ -28,15 +28,24 @@ loki.source.kubernetes "kanidm" {
 loki.process "kanidm" {
 	forward_to = [loki.process.common.receiver]
 
+	// One record per kopid: tracing-forest buffers a whole span tree and writes it
+	// on span close, so a request's lines are always contiguous and a sequential
+	// fold is enough. Root lines carry no box-drawing glyph where children carry
+	// `┕━`, `┝━` or `│`, and the whole block is excluded rather than the three
+	// glyphs in use so a style change upstream cannot reclassify children.
+	//
+	// The class has to exclude the space as well. Without it ` +` gives back one
+	// pad space, the class matches that, and every child line reads as a root —
+	// nothing folds and nothing says so.
+	stage.multiline {
+		firstline = "^[0-9a-f-]{36} \\w+ +[^ \\x{2500}-\\x{257F}]"
+	}
+
+	// After the fold, so a healthcheck tree drops whole rather than orphaning its
+	// children onto the record before it.
 	stage.drop {
 		expression          = "\\| uri: /status \\|"
 		drop_counter_reason = "healthcheck_call"
-	}
-
-	// Every real line opens with the kopid, so this folds only what kanidm writes
-	// outside the tracing layer, such as a bare {CredentialUpdate}.
-	stage.multiline {
-		firstline = "^[0-9a-f-]{36} \\w+"
 	}
 
 	// tracing-forest pads the level to a fixed column and indents children three
@@ -47,19 +56,36 @@ loki.process "kanidm" {
 		expression = "(?s)^(?P<event_id>[0-9a-f-]{36}) (?P<level>\\w+)\\s+(?P<message>.+?)\\s*$"
 	}
 
-	// Loki copies `level` into detected_level verbatim, and the global logs
-	// dashboard matches that against a lowercase list with a case-sensitive =~.
+	// Folding puts the request line at a known position, so its fields can be
+	// lifted out. No (?s) here: `.` cannot cross a newline, which is what keeps
+	// the match on the root line. `[^ ?]+` stops at the query string, leaving the
+	// path — the part worth grouping by. Roots that are not requests do not match,
+	// and a stage.regex that misses writes nothing.
+	stage.regex {
+		source     = "message"
+		expression = "^request \\[.*?\\] method: (?P<method>\\w+) \\| uri: (?P<uri>[^ ?]+).*? \\| status_code: (?P<status_code>\\d+)"
+	}
+
+	// The level of a folded record is the worst level in it, not the level of its
+	// root — an INFO request whose third line is an ERROR is an error, and taking
+	// the root's would hide it from the dashboard's filter. Two explicit branches
+	// rather than a capture, because a capture takes whichever of ERROR and WARN
+	// comes first rather than whichever is worse. The kopid anchor is what stops a
+	// message containing the word ERROR from reading as a severity.
 	stage.template {
 		source   = "level"
-		template = "{{ ToLower .Value }}"
+		template = "{{ if regexMatch \"(?m)^[0-9a-f-]{36} ERROR\" .Entry }}error{{ else if regexMatch \"(?m)^[0-9a-f-]{36} WARN\" .Entry }}warn{{ else }}{{ ToLower .Value }}{{ end }}"
 	}
 
 	// event_id is the kopid kanidm's own error text tells you to search for.
-	// Structured metadata rather than a label: it is one value per request.
+	// Structured metadata rather than labels: one value per request.
 	stage.structured_metadata {
 		values = {
-			level    = "level",
-			event_id = "event_id",
+			level       = "level",
+			event_id    = "event_id",
+			method      = "method",
+			uri         = "uri",
+			status_code = "status_code",
 		}
 	}
 }
