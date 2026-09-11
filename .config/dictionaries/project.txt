@@ -41,11 +41,13 @@ metav
 opencloud
 pkgs
 PUID
+reloader
 seccomp
 secretdata
 selkies
 serverstransport
 sigstore
+stakater
 stdlib
 TAILNET
 Timoni

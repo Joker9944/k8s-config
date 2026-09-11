@@ -61,6 +61,10 @@ _kanidm: schema.#AppRelease & {
 
 		controllers: kanidm: {
 			type: "statefulset"
+			// The subPath mounts below never see a renewed Secret in place, and
+			// kanidmd re-reads its TLS files only on a SIGHUP nothing sends;
+			// reloader rolls the statefulset when the certificate renews.
+			annotations: "secret.reloader.stakater.com/reload": _cert.spec.secretName
 			pod: securityContext: {
 				runAsUser:    uid
 				runAsGroup:   gid

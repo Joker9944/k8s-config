@@ -5,7 +5,7 @@ description: The two issuance paths — public ACME wildcard and a private root/
 tags: [cert-manager, tls, pki, trust-manager]
 resource: cue/infrastructure/controllers/certs-config
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T13:00:00Z }
+generated: { by: claude-code/fable-5, at: 2026-09-11T00:00:00Z }
 ---
 
 # Public path
@@ -30,6 +30,8 @@ Issuer trust-manager  →  Certificate nyx-root-ca (isCA, "Nyx Root R1", 810d)
 
 The `trust-manager` `Issuer` at the root of that chain **is not defined in this repository** — it is the self-signed issuer the trust-manager chart creates in its own namespace, reused here as the cluster's signing root.
 
+Both CA Certificates pin `privateKey.rotationPolicy: Never`. cert-manager ≥ 1.18 defaults to `Always`, which on renewal would give the CA a new key while the Bundles drop its old cert immediately — orphaning every leaf signed before the renewal until that leaf's own renewal, up to 60 days later. Key reuse keeps old leaves chaining against the renewed CA cert. Leaves keep the `Always` default; their rotation has no dependents.
+
 # Distribution
 
 Two mechanisms, chosen by what is being copied:
@@ -40,6 +42,8 @@ Two mechanisms, chosen by what is being copied:
 | **trust-manager `Bundle`** | CA certificates only, as a public trust store | a label on the _destination_ namespace                                                                                                         |
 
 The two Bundles are `nyx-ca-cert-bundle` (intermediate + root, for namespaces labelled `vonarx.online/distribute-nyx-ca-cert-bundle: "true"`) and `public-nyx-ca-cert-bundle` (the same plus `useDefaultCAs`, label `vonarx.online/distribute-public-nyx-ca-cert-bundle: "true"`). Both are listed in the chart's `secretTargets.authorizedSecrets`, without which trust-manager refuses to write them.
+
+Delivery to a namespace is not delivery to a process: a `subPath` mount copies the Secret once at pod start and never again, and kanidmd re-reads its TLS files only on SIGHUP. kanidm therefore carries a `secret.reloader.stakater.com/reload` annotation naming its cert secret, and the `stakater` bundle's reloader rolls the statefulset when it changes — a renewal costs a restart-length SSO blip roughly every 60 days.
 
 # Ordering
 

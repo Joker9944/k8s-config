@@ -2,6 +2,8 @@
 
 ## 2026-09-11
 
+- The CA certs pin `rotationPolicy: Never`; cert-manager ≥ 1.18's `Always` default would orphan old-key leaves the moment a CA renews — [certificates and PKI](/platform/certificates-and-pki.md)
+- stakater's reloader joins the controllers tier to roll kanidm on cert renewal; subPath mounts never update in place — [certificates and PKI](/platform/certificates-and-pki.md)
 - loki's chart repointed to the grafana-community OSS lineage; grafana.github.io's loki is GEL-only from 7.x — [observability](/platform/observability.md)
 - opencloud moves user state to kanidm over read-only LDAPS; client id corrected to `openclouddesktop` — [kanidm](/platform/identity-kanidm.md)
 - `#Release` gains a `postRenderers` passthrough — [CUE layout](/architecture/cue-layout.md)

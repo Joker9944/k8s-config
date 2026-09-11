@@ -37,6 +37,11 @@ let domain = "vonarx.online"
 // --------------------------------------------------------------- the private CA
 // A two-tier chain: a long-lived root signs a shorter-lived intermediate, and
 // only the intermediate ever issues. /platform/certificates-and-pki.md has why.
+//
+// Both CA certs pin rotationPolicy: Never — cert-manager ≥1.18 defaults to
+// Always, which would give a renewing CA a new key while the Bundles below drop
+// its old cert instantly, orphaning every leaf signed before the renewal. Key
+// reuse keeps those leaves chaining against the renewed CA cert.
 
 _rootCert: {
 	apiVersion: "cert-manager.io/v1"
@@ -48,6 +53,7 @@ _rootCert: {
 		duration:   "19440h" // 810 days
 		issuerRef: {group: "cert-manager.io", kind: "Issuer", name: "trust-manager"}
 		secretName: "nyx-root-ca-cert"
+		privateKey: rotationPolicy: "Never"
 	}
 }
 
@@ -68,6 +74,7 @@ _intermediateCert: {
 		duration:   "6480h" // 270 days
 		issuerRef: {group: "cert-manager.io", kind: "Issuer", name: _rootIssuer.metadata.name}
 		secretName: "nyx-intermediate-ca-cert"
+		privateKey: rotationPolicy: "Never"
 	}
 }
 
