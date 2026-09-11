@@ -2,7 +2,11 @@ package opencloud
 
 // cSpell:ignore decomposedfs decomposeds
 
-import "github.com/joker9944/k8s-config/schema"
+import (
+	"strings"
+
+	"github.com/joker9944/k8s-config/schema"
+)
 
 bundle: schema.#Bundle & {
 	namespace: "opencloud"
@@ -24,6 +28,23 @@ _repo: schema.#HelmRepo & {
 let host = "cloud-eval.vonarx.online"
 let collaboraHost = "office-eval.vonarx.online"
 let tlsSecret = "wildcard-vonarx-online-cert"
+
+// kanidm mints a per-client issuer URL, and OpenCloud validates every token
+// against exactly one issuer, so all four apps have to authenticate as the same
+// client. The webfinger service is what overrides the vendor-fixed client_id the
+// desktop and mobile apps ship with; the key is read last, so it wins over the
+// WEB_OIDC_CLIENT_ID the chart emits.
+let clientId = "opencloud"
+
+// Scopes decode as a list, so these are comma-separated — the space-separated
+// form the OpenCloud docs show lands as one element holding the whole string.
+// Only the sync clients ask for offline_access.
+let webfingerScopes = {
+	web:     "openid,profile,email,groups_name,roles"
+	desktop: "openid,profile,email,groups_name,roles,offline_access"
+	android: desktop
+	ios:     desktop
+}
 
 // The chart builds its ingress tls secretName as `<global.tls.secretName>-opencloud`
 // and `-collabora`, which no single shared wildcard can satisfy. Its ingress is
@@ -89,8 +110,8 @@ _opencloud: schema.#Release & {
 		ingress: enabled: false
 
 		oidc: {
-			issuerUrl:  "https://idm.vonarx.online/oauth2/openid/opencloud"
-			clientId:   "opencloud"
+			issuerUrl:  "https://idm.vonarx.online/oauth2/openid/\(clientId)"
+			"clientId": clientId
 			accountUrl: "https://idm.vonarx.online/ui/profile"
 		}
 
@@ -123,13 +144,21 @@ _opencloud: schema.#Release & {
 			// The built-in IDM stores the accounts kanidm autoprovisions.
 			excludeServices: []
 
-			oidc: scope: "openid profile email groups_names roles"
+			// WEB_OIDC_SCOPE, read by the web service itself, so space-separated.
+			// kanidm has no groups_names: the claim is gated on groups_name.
+			oidc: scope: "openid profile email groups_name roles"
 
-			// The kubelet kills at 30s and storage-users defaults its flush window
-			// to the same 30, which races. The chart exposes no
-			// terminationGracePeriodSeconds, so give the flush the slack instead.
 			env: [
+				// The kubelet kills at 30s and storage-users defaults its flush window
+				// to the same 30, which races. The chart exposes no
+				// terminationGracePeriodSeconds, so give the flush the slack instead.
 				{name: "STORAGE_USERS_GRACEFUL_SHUTDOWN_TIMEOUT", value: "20"},
+
+				for platform, scopes in webfingerScopes
+				for e in [
+					{name: "WEBFINGER_\(strings.ToUpper(platform))_OIDC_CLIENT_ID", value: clientId},
+					{name: "WEBFINGER_\(strings.ToUpper(platform))_OIDC_CLIENT_SCOPES", value: scopes},
+				] {e},
 			]
 
 			storage: {

@@ -5,7 +5,7 @@ description: How kanidm resolves an OAuth2 client_id, which OIDC claim carries w
 tags: [kanidm, oidc, oauth2, claims, sso]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-11T10:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-11T14:30:00Z }
 sources:
   - id: kanidm-oauth2
     resource: https://github.com/kanidm/kanidm/blob/v1.11.1/server/lib/src/idm/oauth2.rs
@@ -53,6 +53,8 @@ Everything here is read off kanidm's source at the tag [`identity-kanidm`](/plat
 | `groups`                  | uuid + spn (`groups`), spn (`groups_spn`), name (`groups_name`) | resp.            |
 | `ssh_publickeys`          | `sshkeys`                                                       | `ssh_publickeys` |
 
+The group scopes are `groups`, `groups_uuid`, `groups_name` and `groups_spn`, with `groups` implying uuid + spn. A scope map stores arbitrary strings, so a near-miss like `groups_names` is granted and requested without error and simply emits no claim — nothing on either end reports it.
+
 `sub` is the UUID unconditionally — there is no setting that makes it the name or spn. `prefer-short-username` only moves `preferred_username` between `spn` and `name`; it is per client, and the six clients registered here set it while the four servarr ones do not. The same toggle also drives `username` in the token introspection response.
 
 # The book disagrees with the code
@@ -82,8 +84,6 @@ Nextcloud's `user_oidc` defaults `mappingUid` to `sub` and `mappingDisplayName` 
 # Client identifiers are case-folded
 
 A client's `client_id` is the name given to `kanidm system oauth2 create`. The name syntax reads as lowercase-only — `INAME_RE` is `^[a-z][a-z0-9-_\.]{0,63}$`[^kanidm-value] — which makes a vendor that ships a fixed mixed-case `client_id` look unregistrable. It is not: `Value::new_iname` lowercases before it validates,[^kanidm-value] so creation normalises rather than erroring, and the token path looks the client up through `client_id.to_lowercase()`.[^kanidm-oauth2] Both ends fold, so the ID the client sends resolves to the lowercase entry.
-
-This is what lets opencloud's desktop and mobile apps — `OpenCloudDesktop`, `OpenCloudAndroid`, `OpenCloudIOS` — work against clients created under their folded names.
 
 [^kanidm-oauth2]: kanidm — `server/lib/src/idm/oauth2.rs`
 

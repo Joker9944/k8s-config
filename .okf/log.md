@@ -2,6 +2,8 @@
 
 ## 2026-09-11
 
+- OpenCloud runs one kanidm client for all four of its apps, steered onto it by webfinger — [kanidm](/platform/identity-kanidm.md)
+- `groups_names` is not a kanidm scope, and a scope map grants a near-miss silently — [kanidm OIDC clients and claims](/reference/oidc-claim-mapping.md)
 - opencloud's chart mounts a `proxy-config` ConfigMap it never emits, so the bundle ships an empty one to unblock the pod — [app-template pattern](/architecture/app-template-pattern.md)
 - `#GitRepo` gains `commit`, the only pin available for a chart repository that publishes no tags — [app-template pattern](/architecture/app-template-pattern.md)
 - `#IngressAnnotations` loses its `preset` flag: no chart in the fleet writes the tls and entrypoint annotations itself — [CUE layout](/architecture/cue-layout.md)
