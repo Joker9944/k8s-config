@@ -160,10 +160,10 @@ _blocky: schema.#AppRelease & {
 			}
 		}
 
-		rawResources: cnpg: {
+		rawResources: cnpg: manifest: {
 			apiVersion: "postgresql.cnpg.io/v1"
 			kind:       "Cluster"
-			spec: spec: {
+			spec: {
 				description: "PostgreSQL Cluster for blocky"
 				instances:   3
 				imageCatalogRef: {

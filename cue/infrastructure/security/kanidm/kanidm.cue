@@ -142,10 +142,10 @@ _kanidm: schema.#AppRelease & {
 			}
 		}
 
-		rawResources: transport: {
+		rawResources: transport: manifest: {
 			apiVersion: "traefik.io/v1alpha1"
 			kind:       "ServersTransport"
-			spec: spec: {
+			spec: {
 				serverName: "\(name).\(namespace)"
 				rootCAs: [{secret: "nyx-ca-cert-bundle"}]
 			}

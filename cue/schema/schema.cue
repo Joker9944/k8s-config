@@ -125,40 +125,44 @@ import "list"
 
 	out: {
 		"dest-\(vol)": {
-			apiVersion: "volsync.backube/v1alpha1"
-			kind:       "ReplicationDestination"
 			// BOOTSTRAP: every destination is enabled so a fresh cluster restores
 			// rather than starting empty. Revert to `false` once all nine volumes
 			// have restored — see /platform/backup-and-restore.md.
 			enabled: false
-			spec: spec: {
-				trigger: manual: "restore-once"
-				restic: {
-					repository: secretName
-					accessModes: [accessMode]
-					capacity:                size
-					copyMethod:              "Snapshot"
-					moverSecurityContext:    _mover
-					storageClassName:        "longhorn"
-					volumeSnapshotClassName: "longhorn"
+			manifest: {
+				apiVersion: "volsync.backube/v1alpha1"
+				kind:       "ReplicationDestination"
+				spec: {
+					trigger: manual: "restore-once"
+					restic: {
+						repository: secretName
+						accessModes: [accessMode]
+						capacity:                size
+						copyMethod:              "Snapshot"
+						moverSecurityContext:    _mover
+						storageClassName:        "longhorn"
+						volumeSnapshotClassName: "longhorn"
+					}
 				}
 			}
 		}
 		"source-\(vol)": {
-			apiVersion: "volsync.backube/v1alpha1"
-			kind:       "ReplicationSource"
-			enabled:    true
-			spec: spec: {
-				sourcePVC: "\(app)-\(vol)"
-				trigger: schedule: "@daily"
-				restic: {
-					repository:        secretName
-					pruneIntervalDays: 7
-					retain: {daily: 7, weekly: 4}
-					copyMethod:            "Clone"
-					storageClassName:      "longhorn-local-lax"
-					cacheStorageClassName: "longhorn"
-					moverSecurityContext:  _mover
+			enabled: true
+			manifest: {
+				apiVersion: "volsync.backube/v1alpha1"
+				kind:       "ReplicationSource"
+				spec: {
+					sourcePVC: "\(app)-\(vol)"
+					trigger: schedule: "@daily"
+					restic: {
+						repository:        secretName
+						pruneIntervalDays: 7
+						retain: {daily: 7, weekly: 4}
+						copyMethod:            "Clone"
+						storageClassName:      "longhorn-local-lax"
+						cacheStorageClassName: "longhorn"
+						moverSecurityContext:  _mover
+					}
 				}
 			}
 		}
