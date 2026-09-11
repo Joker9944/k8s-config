@@ -34,13 +34,15 @@ _dashboards: schema.#ConfigMapFiles & {
 	files: "logs.json": _logs
 }
 
-_grafana: schema.#HelmRepo & {name: "grafana", url: "https://grafana.github.io/helm-charts"}
+// The OSS loki chart: grafana.github.io kept the loki name for the
+// Enterprise-Logs-only lineage (7.x+), OSS moved here at 6.55.0.
+_grafana: schema.#HelmRepo & {name: "grafana-community", url: "https://grafana-community.github.io/helm-charts"}
 
 _loki: schema.#Release & {
 	name:      "loki"
 	namespace: bundle.namespace
 	chart:     "loki"
-	// renovate: datasource=helm packageName=loki registryUrl=https://grafana.github.io/helm-charts
+	// renovate: datasource=helm packageName=loki registryUrl=https://grafana-community.github.io/helm-charts
 	version:    "6.55.0"
 	sourceName: _grafana.name
 
