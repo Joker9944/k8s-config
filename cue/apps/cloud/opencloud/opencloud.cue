@@ -26,15 +26,19 @@ _repo: schema.#HelmRepo & {
 }
 
 let host = "cloud-eval.vonarx.online"
+let oidcHost = "idm.vonarx.online"
 let collaboraHost = "office-eval.vonarx.online"
 let tlsSecret = "wildcard-vonarx-online-cert"
 
+// HACK The desktop client does not support webfinger yet so we use that client id
+// for all clients.
+//
 // kanidm mints a per-client issuer URL, and OpenCloud validates every token
 // against exactly one issuer, so all four apps have to authenticate as the same
 // client. The webfinger service is what overrides the vendor-fixed client_id the
 // desktop and mobile apps ship with; the key is read last, so it wins over the
 // WEB_OIDC_CLIENT_ID the chart emits.
-let clientId = "opencloud"
+let clientId = strings.ToLower("OpenCloudDesktop")
 
 // Scopes decode as a list, so these are comma-separated — the space-separated
 // form the OpenCloud docs show lands as one element holding the whole string.
@@ -100,7 +104,7 @@ _opencloud: schema.#Release & {
 		global: {
 			domain: {
 				opencloud: host
-				oidc:      "idm.vonarx.online"
+				oidc:      oidcHost
 				collabora: collaboraHost
 			}
 			// the ingresses above carry the tls block
@@ -110,9 +114,9 @@ _opencloud: schema.#Release & {
 		ingress: enabled: false
 
 		oidc: {
-			issuerUrl:  "https://idm.vonarx.online/oauth2/openid/\(clientId)"
+			issuerUrl:  "https://\(oidcHost)/oauth2/openid/\(clientId)"
 			"clientId": clientId
-			accountUrl: "https://idm.vonarx.online/ui/profile"
+			accountUrl: "https://\(oidcHost)/ui/profile"
 		}
 
 		collabora: {

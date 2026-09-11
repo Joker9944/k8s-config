@@ -25,37 +25,37 @@ kanidm group add-members opencloud_users cloud_users
 # the chart carries no client-secret setting, so nothing is carried back into the
 # SOPS secret.
 
-kanidm system oauth2 create-public opencloud "OpenCloud" https://cloud-eval.vonarx.online/
+kanidm system oauth2 create-public openclouddesktop "OpenCloud" https://cloud-eval.vonarx.online/
 
-kanidm system oauth2 enable-pkce opencloud
+kanidm system oauth2 enable-pkce openclouddesktop
 
 # PROXY_USER_OIDC_CLAIM is preferred_username, which kanidm fills from spn
 # unless the client prefers the short name.
-kanidm system oauth2 prefer-short-username opencloud
+kanidm system oauth2 prefer-short-username openclouddesktop
 
 # web
-kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/
-kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/oidc-callback.html
-kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/oidc-silent-redirect.html
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/oidc-callback.html
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/oidc-silent-redirect.html
 
 # mobile, as opaque origins — kanidm matches a non-http(s) redirect on scheme and
 # authority, which is what the apps build from their own fixed scheme and host.
-kanidm system oauth2 add-redirect-url opencloud oc://android.opencloud.eu
-kanidm system oauth2 add-redirect-url opencloud oc://ios.opencloud.eu
+kanidm system oauth2 add-redirect-url openclouddesktop oc://android.opencloud.eu
+kanidm system oauth2 add-redirect-url openclouddesktop oc://ios.opencloud.eu
 
 # desktop, which listens on an ephemeral port and redirects to http://127.0.0.1:<port>.
 # kanidm allows this on public clients only, where PKCE is mandatory.
-kanidm system oauth2 enable-localhost-redirects opencloud
+kanidm system oauth2 enable-localhost-redirects openclouddesktop
 
 # The claim values are not free choice: PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM is
 # `roles`, and the proxy maps opencloudAdmin / opencloudSpaceAdmin /
 # opencloudUser / opencloudGuest onto its own roles.
-kanidm system oauth2 update-claim-map opencloud roles opencloud_admins opencloudAdmin
-kanidm system oauth2 update-claim-map opencloud roles opencloud_users opencloudUser
+kanidm system oauth2 update-claim-map openclouddesktop roles opencloud_admins opencloudAdmin
+kanidm system oauth2 update-claim-map openclouddesktop roles opencloud_users opencloudUser
 
 # The union of what the four platforms request; each asks for a subset, so only the
 # sync clients spend offline_access. `roles` has to be granted as a scope as well as
 # mapped as a claim — kanidm refuses a scope it has not mapped. `groups_name` is the
 # scope that emits the `groups` claim with names; there is no `groups_names`.
-kanidm system oauth2 update-scope-map opencloud opencloud_admins openid profile email groups_name roles offline_access
-kanidm system oauth2 update-scope-map opencloud opencloud_users openid profile email groups_name roles offline_access
+kanidm system oauth2 update-scope-map openclouddesktop opencloud_admins openid profile email groups_name roles offline_access
+kanidm system oauth2 update-scope-map openclouddesktop opencloud_users openid profile email groups_name roles offline_access

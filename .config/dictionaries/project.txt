@@ -53,4 +53,5 @@ toplevel
 traefikoidc
 updatekeys
 volsync
+webfinger
 websecure
