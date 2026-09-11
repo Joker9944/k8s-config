@@ -32,7 +32,7 @@ _kps: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "kube-prometheus-stack"
 	// renovate: datasource=helm packageName=kube-prometheus-stack registryUrl=https://prometheus-community.github.io/helm-charts
-	version:    "81.6.9"
+	version:    "90.0.0"
 	sourceName: _prometheusCommunity.name
 	crds:       true
 
@@ -109,8 +109,6 @@ _kps: schema.#Release & {
 					role_attribute_path:        "contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'"
 					allow_assign_grafana_admin: false
 				}
-
-				users: viewers_can_edit: true
 			}
 
 			envFromSecret: "grafana-environment"
