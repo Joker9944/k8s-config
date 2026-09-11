@@ -159,10 +159,10 @@ _gotify: schema.#AppRelease & {
 			dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-data"}
 		}
 
-		rawResources: cnpg: {
+		rawResources: cnpg: manifest: {
 			apiVersion: "postgresql.cnpg.io/v1"
 			kind:       "Cluster"
-			spec: spec: {
+			spec: {
 				description: "PostgreSQL Cluster for gotify"
 				instances:   3
 
