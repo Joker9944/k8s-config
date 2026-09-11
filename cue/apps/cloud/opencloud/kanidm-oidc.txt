@@ -66,5 +66,5 @@ kanidm system oauth2 update-scope-map openclouddesktop opencloud_users openid pr
 # dn=token with the api token as password. The token goes into
 # secrets/opencloud-ldap.secret.yaml, under both keys.
 
-kanidm service-account create opencloud_ldap "OpenCloud LDAP Service" opencloud_admins
-kanidm service-account api-token generate opencloud_ldap "OpenCloud Token"
+kanidm service-account create opencloud "OpenCloud LDAP Service" opencloud_admins
+kanidm service-account api-token generate opencloud "OpenCloud Token"
