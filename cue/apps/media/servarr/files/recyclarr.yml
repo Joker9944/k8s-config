@@ -22,7 +22,6 @@ sonarr:
       type: series
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: true
 
     media_naming: # recyclarr list naming sonarr
       season: default
@@ -36,7 +35,7 @@ sonarr:
       - name: HD-1080p
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats sonarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-1080p
@@ -55,7 +54,7 @@ sonarr:
       - name: Ultra-HD
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats sonarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -74,7 +73,7 @@ sonarr:
       - name: HD-1080p / Ultra-HD
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats sonarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -157,7 +156,6 @@ sonarr:
       type: anime
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: true
 
     media_naming: # recyclarr list naming sonarr
       season: default
@@ -170,7 +168,7 @@ sonarr:
       - name: HD-1080p
         reset_unmatched_scores:
           enabled: true
-        score_set: anime-sonarr # recyclarr list custom-formats sonarr --score-sets
+        score_set: anime-sonarr
         upgrade:
           allowed: true
           until_quality: Bluray-1080p
@@ -263,7 +261,6 @@ radarr:
       type: movie
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: true
 
     media_naming: # recyclarr list naming radarr
       folder: jellyfin
@@ -275,7 +272,7 @@ radarr:
       - name: HD-1080p (Standard)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-1080p
@@ -294,7 +291,7 @@ radarr:
       - name: HD-1080p (German)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-1080p
@@ -313,7 +310,7 @@ radarr:
       - name: Ultra-HD (Standard)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -332,7 +329,7 @@ radarr:
       - name: Ultra-HD (German)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -351,7 +348,7 @@ radarr:
       - name: HD-1080p / Ultra-HD (Standard)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -377,7 +374,7 @@ radarr:
       - name: HD-1080p / Ultra-HD (German)
         reset_unmatched_scores:
           enabled: true
-        score_set: default # recyclarr list custom-formats radarr --score-sets
+        score_set: default
         upgrade:
           allowed: true
           until_quality: Bluray-2160p
@@ -403,7 +400,7 @@ radarr:
       - name: HD-1080p (Anime)
         reset_unmatched_scores:
           enabled: true
-        score_set: anime-radarr # recyclarr list custom-formats radarr --score-sets
+        score_set: anime-radarr
         upgrade:
           allowed: true
           until_quality: Remux-1080p
