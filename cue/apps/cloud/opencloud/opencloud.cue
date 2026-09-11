@@ -115,8 +115,7 @@ _opencloud: schema.#Release & {
 				oidc:      oidcHost
 				collabora: collaboraHost
 			}
-			// the ingresses above carry the tls block
-			tls: enabled: false
+			tls: enabled: true
 		}
 
 		ingress: enabled: false
