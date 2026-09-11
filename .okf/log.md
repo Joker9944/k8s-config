@@ -8,6 +8,7 @@
 - kanidm folds an OAuth2 `client_id` on both the create and the token path, so a vendor's mixed-case ID is registrable — [kanidm OIDC clients and claims](/reference/oidc-claim-mapping.md)
 - opencloud is the first public OAuth2 client, the first with several clients per workload, and the first authorised by a claim map — [kanidm](/platform/identity-kanidm.md)
 - `decomposeds3` splits a file between Garage and the data volume, so neither half restores alone — [storage](/platform/storage.md)
+- jellyfin's Serilog output gets a log pipeline — [observability](/platform/observability.md)
 
 ## 2026-09-10
 

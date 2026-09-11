@@ -1,3 +1,5 @@
+@extern(embed)
+
 package jellyfin
 
 import "github.com/joker9944/k8s-config/schema"
@@ -6,7 +8,17 @@ bundle: schema.#Bundle & {
 	namespace: "jellyfin"
 	// baseline forbids hostPath volumes, and the media mount is one
 	namespaceLabels: "pod-security.kubernetes.io/enforce": "privileged"
+	before: [_logs.out]
 	releases: [_jellyfin]
+}
+
+_jellyfinLogs: _ @embed(file="files/jellyfin.alloy", type=text)
+
+// jellyfin's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "jellyfin"
+	ns:     bundle.namespace
+	config: _jellyfinLogs
 }
 
 _jellyfin: schema.#AppRelease & {
@@ -35,6 +47,8 @@ _jellyfin: schema.#AppRelease & {
 	backups: [_backup]
 
 	values: {
+		defaultPodOptions: labels: _logs.podLabels
+
 		controllers: jellyfin: {
 			type: "statefulset"
 			pod: {

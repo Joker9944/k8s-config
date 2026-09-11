@@ -1,0 +1,66 @@
+// The jellyfin log pipeline. Loaded into alloy's config graph by the sidecar
+// that watches ConfigMaps labelled alloy_config; the base config lives with
+// alloy and supplies loki.process.common and the target set read below.
+
+// cSpell:ignore Serilog matroska
+
+discovery.relabel "jellyfin" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "jellyfin"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "jellyfin" {
+	targets    = discovery.relabel.jellyfin.output
+	forward_to = [loki.process.jellyfin.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "jellyfin" {
+	forward_to = [loki.process.common.receiver]
+
+	// Serilog's `{NewLine}{Exception}` puts .NET stack traces on their own lines,
+	// and ffmpeg's and sqlite's own output passes through unwrapped. The anchor is
+	// the timestamp shape rather than a bare bracket because ffmpeg opens with one
+	// too (`[matroska,webm @ 0x...] ...`), and would otherwise read as a record.
+	stage.multiline {
+		firstline = "^\\[\\d{2}:\\d{2}:\\d{2}\\] \\["
+	}
+
+	// `[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}`.
+	// Timestamp and thread are matched but not captured — the container runtime
+	// supplies the one, nothing groups by the other. The message is where the
+	// expression stops, so it needs neither (?s) nor an anchor.
+	//
+	// `unit` excludes the newline on purpose: a negated class crosses one, so
+	// after the fold above `[^:]+` backtracks to the last colon in the whole
+	// record and captures the stack trace's exception type instead.
+	stage.regex {
+		expression = "^\\[[^\\]]+\\] \\[(?P<level>\\w+)\\] \\[\\d+\\] (?P<unit>[^:\\n]+): "
+	}
+
+	// Serilog's three-letter `u3` vocabulary (LevelOutputFormat.cs), which Loki's
+	// own heuristic does not recognise — 99.6% of this workload read as `unknown`
+	// before. The final else is not decoration: stage.template creates its source
+	// field when absent, so it runs on any line the regex above could not parse.
+	stage.template {
+		source   = "level"
+		template = "{{ if eq .Value \"INF\" }}info{{ else if eq .Value \"WRN\" }}warn{{ else if eq .Value \"ERR\" }}error{{ else if eq .Value \"DBG\" }}debug{{ else if eq .Value \"VRB\" }}trace{{ else if eq .Value \"FTL\" }}critical{{ else }}unknown{{ end }}"
+	}
+
+	stage.structured_metadata {
+		values = {
+			level = "level",
+			unit  = "unit",
+		}
+	}
+}
