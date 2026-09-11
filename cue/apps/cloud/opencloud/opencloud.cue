@@ -32,9 +32,9 @@ _repo: schema.#HelmRepo & {
 	url:  "oci://ghcr.io/tim-herbie/opencloud-helm"
 }
 
-let host = "cloud-eval.vonarx.online"
+let host = "cloud.vonarx.online"
 let oidcHost = "idm.vonarx.online"
-let collaboraHost = "office-eval.vonarx.online"
+let collaboraHost = "office.vonarx.online"
 let tlsSecret = "wildcard-vonarx-online-cert"
 let kanidmBaseDN = "dc=idm,dc=vonarx,dc=online"
 

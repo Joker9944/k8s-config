@@ -25,7 +25,7 @@ kanidm group add-members opencloud_users cloud_users
 # the chart carries no client-secret setting, so nothing is carried back into the
 # SOPS secret.
 
-kanidm system oauth2 create-public openclouddesktop "OpenCloud" https://cloud-eval.vonarx.online/
+kanidm system oauth2 create-public openclouddesktop "OpenCloud" https://cloud.vonarx.online/
 
 kanidm system oauth2 enable-pkce openclouddesktop
 
@@ -34,9 +34,9 @@ kanidm system oauth2 enable-pkce openclouddesktop
 kanidm system oauth2 prefer-short-username openclouddesktop
 
 # web
-kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/
-kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/oidc-callback.html
-kanidm system oauth2 add-redirect-url openclouddesktop https://cloud-eval.vonarx.online/oidc-silent-redirect.html
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud.vonarx.online/
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud.vonarx.online/oidc-callback.html
+kanidm system oauth2 add-redirect-url openclouddesktop https://cloud.vonarx.online/oidc-silent-redirect.html
 
 # mobile, as opaque origins — kanidm matches a non-http(s) redirect on scheme and
 # authority, which is what the apps build from their own fixed scheme and host.
