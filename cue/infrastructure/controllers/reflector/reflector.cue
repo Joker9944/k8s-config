@@ -18,7 +18,7 @@ _reflector: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "reflector"
 	// renovate: datasource=helm packageName=reflector registryUrl=https://emberstack.github.io/helm-charts
-	version:    "9.1.45"
+	version:    "10.0.65"
 	sourceName: "emberstack"
 	interval:   "5m"
 	crds:       true
