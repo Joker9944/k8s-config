@@ -59,3 +59,12 @@ kanidm system oauth2 update-claim-map openclouddesktop roles opencloud_users ope
 # scope that emits the `groups` claim with names; there is no `groups_names`.
 kanidm system oauth2 update-scope-map openclouddesktop opencloud_admins openid profile email groups_name roles offline_access
 kanidm system oauth2 update-scope-map openclouddesktop opencloud_users openid profile email groups_name roles offline_access
+
+# ldap setup
+#
+# Read-only directory access for user and group lookups; OpenCloud binds as
+# dn=token with the api token as password. The token goes into
+# secrets/opencloud-ldap.secret.yaml, under both keys.
+
+kanidm service-account create opencloud_ldap "OpenCloud LDAP Service" opencloud_admins
+kanidm service-account api-token generate opencloud_ldap "OpenCloud Token"

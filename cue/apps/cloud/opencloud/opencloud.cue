@@ -3,6 +3,7 @@ package opencloud
 // cSpell:ignore decomposedfs decomposeds
 
 import (
+	"encoding/yaml"
 	"strings"
 
 	"github.com/joker9944/k8s-config/schema"
@@ -10,7 +11,13 @@ import (
 
 bundle: schema.#Bundle & {
 	namespace: "opencloud"
-	extraSecretFiles: ["apps/cloud/opencloud/secrets/opencloud.secret.yaml"]
+	// kanidm's LDAPS certificate chains to the private CA; trust-manager writes
+	// the bundle here for the volume the postRenderer mounts.
+	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
+	extraSecretFiles: [
+		"apps/cloud/opencloud/secrets/opencloud.secret.yaml",
+		"apps/cloud/opencloud/secrets/opencloud-ldap.secret.yaml",
+	]
 	repositories: [_repo]
 	before: [_ingress, _collaboraIngress]
 	releases: [_opencloud]
@@ -29,6 +36,7 @@ let host = "cloud-eval.vonarx.online"
 let oidcHost = "idm.vonarx.online"
 let collaboraHost = "office-eval.vonarx.online"
 let tlsSecret = "wildcard-vonarx-online-cert"
+let kanidmBaseDN = "dc=idm,dc=vonarx,dc=online"
 
 // HACK The desktop client does not support webfinger yet so we use that client id
 // for all clients.
@@ -133,6 +141,8 @@ _opencloud: schema.#Release & {
 			limits: memory: "1500Mi"
 		}
 
+		monitoring: enabled: true
+
 		opencloud: {
 			// every certificate on the path is real
 			insecure:       false
@@ -143,10 +153,27 @@ _opencloud: schema.#Release & {
 			// in particular is what every stored file reference is resolved against.
 			initSecrets: existingSecret: "opencloud-init"
 
-			// Must not contain "idp": the chart reads that as "external LDAP too"
-			// and points the LDAP settings at a server this cluster does not run.
-			// The built-in IDM stores the accounts kanidm autoprovisions.
-			excludeServices: []
+			// Excluding "idp" is the chart's switch for external user management:
+			// only then does it render the LDAP env block. "idm" is the built-in
+			// LDAP server that kanidm replaces; the chart's gate keys on "idp" alone.
+			excludeServices: ["idp", "idm"]
+
+			// User state lives only in kanidm, read over LDAPS. The server is
+			// read-only — dn=token binds with an api token — hence no
+			// autoprovisioning, write-backs, referential integrity or disable
+			// attribute.
+			proxyAutoprovisionAccounts: false
+			ldapServerWriteEnabled:     false
+			graphLdapRefintEnabled:     false
+			ldap: {
+				uri:       "ldaps://kanidm-ldaps.kanidm.svc.cluster.local:636"
+				insecure:  false
+				bindDN:    "dn=token"
+				secretRef: "opencloud-ldap-bind"
+				user: {baseDN: kanidmBaseDN, schema: id: "uuid"}
+				group: {baseDN: kanidmBaseDN, createBaseDN: kanidmBaseDN, schema: id: "uuid"}
+				disableUserMechanism: "none"
+			}
 
 			// WEB_OIDC_SCOPE, read by the web service itself, so space-separated.
 			// kanidm has no groups_names: the claim is gated on groups_name.
@@ -157,6 +184,13 @@ _opencloud: schema.#Release & {
 				// to the same 30, which races. The chart exposes no
 				// terminationGracePeriodSeconds, so give the flush the slack instead.
 				{name: "STORAGE_USERS_GRACEFUL_SHUTDOWN_TIMEOUT", value: "20"},
+
+				// The chart's LDAP block fixes the objectclasses at OpenCloud's
+				// OpenLDAP defaults; kanidm presents person and group.
+				{name: "OC_LDAP_USER_OBJECTCLASS", value: "person"},
+				{name: "OC_LDAP_GROUP_OBJECTCLASS", value: "group"},
+				// Mounted by the postRenderer below.
+				{name: "OC_LDAP_CACERT", value: "/etc/opencloud/ldap-ca/ca.crt"},
 
 				for platform, scopes in webfingerScopes
 				for e in [
@@ -180,7 +214,7 @@ _opencloud: schema.#Release & {
 			}
 
 			// decomposeds3 keeps the blobs in garage; this volume holds the
-			// decomposedfs metadata, the IDM and the search index.
+			// decomposedfs metadata and the search index.
 			// TODO volsync — a PVC cannot gain a dataSourceRef after creation, so
 			// adding backups means recreating this volume.
 			persistence: data: {size: "10Gi", storageClass: "longhorn"}
@@ -191,4 +225,21 @@ _opencloud: schema.#Release & {
 			}
 		}
 	}
+
+	// The chart has no extra-volume knob, so the CA for the LDAPS hop is
+	// patched in after rendering.
+	postRenderers: [{kustomize: patches: [{patch: yaml.Marshal({
+		apiVersion: "apps/v1"
+		kind:       "Deployment"
+		metadata: name: "opencloud-opencloud"
+		spec: template: {
+			spec: {
+				containers: [{
+					name: "opencloud"
+					volumeMounts: [{name: "ldap-ca", mountPath: "/etc/opencloud/ldap-ca", readOnly: true}]
+				}]
+				volumes: [{name: "ldap-ca", secret: secretName: "nyx-ca-cert-bundle"}]
+			}}
+	})
+	}]}]
 }

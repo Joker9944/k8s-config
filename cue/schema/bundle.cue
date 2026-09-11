@@ -66,6 +66,10 @@ import (
 	// and CUE cannot tell an unset struct from an empty one.
 	hasValues: bool | *true
 
+	// Kustomize patches applied after Helm rendering, for what a chart exposes
+	// no knob for.
+	postRenderers: [...] | *[]
+
 	ingressAnnotations: (#IngressAnnotations & {
 		ns:      namespace
 		"chain": chain
@@ -90,6 +94,7 @@ import (
 				upgrade: _lifecycle
 			}
 			if hasValues {"values": values}
+			if len(postRenderers) > 0 {"postRenderers": postRenderers}
 		}
 	}
 }
