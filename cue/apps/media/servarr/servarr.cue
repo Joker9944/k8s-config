@@ -170,10 +170,10 @@ _cnpgSecretRef: {
 
 			rawResources: {
 				for k in ["main", "log"] {
-					(k): {
+					(k): manifest: {
 						apiVersion: "postgresql.cnpg.io/v1"
 						kind:       "Database"
-						spec: spec: {
+						spec: {
 							"name": "\(name)-\(k)"
 							owner:  name
 							cluster: "name": "servarr-cnpg"
@@ -181,10 +181,10 @@ _cnpgSecretRef: {
 						}
 					}
 				}
-				oidc: {
+				oidc: manifest: {
 					apiVersion: "traefik.io/v1alpha1"
 					kind:       "Middleware"
-					spec: spec: plugin: oidc: {
+					spec: plugin: oidc: {
 						providerURL:          "https://idm.vonarx.online/oauth2/openid/\(name)"
 						clientID:             name
 						clientSecret:         "urn:k8s:secret:\(name)-oidc:CLIENT_SECRET"
