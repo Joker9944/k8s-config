@@ -2,6 +2,7 @@
 
 ## 2026-09-11
 
+- loki's chart repointed to the grafana-community OSS lineage; grafana.github.io's loki is GEL-only from 7.x — [observability](/platform/observability.md)
 - OpenCloud runs one kanidm client for all four of its apps, steered onto it by webfinger — [kanidm](/platform/identity-kanidm.md)
 - `groups_names` is not a kanidm scope, and a scope map grants a near-miss silently — [kanidm OIDC clients and claims](/reference/oidc-claim-mapping.md)
 - opencloud's chart mounts a `proxy-config` ConfigMap it never emits, so the bundle ships an empty one to unblock the pod — [app-template pattern](/architecture/app-template-pattern.md)
