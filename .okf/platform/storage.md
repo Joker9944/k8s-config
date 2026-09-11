@@ -4,7 +4,7 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T19:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-11T10:00:00Z }
 ---
 
 # Longhorn classes
@@ -37,7 +37,7 @@ Garage is the in-cluster S3, and the whole of the `storage` tier. Its chart is m
 - Web: `*.web.vonarx.online`
 - In-cluster: `http://garage.garage.svc.cluster.local:3900`
 
-Consumers are Loki (chunks and indexes), nextcloud and opencloud. nextcloud uses it as _primary_ object storage, so user files and previews never reach Longhorn — its volume holds only the ~900MB server tree, `config/` and `custom_apps/`, and the chart's separate data PVC is redundant. Because `loki` `dependsOn` `garage`, Garage is the first thing the observability tier waits on.
+Consumers are Loki (chunks and indexes), nextcloud and opencloud, and both clouds use it as _primary_ object storage. nextcloud's own volume holds only the ~900MB server tree, `config/` and `custom_apps/`, and the chart's separate data PVC is redundant. opencloud runs the `decomposeds3` driver, which splits a file in two: the bytes become an object in Garage, while the decomposedfs metadata naming it stays on the workload's data volume — so neither half restores without the other. Because `loki` `dependsOn` `garage`, Garage is the first thing the observability tier waits on.
 
 Administration is CLI-inside-the-pod; the [dev shell](/workflows/dev-environment.md) defines a `garage` alias that execs into `garage-0`.
 

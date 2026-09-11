@@ -18,15 +18,9 @@ import (
 	chain: #Chain | *"chain-country-whitelist"
 	extra: [...string] | *[]
 
-	// opencloud's chart writes the tls and entrypoint annotations itself, from
-	// its own `annotationsPreset: traefik`, and duplicating them is a conflict.
-	preset: bool | *false
-
 	out: {
-		if !preset {
-			"traefik.ingress.kubernetes.io/router.tls":         "true"
-			"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
-		}
+		"traefik.ingress.kubernetes.io/router.tls":         "true"
+		"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
 		"traefik.ingress.kubernetes.io/router.middlewares": strings.Join([
 			for m in list.Concat([[chain], extra]) {"\(ns)_\(m)@kubernetescrd"},
 		], ",")
@@ -72,12 +66,10 @@ import (
 	// and CUE cannot tell an unset struct from an empty one.
 	hasValues: bool | *true
 
-	ingressPreset: bool | *false
 	ingressAnnotations: (#IngressAnnotations & {
 		ns:      namespace
 		"chain": chain
 		extra:   extraMiddlewares
-		preset:  ingressPreset
 	}).out
 
 	out: fluxHelm.#HelmRelease & {
@@ -149,11 +141,20 @@ _appTemplateVersion: "4.6.2"
 	url:      string
 	interval: string | *"5m"
 
+	// An OCI registry is a chart source with no index to poll: the release names
+	// a chart and a version, and source-controller resolves it as an artifact.
+	// source-controller requires the url to carry the oci:// scheme to match.
+	type: "default" | "oci" | *"default"
+
 	out: fluxSource.#HelmRepository & {
 		apiVersion: "source.toolkit.fluxcd.io/v1"
 		kind:       "HelmRepository"
 		metadata: {"name": name, namespace: ns}
-		spec: {"interval": interval, "url": url}
+		spec: {
+			"interval": interval
+			"url":      url
+			if type != "default" {"type": type}
+		}
 	}
 }
 

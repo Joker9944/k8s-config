@@ -25,7 +25,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 
 # Reference
 
-- [kanidm OIDC claim mapping](reference/oidc-claim-mapping.md) - which claim carries which attribute, and what never leaves kanidm.
+- [kanidm OIDC clients and claims](reference/oidc-claim-mapping.md) - how a client_id resolves, which claim carries which attribute, and what never leaves kanidm.
 
 # Decisions
 

@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-10T15:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-11T10:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -82,7 +82,7 @@ Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, a
 
 `#Release` is a HelmRelease with the chart as a parameter (`chart`, `version`, `sourceKind`, `sourceName`), because most of the fleet outside `apps/` runs a foreign chart. `#AppRelease` embeds it and adds what the bjw-s app-template needs: the chart name, the identifier suffix, and the keyed `values.ingress.<key>` the middleware annotations are placed into. A foreign chart splices `ingressAnnotations` at whatever path its own schema uses.
 
-The annotations come from `#IngressAnnotations`, which derives the middleware reference from the namespace it is handed — that is what stops an ingress from naming another namespace's middleware. It is a separate definition because nextcloud has two ingresses behind different middleware sets.
+The annotations come from `#IngressAnnotations`, which derives the middleware reference from the namespace it is handed — that is what stops an ingress from naming another namespace's middleware. It is a separate definition because nextcloud has two ingresses behind different middleware sets. It always writes the `router.tls` and `router.entrypoints` annotations: no chart in the fleet supplies them itself.
 
 `#Release.crds` switches on the `install`/`upgrade` block every CRD-shipping chart carries — `crds: CreateReplace` with three remediation retries, byte-identical across the ten releases that have it. `#GitRepo` takes `branch` or `tag` plus an optional `ignore`, because two of the three git-sourced charts pin a tag and ship one directory out of a whole repository.
 

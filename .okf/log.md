@@ -1,5 +1,14 @@
 # Update Log
 
+## 2026-09-11
+
+- opencloud's chart mounts a `proxy-config` ConfigMap it never emits, so the bundle ships an empty one to unblock the pod — [app-template pattern](/architecture/app-template-pattern.md)
+- `#GitRepo` gains `commit`, the only pin available for a chart repository that publishes no tags — [app-template pattern](/architecture/app-template-pattern.md)
+- `#IngressAnnotations` loses its `preset` flag: no chart in the fleet writes the tls and entrypoint annotations itself — [CUE layout](/architecture/cue-layout.md)
+- kanidm folds an OAuth2 `client_id` on both the create and the token path, so a vendor's mixed-case ID is registrable — [kanidm OIDC clients and claims](/reference/oidc-claim-mapping.md)
+- opencloud is the first public OAuth2 client, the first with several clients per workload, and the first authorised by a claim map — [kanidm](/platform/identity-kanidm.md)
+- `decomposeds3` splits a file between Garage and the data volume, so neither half restores alone — [storage](/platform/storage.md)
+
 ## 2026-09-10
 
 - A `reference/` tree holds upstream behaviour read off pinned source, and makes `sources` mandatory for what lands there — [reference](/reference/index.md)

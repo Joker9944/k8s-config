@@ -4,7 +4,7 @@ title: App-template pattern
 description: The bjw-s app-template idioms every workload follows, the chart sources, and the OIDC runbooks that sit beside them.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T11:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-11T10:00:00Z }
 ---
 
 # Package shape
@@ -36,8 +36,8 @@ One shape: a SOPS `Secret` manifest with `data`/`stringData` encrypted, listed i
 
 # Chart sources
 
-Most releases pull `app-template` from the shared `bjw-s` `HelmRepository`, which `#Bundle.repositories` defaults to. Two mount a chart directly out of a `#GitRepo` narrowed by an `ignore` block — garage (`script/helm/garage`, tag-pinned) and opencloud (branch `main`, unpinned). The rest declare their upstream as a `#HelmRepo` in the bundle.
+Most releases pull `app-template` from the shared `bjw-s` `HelmRepository`, which `#Bundle.repositories` defaults to. Two mount a chart directly out of a `#GitRepo` narrowed by an `ignore` block — garage (`script/helm/garage`, tag-pinned) and opencloud (`charts/opencloud`). opencloud's upstream publishes no tags at all, so it pins `commit` alongside `branch`; source-controller gives the commit precedence, and without one every upstream push reconciles into the cluster. The rest declare their upstream as a `#HelmRepo` in the bundle.
 
 # kanidm-oidc.txt
 
-Nine workloads carry one, holding the literal `kanidm` CLI commands that register the OAuth2 client, redirect URLs, groups and scope maps. **Nothing applies these** — they are a runbook, replayed by hand. See [identity](/platform/identity-kanidm.md).
+Ten workloads carry one, holding the literal `kanidm` CLI commands that register the OAuth2 client, redirect URLs, groups and scope maps. **Nothing applies these** — they are a runbook, replayed by hand. See [identity](/platform/identity-kanidm.md).

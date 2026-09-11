@@ -1,0 +1,77 @@
+# cspell:ignore openclouddesktop opencloudandroid opencloudios opencloudadmin
+# cspell:ignore opencloudspaceadmin opencloudguest opencloudusers iname spn
+
+# group setup
+
+kanidm group create opencloud_admins
+kanidm group add-members opencloud_admins cloud_admins
+kanidm group create opencloud_users
+kanidm group add-members opencloud_users cloud_users
+
+# oidc web client setup
+#
+# Public, not confidential: OpenCloud Web is a browser SPA and the chart sets
+# only WEB_OIDC_CLIENT_ID — there is no client-secret env anywhere in it, so
+# nothing is carried back into the SOPS secret.
+
+kanidm system oauth2 create-public opencloud "OpenCloud" https://cloud-eval.vonarx.online/
+
+kanidm system oauth2 enable-pkce opencloud
+
+# PROXY_USER_OIDC_CLAIM is preferred_username, which kanidm fills from spn
+# unless the client prefers the short name.
+kanidm system oauth2 prefer-short-username opencloud
+
+kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/
+kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/oidc-callback.html
+kanidm system oauth2 add-redirect-url opencloud https://cloud-eval.vonarx.online/oidc-silent-redirect.html
+
+# The claim values are not free choice: PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM is
+# `roles`, and the proxy maps opencloudAdmin / opencloudSpaceAdmin /
+# opencloudUser / opencloudGuest onto its own roles.
+kanidm system oauth2 update-claim-map opencloud roles opencloud_admins opencloudAdmin
+kanidm system oauth2 update-claim-map opencloud roles opencloud_users opencloudUser
+
+# `roles` has to be granted as a scope too — the chart requests
+# WEB_OIDC_SCOPE="openid profile email groups roles" and kanidm refuses a scope
+# it has not mapped.
+kanidm system oauth2 update-scope-map opencloud opencloud_admins openid profile email groups_names roles
+kanidm system oauth2 update-scope-map opencloud opencloud_users openid profile email groups_names roles
+
+# native clients — UNVERIFIED, run these only when testing desktop/mobile sync
+#
+# The vendor ships fixed client IDs (OpenCloudDesktop / OpenCloudAndroid /
+# OpenCloudIOS). kanidm's name syntax is lowercase-only, but it folds case on
+# both sides — Value::new_iname lowercases before validating, and the token path
+# looks the client up through client_id.to_lowercase() — so the mixed-case ID
+# the app sends resolves to the lowercase name created here.
+#
+# offline_access is what gets a refresh token, without which a sync client
+# re-prompts constantly.
+
+kanidm system oauth2 create-public openclouddesktop "OpenCloud Desktop" https://cloud-eval.vonarx.online/
+kanidm system oauth2 enable-pkce openclouddesktop
+kanidm system oauth2 prefer-short-username openclouddesktop
+kanidm system oauth2 enable-localhost-redirects openclouddesktop
+kanidm system oauth2 update-claim-map openclouddesktop roles opencloud_admins opencloudAdmin
+kanidm system oauth2 update-claim-map openclouddesktop roles opencloud_users opencloudUser
+kanidm system oauth2 update-scope-map openclouddesktop opencloud_admins openid profile email groups_names roles offline_access
+kanidm system oauth2 update-scope-map openclouddesktop opencloud_users openid profile email groups_names roles offline_access
+
+kanidm system oauth2 create-public opencloudandroid "OpenCloud Android" https://cloud-eval.vonarx.online/
+kanidm system oauth2 enable-pkce opencloudandroid
+kanidm system oauth2 prefer-short-username opencloudandroid
+kanidm system oauth2 add-redirect-url opencloudandroid oc://android.opencloud.eu
+kanidm system oauth2 update-claim-map opencloudandroid roles opencloud_admins opencloudAdmin
+kanidm system oauth2 update-claim-map opencloudandroid roles opencloud_users opencloudUser
+kanidm system oauth2 update-scope-map opencloudandroid opencloud_admins openid profile email groups roles offline_access
+kanidm system oauth2 update-scope-map opencloudandroid opencloud_users openid profile email groups roles offline_access
+
+kanidm system oauth2 create-public opencloudios "OpenCloud iOS" https://cloud-eval.vonarx.online/
+kanidm system oauth2 enable-pkce opencloudios
+kanidm system oauth2 prefer-short-username opencloudios
+kanidm system oauth2 add-redirect-url opencloudios oc://ios.opencloud.eu
+kanidm system oauth2 update-claim-map opencloudios roles opencloud_admins opencloudAdmin
+kanidm system oauth2 update-claim-map opencloudios roles opencloud_users opencloudUser
+kanidm system oauth2 update-scope-map opencloudios opencloud_admins openid profile email groups roles offline_access
+kanidm system oauth2 update-scope-map opencloudios opencloud_users openid profile email groups roles offline_access
