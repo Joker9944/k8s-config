@@ -109,8 +109,6 @@ _kps: schema.#Release & {
 					role_attribute_path:        "contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'"
 					allow_assign_grafana_admin: false
 				}
-
-				users: viewers_can_edit: true
 			}
 
 			envFromSecret: "grafana-environment"
