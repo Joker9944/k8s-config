@@ -69,7 +69,7 @@ _traefik: schema.#Release & {
 			oidc: {
 				moduleName: "github.com/lukaszraczylo/traefikoidc"
 				// renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced
-				version: "v1.0.35"
+				version: "v1.0.36"
 			}
 		}
 
