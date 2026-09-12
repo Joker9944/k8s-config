@@ -1,11 +1,11 @@
-package stakater
+package reloader
 
 // cSpell:ignore stakater
 
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
-	namespace:   "stakater-system"
+	namespace:   "reloader-system"
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "stakater", url: "https://stakater.github.io/stakater-charts"},

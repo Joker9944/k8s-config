@@ -14,7 +14,7 @@ import (
 	metallbconfig "github.com/joker9944/k8s-config/infrastructure/controllers/metallb-config:metallbconfig"
 	redisoperator "github.com/joker9944/k8s-config/infrastructure/controllers/redis-operator:redisoperator"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reflector"
-	"github.com/joker9944/k8s-config/infrastructure/controllers/stakater"
+	"github.com/joker9944/k8s-config/infrastructure/controllers/reloader"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/traefik"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/volsync"
 )
@@ -36,7 +36,7 @@ tier: schema.#Tier & {
 		"metallb-config":  metallbconfig.bundle
 		"redis-operator":  redisoperator.bundle
 		"reflector":       reflector.bundle
-		"stakater":        stakater.bundle
+		"reloader":        reloader.bundle
 		"traefik":         traefik.bundle
 		"volsync":         volsync.bundle
 	}
