@@ -32,7 +32,7 @@ _kps: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "kube-prometheus-stack"
 	// renovate: datasource=helm packageName=kube-prometheus-stack registryUrl=https://prometheus-community.github.io/helm-charts
-	version:    "90.0.0"
+	version:    "90.1.1"
 	sourceName: _prometheusCommunity.name
 	crds:       true
 
