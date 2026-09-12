@@ -32,7 +32,7 @@ _trustManager: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "trust-manager"
 	// renovate: datasource=helm packageName=trust-manager registryUrl=https://charts.jetstack.io
-	version:    "v0.24.0"
+	version:    "v0.25.0"
 	sourceName: "jetstack"
 
 	values: secretTargets: {
