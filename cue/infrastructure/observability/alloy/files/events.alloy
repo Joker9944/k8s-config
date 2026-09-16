@@ -1,0 +1,55 @@
+// Cluster events. The source in config.alloy forwards here; this file belongs to
+// neither a workload nor a log format, so like klog.alloy it ships beside the
+// base config rather than in an app package.
+
+loki.process "k8s_events" {
+	forward_to = [loki.process.common.receiver]
+
+	// The event says what it is: `type` is Normal or Warning and nothing else.
+	// Without this, discover_log_levels reaches its content heuristic and reads
+	// severity out of the message — longhorn's `Removed unknown replica … in
+	// mode ERR from engine` is a Normal event that arrived as error.
+	stage.json {
+		expressions = {
+			level      = "type",
+			reason     = "reason",
+			kind       = "kind",
+			object     = "name",
+			controller = "reportingcontroller",
+			node       = "sourcehost",
+		}
+	}
+
+	// Flux re-emits these three on every reconcile and they are 95% of the
+	// stream. Each name is success-only by construction, so the reason alone is
+	// the whole condition — there is no failure path that reports
+	// ReconciliationSucceeded. First, so a line headed for the bin is never
+	// parsed.
+	stage.drop {
+		source              = "reason"
+		expression          = "^(ArtifactUpToDate|ReconciliationSucceeded|GitOperationSucceeded)$"
+		drop_counter_reason = "flux_steady_state"
+	}
+
+	// Rewrites `level` in place. The final else is what keeps a line whose type
+	// did not parse from being stamped by the fallthrough branch: stage.template
+	// creates its source field when the field is absent.
+	stage.template {
+		source   = "level"
+		template = "{{ if eq .Value \"Normal\" }}info{{ else if eq .Value \"Warning\" }}warn{{ else }}unknown{{ end }}"
+	}
+
+	// The line stays the full JSON, so what is not promoted here is still
+	// searchable. `node` is set only on kubelet-reported events; stage.json
+	// leaves an absent key unset rather than empty, so this skips it.
+	stage.structured_metadata {
+		values = {
+			level      = "level",
+			reason     = "reason",
+			kind       = "kind",
+			object     = "object",
+			controller = "controller",
+			node       = "node",
+		}
+	}
+}

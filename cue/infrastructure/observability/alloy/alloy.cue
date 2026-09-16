@@ -23,11 +23,13 @@ _grafana: schema.#HelmRepo & {name: "grafana", url: "https://grafana.github.io/h
 // package directory, which is why this file lives here.
 _configAlloy: _ @embed(file="files/config.alloy", type=text)
 _klogAlloy:   _ @embed(file="files/klog.alloy", type=text)
+_eventsAlloy: _ @embed(file="files/events.alloy", type=text)
 
 // Delivered into /etc/alloy.d by the same sidecar that carries the workload
-// files, so the base and the pipelines that reference it arrive together. Both
-// keys ride the one ConfigMap, which is what stops config.alloy's reference into
-// klog.alloy from ever resolving against a directory that lacks it.
+// files, so the base and the pipelines that reference it arrive together. Every
+// key rides the one ConfigMap, which is what stops config.alloy's references
+// into klog.alloy and events.alloy from ever resolving against a directory that
+// lacks them.
 _config: schema.#ConfigMapFiles & {
 	name: "alloy-config"
 	ns:   bundle.namespace
@@ -35,6 +37,7 @@ _config: schema.#ConfigMapFiles & {
 	files: {
 		"config.alloy": _configAlloy
 		"klog.alloy":   _klogAlloy
+		"events.alloy": _eventsAlloy
 	}
 }
 

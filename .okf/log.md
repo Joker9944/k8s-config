@@ -2,6 +2,7 @@
 
 ## 2026-09-16
 
+- `events.alloy` maps the cluster event's own `type` to a level and drops the three Flux steady-state reasons — [observability](/platform/observability.md)
 - `#Release.crds` drops off the six releases whose charts have no Helm `crds/` directory — [CUE layout](/architecture/cue-layout.md)
 
 ## 2026-09-11

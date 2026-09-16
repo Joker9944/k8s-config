@@ -112,13 +112,3 @@ loki.source.kubernetes_events "k8s_events" {
 		enabled = true
 	}
 }
-
-loki.process "k8s_events" {
-	forward_to = [loki.process.common.receiver]
-
-	stage.labels {
-		values = {
-			kubernetes_cluster_events = "job",
-		}
-	}
-}

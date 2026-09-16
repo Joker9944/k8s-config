@@ -4,6 +4,7 @@ kanidm group create grafana_admins
 kanidm group add-members grafana_admins monitoring_admins
 kanidm group create grafana_users
 kanidm group add-members grafana_users monitoring_users
+kanidm group create grafana_editors
 
 # OIDC Setup
 
@@ -18,3 +19,4 @@ kanidm system oauth2 update-scope-map grafana grafana_admins email openid profil
 
 kanidm system oauth2 update-claim-map-join grafana grafana_role array
 kanidm system oauth2 update-claim-map grafana grafana_role grafana_admins Admin
+kanidm system oauth2 update-claim-map grafana grafana_role grafana_editors Editor
