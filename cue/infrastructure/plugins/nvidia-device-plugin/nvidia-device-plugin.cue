@@ -39,12 +39,11 @@ _nvidia: schema.#Release & {
 	version:    "0.20.0"
 	sourceName: "nvidia-device-plugin"
 	interval:   "5m"
-	crds:       true
 
 	values: {
-		// the plugin and gfd need NVML to enumerate the GPU, which arrives with the
-		// driver the handler injects. The chart puts this on the device-plugin,
-		// gfd and mps-control DaemonSets; the NFD workers never touch the GPU.
+		// the plugin needs NVML to enumerate the GPU, which arrives with the driver
+		// the handler injects. The chart puts this on the device-plugin and the
+		// mps-control DaemonSet.
 		runtimeClassName: "nvidia-cdi"
 
 		// the default envvar strategy hands the allocated device to the runtime as
@@ -53,19 +52,20 @@ _nvidia: schema.#Release & {
 		// the chart's `uuid` default would ask for a device it does not declare.
 		deviceIDStrategy: "index"
 
-		gfd: enabled: true
-		nfd: {
-			enableNodeFeatureApi: true
-			// the feature-discovery worker labels the node, so it has to reach the
-			// reserved one too
-			worker: tolerations: [
-				{key: "node-role.kubernetes.io/master", operator: "Equal", value: "", effect: "NoSchedule"},
-				{key: "nvidia.com/gpu", operator: "Equal", value: "present", effect: "NoSchedule"},
-				schema.#Reserved.any,
-			]
-		}
+		// Both subcharts only label nodes, and nothing in this repo reads a
+		// `feature.node.kubernetes.io/*` or `nvidia.com/*` label. The chart's default
+		// affinity elects the GPU node from three of them: two are NFD's, and the
+		// third, `nvidia.com/gpu.present`, is the chart's own documented override.
+		// mother carries that one from nix-config, which is what keeps this
+		// DaemonSet on the GPU node with feature discovery gone — drop the label and
+		// the plugin matches no node, so `nvidia.com/gpu` leaves mother's allocatable
+		// and jellyfin stops scheduling. The subchart condition is
+		// `nfd.enabled,gfd.enabled` and Helm takes the first path that exists, so
+		// naming nfd.enabled is what decides it rather than gfd's default.
+		nfd: enabled: false
+		gfd: enabled: false
 
-		// the device-plugin, gfd and mps-control DaemonSets share this list. Helm
+		// the device-plugin and mps-control DaemonSets share this list. Helm
 		// replaces lists rather than merging them, so the chart's own two entries
 		// have to be restated.
 		tolerations: [

@@ -4,7 +4,7 @@ title: The nyx cluster
 description: Node inventory, the label and taint scheme workloads schedule against, and what the cluster gets from nix-config rather than this repo.
 tags: [cluster, nodes, scheduling]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T19:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-16T20:15:00Z }
 ---
 
 # Nodes
@@ -22,7 +22,7 @@ Four k3s nodes. Three are control planes that also run workloads; `mother` is th
 
 The GPU reaches pods through the **`nvidia-cdi` containerd handler**. `nvidia-container-toolkit` writes a CDI spec to `/run/cdi` declaring `nvidia.com/gpu=0` and `=all` — index names only, no UUIDs, which is what forces the device plugin's `deviceIDStrategy: index`. k3s registers both an `nvidia` and an `nvidia-cdi` handler once nix-config puts `nvidia-container-runtime` on its PATH. Only the second is usable: the plain one runs the runtime in auto mode and reaches for a legacy libnvidia-container driver tree no NixOS host has, failing the container with `exit status 2`.
 
-k3s's `runtimes` Addon ships RuntimeClasses for `nvidia`, `crun` and the wasm handlers, but none for `nvidia-cdi` — that one is created by this repo, alongside the device plugin. Two traps sit next to it. **Pod `cdi.k8s.io/*` annotations do nothing**: containerd 2.0 dropped that injection path for the CRI `CDIDevices` field, so an annotation is ignored rather than rejected, and the workload starts with no GPU. And **nothing taints the GPU node** — an `nvidia.com/gpu` toleration is dead weight; `nvidia.com/gpu: 1` in a container's limits is what places a pod on `mother`.
+k3s's `runtimes` Addon ships RuntimeClasses for `nvidia`, `crun` and the wasm handlers, but none for `nvidia-cdi` — that one is created by this repo, alongside the device plugin. Three traps sit next to it. **Pod `cdi.k8s.io/*` annotations do nothing**: containerd 2.0 dropped that injection path for the CRI `CDIDevices` field, so an annotation is ignored rather than rejected, and the workload starts with no GPU. And **nothing taints the GPU node** — an `nvidia.com/gpu` toleration is dead weight; `nvidia.com/gpu: 1` in a container's limits is what places a pod on `mother`. The **device plugin's own** placement is a third thing again, a node label: the chart's default affinity admits a node carrying any of `feature.node.kubernetes.io/pci-10de.present`, `feature.node.kubernetes.io/cpu-model.vendor_id=NVIDIA` or `nvidia.com/gpu.present`. The first two are node-feature-discovery's and that subchart is disabled, so `nvidia.com/gpu.present=true` on `mother`, from nix-config, is the whole of what elects the GPU node. Drop it and the DaemonSet matches nothing, `nvidia.com/gpu` leaves the allocatable and jellyfin stops scheduling — with nothing in any log naming the label.
 
 `generic-device-plugin` advertises `/dev/net/tun` on every node as **`devic.es/tun`** — upstream renamed the domain from `squat.ai`, and its `--domain` flag is left at the default. A request for the old name is not a scheduling shortage; it is a resource no node has.
 
