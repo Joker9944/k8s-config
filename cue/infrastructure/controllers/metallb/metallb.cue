@@ -24,7 +24,6 @@ _metallb: schema.#Release & {
 	version:    "0.15.3"
 	sourceName: "metallb"
 	interval:   "5m"
-	crds:       true
 
 	// the speaker is a DaemonSet and has to announce from every node, reserved
 	// or not

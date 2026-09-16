@@ -32,7 +32,6 @@ _garage: schema.#Release & {
 	version:    "" // a git ref, not a chart version
 	sourceKind: "GitRepository"
 	sourceName: _garageRepo.name
-	crds:       true
 
 	host: "s3.vonarx.online"
 	let wildcardHost = "*.\(host)"

@@ -20,7 +20,6 @@ _certManager: schema.#Release & {
 	// renovate: datasource=helm packageName=cert-manager registryUrl=https://charts.jetstack.io
 	version:    "v1.21.2"
 	sourceName: "jetstack"
-	crds:       true
 
 	values: "crds": enabled: true
 }

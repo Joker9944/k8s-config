@@ -50,9 +50,10 @@ import (
 	chain:      #Chain | *"chain-country-whitelist"
 	extraMiddlewares: [...string] | *[]
 
-	// The preset every CRD-shipping chart in the fleet carries, byte-identical
-	// across all ten of them: Helm owns the CRD lifecycle and a failed install or
-	// upgrade is retried three times.
+	// Helm owns the CRD lifecycle and a failed install or upgrade is retried three
+	// times. Only for a chart with a real Helm `crds/` directory — a chart that
+	// renders its CRDs as ordinary templates (cert-manager, cnpg, volsync,
+	// metallb) never reaches this code path, so setting it there is a lie.
 	crds: bool | *false
 	_lifecycle: {"crds": "CreateReplace", remediation: retries: 3}
 

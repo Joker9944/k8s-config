@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-09-16
+
+- `#Release.crds` drops off the six releases whose charts have no Helm `crds/` directory — [CUE layout](/architecture/cue-layout.md)
+
 ## 2026-09-11
 
 - The CA certs pin `rotationPolicy: Never`; cert-manager ≥ 1.18's `Always` default would orphan old-key leaves the moment a CA renews — [certificates and PKI](/platform/certificates-and-pki.md)

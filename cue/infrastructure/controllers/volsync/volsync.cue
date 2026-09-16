@@ -19,6 +19,5 @@ _volsync: schema.#Release & {
 	version:    "0.16.0"
 	sourceName: "backube"
 	interval:   "5m"
-	crds:       true
 	hasValues:  false
 }

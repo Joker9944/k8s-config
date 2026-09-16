@@ -19,7 +19,6 @@ _cnpg: schema.#Release & {
 	version:    "0.29.0"
 	sourceName: "cnpg"
 	interval:   "5m"
-	crds:       true
 	hasValues:  false
 }
 
@@ -34,6 +33,5 @@ _barman: schema.#Release & {
 	version:    "0.8.0"
 	sourceName: "cnpg"
 	interval:   "5m"
-	crds:       true
 	hasValues:  false
 }

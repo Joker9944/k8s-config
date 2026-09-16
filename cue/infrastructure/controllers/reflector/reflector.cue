@@ -21,6 +21,5 @@ _reflector: schema.#Release & {
 	version:    "10.0.65"
 	sourceName: "emberstack"
 	interval:   "5m"
-	crds:       true
 	hasValues:  false
 }
