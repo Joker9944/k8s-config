@@ -101,7 +101,7 @@ import (
 }
 
 // renovate: datasource=helm packageName=app-template registryUrl=https://bjw-s-labs.github.io/helm-charts
-_appTemplateVersion: "5.1.0"
+_appTemplateVersion: "5.2.1"
 
 // A release from the bjw-s app-template chart, which is what every workload in
 // apps/ runs. Adds the chart's own conventions: the identifier suffix and the
