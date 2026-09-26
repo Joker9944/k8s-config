@@ -103,7 +103,7 @@ _opencloud: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "opencloud"
 	// renovate: datasource=docker packageName=ghcr.io/tim-herbie/opencloud-helm/opencloud
-	version:    "3.0.0"
+	version:    "3.1.0"
 	sourceName: _repo.name
 
 	"host": host
