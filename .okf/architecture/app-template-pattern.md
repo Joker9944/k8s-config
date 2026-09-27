@@ -4,7 +4,7 @@ title: App-template pattern
 description: The bjw-s app-template idioms every workload follows, the chart sources, and the OIDC runbooks that sit beside them.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-11T10:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-27T18:00:00Z }
 ---
 
 # Package shape
@@ -36,7 +36,7 @@ One shape: a SOPS `Secret` manifest with `data`/`stringData` encrypted, listed i
 
 # Chart sources
 
-Most releases pull `app-template` from the shared `bjw-s` `HelmRepository`, which `#Bundle.repositories` defaults to. Two mount a chart directly out of a `#GitRepo` narrowed by an `ignore` block — garage (`script/helm/garage`, tag-pinned) and opencloud (`charts/opencloud`). opencloud's upstream publishes no tags at all, so it pins `commit` alongside `branch`; source-controller gives the commit precedence, and without one every upstream push reconciles into the cluster. The rest declare their upstream as a `#HelmRepo` in the bundle.
+Most releases pull `app-template` from the shared `bjw-s` `HelmRepository`, which `#Bundle.repositories` defaults to. One mounts a chart directly out of a `#GitRepo` narrowed by an `ignore` block — garage (`script/helm/garage`, tag-pinned). The rest declare their upstream as a `#HelmRepo` in the bundle, opencloud's with `type: "oci"`: `opencloud-eu/helm` was archived in favour of a paid offering, and the community fork carrying it on publishes an OCI artifact rather than a chart index.
 
 # kanidm-oidc.txt
 

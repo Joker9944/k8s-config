@@ -135,9 +135,22 @@ _opencloud: schema.#Release & {
 			}
 		}
 
-		tika: resources: {
-			requests: {cpu: "100m", memory: "512Mi"}
-			limits: memory: "1500Mi"
+		tika: {
+			// The chart floats this on `latest-full`, and Tika 4 parses in a forked
+			// child JVM whose heap is sized from the cgroup limit — a tag bump moves
+			// the memory profile, so it is pinned like every other image here.
+			image: {
+				repository: "apache/tika"
+				tag:        "4.0.0-full@sha256:80072bb73dd320a9de9709beb0b16d14dd6d2680376f8d31e498f55b633ba593"
+			}
+
+			// That child takes MaxRAMPercentage=60 of the limit and shares the cgroup
+			// with the ~300Mi parent, so the ceiling covers two JVMs plus their
+			// non-heap. At 1500Mi a large PDF OOMKilled the container mid-parse.
+			resources: {
+				requests: {cpu: "100m", memory: "512Mi"}
+				limits: memory: "3Gi"
+			}
 		}
 
 		monitoring: enabled: true
@@ -213,10 +226,13 @@ _opencloud: schema.#Release & {
 			}
 
 			// decomposeds3 keeps the blobs in garage; this volume holds the
-			// decomposedfs metadata and the search index.
+			// decomposedfs metadata and the search index. It is also the tus staging
+			// area, which takes a whole upload before the blob moves to garage, so it
+			// has to fit the largest single upload — a short volume fails the session
+			// with "insufficient storage" and leaks the staged file.
 			// TODO volsync — a PVC cannot gain a dataSourceRef after creation, so
 			// adding backups means recreating this volume.
-			persistence: data: {size: "10Gi", storageClass: "longhorn"}
+			persistence: data: {size: "20Gi", storageClass: "longhorn"}
 
 			resources: {
 				requests: {cpu: "128m", memory: "512Mi"}

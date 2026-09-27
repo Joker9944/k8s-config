@@ -4,7 +4,7 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-27T18:00:00Z }
 ---
 
 # Images
@@ -57,6 +57,8 @@ Two regex managers cover the rest, both reading `*.cue`:
 | ------------------------------------------------- | -------------------------------- |
 | `repository: "…"` followed by `tag: "…@sha256:…"` | no — the pair is self-describing |
 | `// renovate: …` above a quoted version           | yes                              |
+
+**An image renovate never sees is one the repo does not name**: a foreign chart's own `image.tag` default floats on whatever the vendor points it at, and pinning it takes writing `repository:`/`tag:` into the release's values so the pair falls under the first manager. opencloud's tika ran `apache/tika:latest-full` that way and crossed a major — Tika 4 parses in a forked child JVM sized from the cgroup limit — without a commit to show for it. <!-- cSpell:ignore tika -->
 
 `.cue` is the only tree renovate reads. The manager for marked YAML went with [the machine configuration](/platform/cluster-nyx.md), the `Dockerfile` one with the move to Nix-built images, and the stock `pre-commit` manager has nothing to read because the flake generates `.pre-commit-config.yaml` and it is gitignored — hook versions move with `flake.lock`.
 

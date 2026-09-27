@@ -1,5 +1,12 @@
 # Update Log
 
+## 2026-09-27
+
+- opencloud's data volume doubles as the tus staging area, so it is sized for the largest single upload and leaks a failed one — [storage](/platform/storage.md)
+- opencloud's chart is an OCI `#HelmRepo` from the community fork, not a `#GitRepo` pinned by commit — [app-template pattern](/architecture/app-template-pattern.md)
+- `#GitRepo`'s three users are no longer all charts — [CUE layout](/architecture/cue-layout.md)
+- A foreign chart's own `image.tag` default is invisible to renovate — [images, CI and dependency updates](/workflows/images-and-ci.md)
+
 ## 2026-09-16
 
 - The device plugin's node election is a label the chart's affinity names, not feature discovery — [the nyx cluster](/platform/cluster-nyx.md)
