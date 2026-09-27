@@ -2,6 +2,7 @@
 
 ## 2026-09-27
 
+- gluetun answers NOERROR/0 instead of NXDOMAIN, halting musl's search walk on the inherited tailnet suffix; curl and nslookup both hide it — [networking and ingress](/platform/networking-and-ingress.md)
 - opencloud's data volume doubles as the tus staging area, so it is sized for the largest single upload and leaks a failed one — [storage](/platform/storage.md)
 - opencloud's chart is an OCI `#HelmRepo` from the community fork, not a `#GitRepo` pinned by commit — [app-template pattern](/architecture/app-template-pattern.md)
 - `#GitRepo`'s three users are no longer all charts — [CUE layout](/architecture/cue-layout.md)

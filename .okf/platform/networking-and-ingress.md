@@ -1,10 +1,10 @@
 ---
 type: Infrastructure
 title: Networking and ingress
-description: MetalLB address allocation, Traefik entrypoints and plugins, and the three middleware chains that gate every exposed service.
+description: MetalLB address allocation, Traefik entrypoints and plugins, the three middleware chains that gate every exposed service, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T19:42:00Z }
+generated: { by: claude-code/opus-5, at: 2026-09-27T20:15:00Z }
 ---
 
 # Address allocation
@@ -53,3 +53,13 @@ The underscore is `safeNaming`, on in the chart values. It applies to every name
 # DNS
 
 `blocky` (`cue/apps/utility/blocky`) serves DNS over DoH upstreams with denylist filtering. Its `files/config.yml` is a **jinja template**, not a finished config: a `#ConfigMapFiles` volume mounts it at `/templates`, and a `ghcr.io/joker9944/jinja-cli` init container renders it to an `emptyDir` so `{{ environ(...) }}` can pull in the namespace and the Postgres URI at start-up. Query logs go to its own CNPG cluster; the cache goes to a standalone `redis` release from the ot-helm operator.
+
+## Pod DNS behind a VPN sidecar
+
+Pods inherit the node's search domains, so every pod's `resolv.conf` carries `stoat-herring.ts.net` after the three `.cluster.local` entries, at `ndots:5`. That is harmless until a VPN sidecar owns the resolver.
+
+gluetun points `resolv.conf` at its own server on `127.0.0.1` — one file, bind-mounted into every container of the pod and rewritten on each `DNS_UPDATE_PERIOD` — and answers **`NOERROR` with zero answers, not `NXDOMAIN`**, for any name it cannot resolve. Only `.cluster.local` gets a true `NXDOMAIN`. musl reads `NOERROR` as "the name exists, with no address of this type" and abandons the search walk there, so a relative lookup dies on the tailnet suffix and the absolute name is never queried. In qBittorrent every tracker then reports `Host not found (authoritative)` — Boost.Asio's rendering of `EAI_NODATA`, which reads like an upstream NXDOMAIN and is not one.
+
+**Two tools lie about this.** `curl` in these images links c-ares (`curl -V` → `AsynchDNS`), which tolerates the bogus `NOERROR` and keeps walking; `nslookup` queries the name as given and never applies the search list at all. Both succeed while the app fails. Only `getaddrinfo` reproduces it, so test with that.
+
+[qbittorrent](/architecture/app-template-pattern.md) is the fix's only site: `dnsPolicy: None` plus an explicit `searches` omitting the suffix. `dnsConfig.searches` under `ClusterFirst` only ever _appends_, so removing an inherited domain needs `None`, and `None` in turn requires an explicit `nameservers` — which hardcodes the cluster domain and the namespace into the package. Keeping `ndots:5` is deliberate: the walk now exhausts three `NXDOMAIN`s and reaches the absolute name, and short cluster names still resolve. Any other musl workload put behind gluetun needs the same treatment. <!-- cSpell:ignore ndots resolv musl NXDOMAIN NOERROR getaddrinfo NODATA Asio -->

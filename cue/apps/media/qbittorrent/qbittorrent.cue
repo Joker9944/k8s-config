@@ -1,6 +1,6 @@
 package qbittorrent
 
-// cSpell:ignore devic
+// cSpell:ignore devic ndots resolv musl NXDOMAIN NOERROR
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -55,6 +55,24 @@ _qbittorrent: schema.#AppRelease & {
 		global: labels: "app.kubernetes.io/part-of": partOf
 
 		defaultPodOptions: {
+			// gluetun's resolver answers NOERROR with zero answers, instead of
+			// NXDOMAIN, for names it cannot resolve. musl reads that as "exists,
+			// no address" and abandons the search walk, so every relative lookup
+			// dies on the inherited stoat-herring.ts.net suffix before the real
+			// name is tried. This pod therefore generates its own resolv.conf
+			// omitting that suffix; .cluster.local does answer NXDOMAIN, so the
+			// walk runs to exhaustion and reaches the absolute name.
+			dnsPolicy: "None"
+			dnsConfig: {
+				// gluetun rewrites this to 127.0.0.1 once its resolver is up
+				nameservers: ["127.0.0.1"]
+				searches: [
+					"\(namespace).svc.cluster.local",
+					"svc.cluster.local",
+					"cluster.local",
+				]
+				options: [{name: "ndots", value: "5"}]
+			}
 			labels: "app.kubernetes.io/part-of": partOf
 			topologySpreadConstraints: [{
 				maxSkew:           1
