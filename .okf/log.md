@@ -4,6 +4,13 @@
 
 - Jellyfin's config stays in its volume rather than being extracted into `files/` and overlaid back — [decision](/decisions/jellyfin-config-not-declared.md)
 - Where Jellyfin keeps its settings, how to read them, and what a direct file edit bypasses — [jellyfin's config](/workflows/jellyfin-config.md)
+- Jellyfin's transcode and cache scratch moved out of the backed-up volume, and what actually bounds it — [jellyfin's config](/workflows/jellyfin-config.md), [storage](/platform/storage.md)
+- Jellyfin's metrics endpoint measured and rejected; a `/metrics` endpoint is not on its own a reason to scrape — [decision](/decisions/jellyfin-metrics-not-scraped.md), [observability](/platform/observability.md)
+- Denying one path takes `replacePathRegex`, because a middleware is scoped to a router — [networking and ingress](/platform/networking-and-ingress.md)
+- A `rawResource`'s name comes from its key and the release, so a `metadata.name` in the manifest is overridden — [app-template pattern](/architecture/app-template-pattern.md)
+- The chart's `*SelectorNilUsesHelmValues` defaults silently excluded every ServiceMonitor outside the chart — [observability](/platform/observability.md)
+- `globalMounts` is the single-container idiom; `advancedMounts` is for multi-container releases — [app-template pattern](/architecture/app-template-pattern.md)
+- MetalLB's second pinned address is blocky's, jellyfin's autodiscovery service having gone — [networking and ingress](/platform/networking-and-ingress.md)
 
 ## 2026-09-27
 

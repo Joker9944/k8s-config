@@ -139,6 +139,17 @@ _kps: schema.#Release & {
 					accessModes: ["ReadWriteOnce"]
 					resources: requests: storage: "30Gi"
 				}
+
+				// The chart's default narrows every selector to `release: <this
+				// release>`, which no workload outside this chart carries — garage and
+				// opencloud both shipped a ServiceMonitor that was never scraped. An
+				// empty selector matches any one in any namespace, which is what a
+				// fleet-wide prometheus wants.
+				serviceMonitorSelectorNilUsesHelmValues: false
+				podMonitorSelectorNilUsesHelmValues:     false
+				probeSelectorNilUsesHelmValues:          false
+				ruleSelectorNilUsesHelmValues:           false
+				scrapeConfigSelectorNilUsesHelmValues:   false
 			}
 			ingress: {
 				enabled:     true

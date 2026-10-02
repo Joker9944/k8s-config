@@ -4,7 +4,7 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-27T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-02T12:30:00Z }
 ---
 
 # Longhorn classes
@@ -22,6 +22,8 @@ The single-replica classes are a deliberate trade: replication is delegated to t
 Longhorn schedules against reserved size, never used size, and `storage-over-provisioning-percentage` is 100 against a `storageReserved` of 0 — so each node's ceiling is its whole disk, and `spec.size × numberOfReplicas` counts against it from the moment a volume exists, however empty it stays. A claim size is therefore a capacity decision rather than a limit, and the chart default is rarely the right one. `strict-local` sharpens this: its replica is placed when the pod attaches, not when the PVC binds, so an oversized volume provisions cleanly and only fails once its pod lands on a node without room. `mother`'s headroom is reachable only by replicated volumes, since Longhorn tolerates its `reserved=storage` taint but [almost no workload does](/platform/cluster-nyx.md).
 
 A `VolumeSnapshotClass` named `longhorn` backs volsync's `copyMethod: Snapshot`; see [backup and restore](/platform/backup-and-restore.md).
+
+**Scratch whose correct recovery is regenerating it stays out of Longhorn.** jellyfin's transcode directory is an `emptyDir` on the node filesystem of the host it is pinned to — a claim would reserve its whole size against that node's ceiling however empty it stayed, and route throwaway writes through the engine. Its `sizeLimit` is a backstop for the node rather than a policy, because kubelet enforces the limit by **evicting the pod**: quota-based `ENOSPC` needs `LocalStorageCapacityIsolationFSQuotaMonitoring`, which k3s does not enable. That asymmetry is why only the transcode volume carries one — it has a runaway mode, an abandoned session writing HLS segments nothing reaps, so a cap bounds an otherwise unbounded risk, while the cache volume plateaus with library size and a cap there would add an eviction trigger without removing a risk. What actually bounds the transcodes is the app: segment deletion and the inactive-session threshold, both [settings in its own volume](/workflows/jellyfin-config.md).
 
 # NFS
 

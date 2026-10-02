@@ -23,7 +23,7 @@ _logs: schema.#AlloyPipeline & {
 
 _jellyfin: schema.#AppRelease & {
 	name:      "jellyfin"
-	namespace: "jellyfin"
+	namespace: bundle.namespace
 
 	let uid = 6003
 	let gid = 6000
@@ -76,8 +76,7 @@ _jellyfin: schema.#AppRelease & {
 				}
 				env: {
 					UMASK:                       "0002"
-					NVIDIA_DRIVER_CAPABILITIES:  "all"
-					JELLYFIN_PublishedServerUrl: "https://jellyfin.vonarx.online"
+					JELLYFIN_PublishedServerUrl: "https://\(host)"
 				}
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}
@@ -91,27 +90,16 @@ _jellyfin: schema.#AppRelease & {
 			}
 		}
 
-		service: {
-			jellyfin: {
-				controller: "jellyfin"
-				primary:    true
-				ports: http: {primary: true, port: portHTTP}
-			}
-			autodiscovery: {
-				controller: "jellyfin"
-				type:       "LoadBalancer"
-				annotations: "metallb.io/loadBalancerIPs": "192.168.0.130"
-				ports: {
-					"service-discovery": {port: 1900, protocol: "UDP"}
-					"client-discovery": {port: 7359, protocol: "UDP"}
-				}
-			}
+		service: jellyfin: {
+			controller: "jellyfin"
+			primary:    true
+			ports: http: {primary: true, port: portHTTP}
 		}
 
 		// annotations (incl. the namespace-qualified middleware) come from #Release
 		ingress: jellyfin: {
-			hosts: [{host: "jellyfin.vonarx.online", paths: [{path: "/", service: {identifier: "jellyfin", port: "http"}}]}]
-			tls: [{hosts: ["jellyfin.vonarx.online"], secretName: "wildcard-vonarx-online-cert"}]
+			hosts: [{"host": host, paths: [{path: "/", service: {identifier: "jellyfin", port: "http"}}]}]
+			tls: [{hosts: [host], secretName: "wildcard-vonarx-online-cert"}]
 		}
 
 		persistence: {
@@ -121,12 +109,16 @@ _jellyfin: schema.#AppRelease & {
 				retain:     true
 				size:       configSize
 				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-config"}
-				advancedMounts: jellyfin: jellyfin: [{path: "/config"}]
+				globalMounts: [{path: "/config"}]
 			}
-			transcodes: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/config/transcodes"}]}
-			cache: {type: "emptyDir", advancedMounts: jellyfin: jellyfin: [{path: "/cache"}]}
+			// outside /config: under it, an emptyDir that failed to mount would put
+			// transcodes on the config volume. The cap is a backstop for the node
+			// filesystem — kubelet enforces it by evicting the pod, so what actually
+			// bounds the directory is jellyfin's own segment deletion.
+			transcodes: {type: "emptyDir", sizeLimit: "50Gi", globalMounts: [{path: "/transcodes"}]}
+			cache: {type: "emptyDir", globalMounts: [{path: "/cache"}]}
 			media: schema.#MediaDataHost & {
-				advancedMounts: jellyfin: jellyfin: [{path: "/mnt/media-data"}]
+				globalMounts: [{path: "/mnt/media-data"}]
 			}
 			tmp: type: "emptyDir"
 		}

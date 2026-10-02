@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-16T19:20:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-02T12:45:00Z }
 ---
 
 # The tier
@@ -79,6 +79,10 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 # Coverage gaps
 
 **`NodeMemoryHighUtilization` is a local rule, not the chart's.** Linux does not count the ZFS ARC in `MemAvailable`, and [mother](/platform/cluster-nyx.md) holds ~54 of its 62 GiB there, so the stock expression reads 95% on a host that is 11% used; the replacement adds back ARC above `arc_c_min` and contributes 0 where there is no ARC, so one rule still covers the fleet. `defaultRules` reaches `for` and `severity` per rule but never the expression, so a wrong default can only be disabled and re-declared — `defaultRules.disabled` alongside `additionalPrometheusRulesMap`, whose PrometheusRule carries the `release` label the default `ruleSelector` wants and a hand-written one would not. The node-exporter-mixin dashboards read `MemAvailable` directly, so they still show that node near 95% and disagree with the alert. That divergence is accepted — they are chart-rendered with no per-dashboard toggle, and correcting them means owning a replacement node dashboard.
+
+**The chart's selector defaults narrow Prometheus to its own release, and a stray ServiceMonitor is silently never scraped.** `serviceMonitorSelectorNilUsesHelmValues` and its podMonitor/probe/rule/scrapeConfig siblings default to `true`, which compiles an unset selector into `release: kube-prometheus-stack` — a label no workload outside the chart carries. garage and opencloud both shipped a ServiceMonitor that matched nothing, for weeks, with no error anywhere: a selector that excludes a monitor is indistinguishable from no monitor existing. All five are now `false`, so any monitor in any namespace is picked up and a new one needs no magic label — garage and opencloud began reporting the moment that landed. `/api/v1/targets` is the only thing that answers whether a monitor is live; the CR's `serviceMonitorSelector` is what to read when it is not. Note that `additionalPrometheusRulesMap` still carries the `release` label deliberately — see below.
+
+Those two are the only app-level monitors in the fleet. **A .NET or Go workload exposing a `/metrics` endpoint is not on its own a reason to scrape it**: the common libraries (`prometheus-net`, the runtime's own meters) instrument the host process rather than the application, so the result can be hundreds of series of GC and threadpool internals with nothing in them about what the app does. Jellyfin was measured and rejected on exactly that basis — [its own decision](/decisions/jellyfin-metrics-not-scraped.md) carries the breakdown.
 
 Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/alertmanager/health` answers `HTTP 500 plugin.unavailable` every time ([grafana#83794](https://github.com/grafana/grafana/issues/83794)). The datasource provisions and works in the browser; only the server-side health API is unimplemented for this type. A health sweep — `check_datasources_health` on the MCP server — therefore reports it broken on a healthy cluster. Not a fault to chase.
 

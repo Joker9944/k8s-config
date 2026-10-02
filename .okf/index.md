@@ -31,6 +31,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 
 - [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.
 - [Jellyfin's config is not declared](decisions/jellyfin-config-not-declared.md) - the settings stay in the volume; the repo declares the deployment.
+- [Jellyfin is not scraped](decisions/jellyfin-metrics-not-scraped.md) - 361 series of .NET runtime internals, nothing about playback.
 
 # Workflows
 

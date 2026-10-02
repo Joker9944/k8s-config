@@ -4,12 +4,12 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, the three middleware chains that gate every exposed service, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-27T20:15:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-02T12:45:00Z }
 ---
 
 # Address allocation
 
-MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (for example jellyfin's DLNA autodiscovery service on `192.168.0.130`). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
+MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (blocky's DNS service on `192.168.0.129` is the only one). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
 
 # Traefik
 
@@ -43,6 +43,8 @@ The converse also holds. Every Traefik pod logs a burst of `middleware ... does 
 The chain is selected per-service: infrastructure dashboards (Longhorn, Prometheus, Alertmanager) take the internal whitelist; public-facing apps take the country whitelist. There is no third option: `#Release` has no field for a bare middleware, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed.
 
 The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept under their original names for compatibility with other TrueCharts charts still in use.
+
+**A middleware is scoped to a router, not a path, and Traefik has no deny middleware.** An app serving something internal on the same port as its public UI therefore cannot simply not route it, and `extraMiddlewares` appends to the whole router. `replacePathRegex` is the only middleware that reads the path itself, so rewriting to a path the app does not serve turns the request into the app's own 404 — and a regex matching an ASP.NET route wants `(?i)`, because endpoint routing there is case-insensitive. Nothing in the fleet does this today; jellyfin did until [its metrics endpoint was switched off](/decisions/jellyfin-metrics-not-scraped.md), so this is the known answer rather than an established pattern.
 
 # Naming the chain from an ingress
 

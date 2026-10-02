@@ -4,7 +4,7 @@ title: Jellyfin's config
 description: Where Jellyfin keeps its settings inside the config volume, how to read them, and what to watch for when changing a file directly.
 tags: [jellyfin, config, kubectl]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-02T10:20:08Z }
+generated: { by: claude-code/opus-5, at: 2026-10-02T12:45:00Z }
 ---
 
 # Where it lives
@@ -21,6 +21,12 @@ All of it is in the `config` volume, mounted at `/config`.
 
 The log directory is Serilog's file sink. What reaches Loki is the console sink
 off container stdout, by way of `files/jellyfin.alloy` — not these files.
+
+Scratch is deliberately **not** here: transcodes and cache are bounded `emptyDir`s
+mounted at `/transcodes` and `/cache`, outside the volume volsync copies. Two
+settings have to agree with those mounts — `encoding.xml`'s `TranscodingTempPath`
+and `system.xml`'s `CachePath` — and a path pointing back under `/config` would
+put HLS segments on the backed-up volume.
 
 # Reading it
 
@@ -42,6 +48,9 @@ Editing a file directly works, and is sometimes the only way to set something th
 dashboard will not expose. It bypasses the dashboard's validation, so a malformed
 or out-of-range value lands unchecked: restart the workload to pick the change up,
 then confirm it took.
+
+`EnableMetrics` is `false` on purpose, and turning it on is the whole of what puts
+`/metrics` on the HTTP port — [why it stays off](/decisions/jellyfin-metrics-not-scraped.md).
 
 The volume itself is described in [storage](/platform/storage.md). Why none of
 this is declared in the repo is
