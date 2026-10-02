@@ -30,6 +30,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 # Decisions
 
 - [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.
+- [Jellyfin's config is not declared](decisions/jellyfin-config-not-declared.md) - the settings stay in the volume; the repo declares the deployment.
 
 # Workflows
 
@@ -39,3 +40,4 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Formatting and cspell](workflows/formatting-and-cspell.md) - the pre-commit suite and the spellchecker's dictionaries.
 - [Commit conventions](workflows/commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](workflows/images-and-ci.md) - Nix-built OCI images, signing, and renovate.
+- [Jellyfin's config](workflows/jellyfin-config.md) - where Jellyfin keeps its settings and how to reach them.

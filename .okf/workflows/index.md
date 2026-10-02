@@ -8,3 +8,4 @@ What to do, and what the tooling does for you.
 - [Formatting and cspell](formatting-and-cspell.md) - the pre-commit suite and the spellchecker's dictionaries.
 - [Commit conventions](commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](images-and-ci.md) - Nix-built OCI images, signing, and renovate.
+- [Jellyfin's config](jellyfin-config.md) - where Jellyfin keeps its settings and how to reach them.

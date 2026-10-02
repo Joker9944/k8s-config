@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-10-02
+
+- Jellyfin's config stays in its volume rather than being extracted into `files/` and overlaid back — [decision](/decisions/jellyfin-config-not-declared.md)
+- Where Jellyfin keeps its settings, how to read them, and what a direct file edit bypasses — [jellyfin's config](/workflows/jellyfin-config.md)
+
 ## 2026-09-27
 
 - gluetun answers NOERROR/0 instead of NXDOMAIN, halting musl's search walk on the inherited tailnet suffix; curl and nslookup both hide it — [networking and ingress](/platform/networking-and-ingress.md)
