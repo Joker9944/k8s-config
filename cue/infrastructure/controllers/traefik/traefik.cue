@@ -31,7 +31,7 @@ _traefik: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "traefik"
 	// renovate: datasource=helm packageName=traefik registryUrl=https://traefik.github.io/charts
-	version:    "41.6.0"
+	version:    "41.6.1"
 	sourceName: _traefikRepo.name
 	crds:       true
 
