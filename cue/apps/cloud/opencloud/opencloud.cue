@@ -234,9 +234,14 @@ _opencloud: schema.#Release & {
 			// adding backups means recreating this volume.
 			persistence: data: {size: "20Gi", storageClass: "longhorn"}
 
+			// bleve's analysis workers allocate in multi-GB bursts while indexing,
+			// and the search backlog only drains if the process survives the burst —
+			// an OOMKill mid-drain leaves the queue intact and the next start repeats
+			// it. The ceiling covers the burst rather than the steady state, which is
+			// ~400Mi.
 			resources: {
 				requests: {cpu: "128m", memory: "512Mi"}
-				limits: memory: "4Gi"
+				limits: memory: "8Gi"
 			}
 		}
 	}

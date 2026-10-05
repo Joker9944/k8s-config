@@ -42,3 +42,4 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Commit conventions](workflows/commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](workflows/images-and-ci.md) - Nix-built OCI images, signing, and renovate.
 - [Jellyfin's config](workflows/jellyfin-config.md) - where Jellyfin keeps its settings and how to reach them.
+- [Diagnosing opencloud's memory](workflows/opencloud-memory.md) - one process, no pprof, and the bleve merge that bounds the limit.

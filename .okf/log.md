@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-10-05
+
+- opencloud is one Go process for all services, pprof is off, and a bleve merge that OOMs retries forever — [diagnosing opencloud's memory](/workflows/opencloud-memory.md)
+- The bleve index, not the decomposedfs metadata, is the data volume's largest tenant — [storage](/platform/storage.md)
+
 ## 2026-10-02
 
 - Jellyfin's config stays in its volume rather than being extracted into `files/` and overlaid back — [decision](/decisions/jellyfin-config-not-declared.md)
