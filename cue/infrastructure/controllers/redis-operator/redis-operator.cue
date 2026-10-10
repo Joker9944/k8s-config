@@ -18,7 +18,7 @@ _redisOperator: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "redis-operator"
 	// renovate: datasource=helm packageName=redis-operator registryUrl=https://ot-container-kit.github.io/helm-charts
-	version:    "0.26.1"
+	version:    "0.27.0"
 	sourceName: "ot-helm"
 	interval:   "5m"
 	crds:       true
