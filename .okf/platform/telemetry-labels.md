@@ -1,0 +1,94 @@
+---
+type: Convention
+title: Telemetry label convention
+description: The label set every log stream and metric series should carry, why `cluster` is an anchor rather than an identity, why `service_name` needs no rule of its own, and why the two signals do not spell the service the same way.
+tags: [prometheus, loki, alloy, labels, logs, metrics]
+status: stable
+generated: { by: claude-code/opus-5, at: 2026-10-17T00:00:00Z }
+---
+
+The label set to aim at. What the pipeline emits today is
+[observability](/platform/observability.md); what a label costs is upstream
+behaviour, in [Loki stream labels](/reference/loki-stream-labels.md) and
+[Prometheus metric labels](/reference/prometheus-metric-labels.md). Neither the
+sourcing rules nor the gap between this set and the current one belong here.
+
+# Logs
+
+Five indexed stream labels:
+
+| label       | carries                                     |
+| ----------- | ------------------------------------------- |
+| `cluster`   | the cluster, as the universal anchor        |
+| `namespace` | the workload's namespace                    |
+| `app`       | the workload, from `app.kubernetes.io/name` |
+| `container` | the container within the pod                |
+| `job`       | `<namespace>/<container>`                   |
+
+**`service_name` needs no rule of its own.** `app` sits second in Loki's
+discover chain, ahead of `container` and `job`, so a stream carrying `app` never
+reaches the fallback and arrives with `service_name` already equal to it. The
+corollary is the useful half: `unknown_service` is not a separate defect to
+chase, it is what a missing `app` looks like from the other side.
+
+# `cluster` is an anchor, not an identity
+
+Its cardinality is 1 and it will stay 1 — nothing here will ever monitor a second
+cluster. It is kept anyway because **a Loki selector needs at least one non-empty
+matcher**, so expressing "every stream" requires one label that every stream can
+carry, and no other candidate qualifies: `job` and `container` are absent on
+anything that pushes to Loki directly rather than through Alloy, `namespace` is
+absent on sources that are not a pod.
+
+That makes it the one place a constant-valued label is correct. The cost
+upstream warns about is stream count, and a label with one value splits nothing —
+it spends one of the fifteen `max_label_names_per_series` slots and fragments no
+chunks. The same reasoning does not transfer to any other label: a second
+constant would cost a slot and buy nothing, because the anchor already exists.
+
+# Metrics
+
+Eight target labels — the set prometheus-operator already emits for a Kubernetes
+target, which is why the metrics half of this convention asks for nothing new:
+
+| label       | carries                                              |
+| ----------- | ---------------------------------------------------- |
+| `job`       | the target's purpose, asserted by the ServiceMonitor |
+| `instance`  | the scraped endpoint, `<host>:<port>`                |
+| `namespace` | the Service's namespace                              |
+| `service`   | the Service object's name                            |
+| `pod`       | the pod backing the endpoint                         |
+| `container` | the container exposing the port                      |
+| `node`      | the node the pod runs on                             |
+| `endpoint`  | the port's name, or its number if unnamed            |
+
+**`cluster` is deliberately absent here.** `{__name__!=""}` selects every series,
+so the anchor problem the log side has does not exist, and matching the log side
+for its own sake is not a reason. A mixin dashboard templating `$cluster`
+degrades to an empty matcher, which matches series that lack the label.
+
+# The service is spelled differently per signal, and `job` is not a join key
+
+`service_name` on logs and `job` on metrics are the same concept wearing the
+spelling each backend made canonical, and the divergence is upstream's, not a
+local inconsistency to fix. The OpenTelemetry mapping into Prometheus folds
+`service.namespace` and `service.name` into **`job`** and `service.instance.id`
+into `instance`, rather than emitting a `service_name` label at all; Loki, Tempo
+and Pyroscope index it as `service_name`. Writing `service_name` onto metrics
+would also collide: kube-state-metrics already uses that name for the name of a
+Kubernetes `Service` object, which is a different thing entirely.
+
+So `job` is **not** a cross-signal join key. It means `<namespace>/<container>` on
+a log stream and whatever the ServiceMonitor asserts on a series. `namespace`
+plus the workload is the correspondence that holds across both.
+
+# What stays out of the index
+
+`pod`, `node`, `component` and `version` belong in structured metadata, and
+`instance` has no place on a log stream at all — it is a concatenation of values
+already present. Structured metadata keeps them queryable after the selector
+without creating a stream per value, which is what an identifier that changes on
+every restart or every image bump would otherwise do.
+
+`env` is excluded outright rather than demoted: there is one environment, so the
+label would carry no information in either place.

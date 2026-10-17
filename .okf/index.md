@@ -22,6 +22,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Storage](platform/storage.md) - the three Longhorn classes, NFS media, and Garage object storage.
 - [Backup and restore](platform/backup-and-restore.md) - volsync/restic for PVCs, CNPG/barman-cloud for Postgres.
 - [Observability](platform/observability.md) - Prometheus, Loki, Alloy, and the Gotify alerting path.
+- [Telemetry label convention](platform/telemetry-labels.md) - the label set to aim at, why `cluster` is an anchor, and why the two signals spell the service differently.
 
 # Reference
 

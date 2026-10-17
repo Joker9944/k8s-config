@@ -24,7 +24,7 @@ kube-prometheus-stack → gotify
 
 # Log pipeline
 
-`cue/infrastructure/observability/alloy/files/config.alloy` is a `#ConfigMapFiles` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`. Which of those belong in the label set at all, and which Alloy construct sets each kind, is [upstream behaviour](/reference/loki-stream-labels.md).
+`cue/infrastructure/observability/alloy/files/config.alloy` is a `#ConfigMapFiles` source, not a chart value. It discovers pods via `discovery.kubernetes` (role `pod`), relabels `__meta_kubernetes_*` into `namespace`, `pod`, `container`, `node` and `app` (from `app.kubernetes.io/name`), derives `job` as `<namespace>/<container>`, and writes to `loki-gateway.loki.svc.cluster.local`. Which of those belong in the label set at all, and which Alloy construct sets each kind, is [upstream behaviour](/reference/loki-stream-labels.md); the set it is meant to produce is [the telemetry label convention](/platform/telemetry-labels.md).
 
 Two sources feed one `loki.write.default`: those pod logs, and cluster events through `loki.source.kubernetes_events` (`job_name` `kubernetes/events`, JSON). Both stamp a static `cluster: nyx`; the pod branch additionally derives `container_runtime` from the scheme prefix of the container id.
 

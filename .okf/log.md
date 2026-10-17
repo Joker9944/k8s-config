@@ -4,6 +4,7 @@
 
 - Prometheus metric labels: job/instance, operator-derived target labels, `honor_labels` collisions and cardinality — [reference](/reference/prometheus-metric-labels.md)
 - Loki stream labels, the `limits_config` ceilings, and which Alloy construct sets each kind — [reference](/reference/loki-stream-labels.md)
+- Target label set for logs and metrics, `cluster` as the selector anchor, and `job` ruled out as a cross-signal key — [telemetry label convention](/platform/telemetry-labels.md)
 
 ## 2026-10-05
 
