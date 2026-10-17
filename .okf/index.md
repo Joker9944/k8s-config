@@ -26,6 +26,8 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 # Reference
 
 - [kanidm OIDC clients and claims](reference/oidc-claim-mapping.md) - how a client_id resolves, which claim carries which attribute, and what never leaves kanidm.
+- [Prometheus metric labels in Kubernetes](reference/prometheus-metric-labels.md) - what `job` and `instance` mean, which labels a Kubernetes target carries, and how a label collision is resolved.
+- [Loki stream labels and how Alloy sets them](reference/loki-stream-labels.md) - what a label costs, when a value belongs in structured metadata or a filter expression, and which Alloy construct sets each.
 
 # Decisions
 

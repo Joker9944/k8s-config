@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-10-17
+
+- Prometheus metric labels: job/instance, operator-derived target labels, `honor_labels` collisions and cardinality — [reference](/reference/prometheus-metric-labels.md)
+- Loki stream labels, the `limits_config` ceilings, and which Alloy construct sets each kind — [reference](/reference/loki-stream-labels.md)
+
 ## 2026-10-05
 
 - opencloud is one Go process for all services, pprof is off, and a bleve merge that OOMs retries forever — [diagnosing opencloud's memory](/workflows/opencloud-memory.md)
