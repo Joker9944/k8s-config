@@ -72,7 +72,7 @@ _jellyfin: schema.#AppRelease & {
 			containers: jellyfin: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/jellyfin/jellyfin"
-					tag:        "12.0@sha256:74f4d87d9cf262c52d62be6be265c0355c6a7e21d0477ab6c654a49a4f8b1fd4"
+					tag:        "12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5"
 				}
 				env: {
 					UMASK:                       "0002"
