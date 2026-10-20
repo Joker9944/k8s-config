@@ -75,6 +75,10 @@ _loki: schema.#Release & {
 				retention_period:          "168h" // 7 * 24h
 				// TODO false so alloy can scrape all the logs
 				reject_old_samples: false
+
+				// The default chain reaches `container` seventh, which gives a
+				// stream missing `app` a plausible name instead of exposing it.
+				discover_service_name: ["app"]
 			}
 
 			querier: max_concurrent: 2

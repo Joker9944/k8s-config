@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-17T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-18T00:00:00Z }
 ---
 
 # The tier
@@ -88,6 +88,6 @@ Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/a
 
 # Dashboards
 
-Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/observability/loki/files/logs.json` is the worked example, and the exception that proves the rule: it filters every namespace by `detected_level`, so it describes Loki's contents rather than any one app and lives with Loki.
+Dashboards live with the app they describe, not with Grafana: a JSON file under the app's `files/`, turned into a ConfigMap by `#ConfigMapFiles` carrying `grafana_dashboard: "1"` plus `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. `cue/infrastructure/observability/loki/files/logs.json` is the worked example, and the exception that proves the rule: it filters every namespace by `detected_level`, so it describes Loki's contents rather than any one app and lives with Loki. A cross-signal dashboard has no such home — `label-conformance.json` reads both stores, so it sits with kube-prometheus-stack because Grafana does.
 
 That is not just a convention — Grafana runs with no persistence, its `storage` volume an `emptyDir`, so `grafana.db` dies with the pod. Dashboards and datasources are re-provisioned at start-up and the admin user is re-created from the `grafana-admin` Secret, but everything else held in that database — service accounts and their tokens, silences, stars, preferences — is gone. A dashboard authored in the UI is a scratch buffer, not a change, and the read-only MCP server's service account has to be re-minted by hand after every restart — Grafana provisions no service accounts ([grafana#82987](https://github.com/grafana/grafana/issues/82987)), so `kube-prometheus-stack/grafana-service-account.txt` carries the procedure.

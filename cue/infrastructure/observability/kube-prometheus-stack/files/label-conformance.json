@@ -1,0 +1,177 @@
+{
+  "uid": "nyx-label-conformance",
+  "title": "Label conformance",
+  "tags": ["conformance", "labels"],
+  "schemaVersion": 42,
+  "editable": false,
+  "timezone": "utc",
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "5m",
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "", "value": "" },
+        "label": "Logs data source",
+        "name": "logs",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": { "text": "", "value": "" },
+        "label": "Metrics data source",
+        "name": "metrics",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Logs",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Streams missing a required label",
+      "description": "One row per non-conforming stream; the same set Drilldown shows as `unknown_service`. Queried on `app` directly so it holds regardless of Loki's `discover_service_name` limit. The cluster-events source is exempt and filtered out; loki-canary carries no `cluster` and is invisible here by construction.",
+      "gridPos": { "x": 0, "y": 1, "w": 16, "h": 9 },
+      "datasource": { "type": "loki", "uid": "${logs}" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "expr": "label_replace(sum by (namespace, job, container, pod) (count_over_time({cluster=\"nyx\", job!=\"kubernetes/events\", app=\"\"}[$__range])), \"missing\", \"app\", \"\", \"\") or label_replace(sum by (namespace, job, container, pod) (count_over_time({cluster=\"nyx\", job!=\"kubernetes/events\", namespace=\"\"}[$__range])), \"missing\", \"namespace\", \"\", \"\") or label_replace(sum by (namespace, job, container, pod) (count_over_time({cluster=\"nyx\", job!=\"kubernetes/events\", container=\"\"}[$__range])), \"missing\", \"container\", \"\", \"\") or label_replace(sum by (namespace, job, container, pod) (count_over_time({cluster=\"nyx\", job!=\"kubernetes/events\", job=\"\"}[$__range])), \"missing\", \"job\", \"\", \"\")"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true } } },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Value", "desc": true }]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "align": "auto" } },
+        "overrides": []
+      },
+      "options": { "showHeader": true, "cellHeight": "sm" }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Out-of-convention labels in the index",
+      "description": "Lines carrying a label the convention puts in structured metadata, or excludes outright. This is a scale indicator rather than an outlier list — every pod stream currently carries all of these.",
+      "gridPos": { "x": 16, "y": 1, "w": 8, "h": 9 },
+      "datasource": { "type": "loki", "uid": "${logs}" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "instant",
+          "expr": "label_replace(sum(count_over_time({cluster=\"nyx\", instance=~\".+\"}[$__range])), \"label\", \"instance\", \"\", \"\") or label_replace(sum(count_over_time({cluster=\"nyx\", pod=~\".+\"}[$__range])), \"label\", \"pod\", \"\", \"\") or label_replace(sum(count_over_time({cluster=\"nyx\", node=~\".+\"}[$__range])), \"label\", \"node\", \"\", \"\") or label_replace(sum(count_over_time({cluster=\"nyx\", container_runtime=~\".+\"}[$__range])), \"label\", \"container_runtime\", \"\", \"\")"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true } } },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Value", "desc": true }]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "align": "auto" } },
+        "overrides": []
+      },
+      "options": { "showHeader": true, "cellHeight": "sm" }
+    },
+    {
+      "id": 4,
+      "type": "row",
+      "title": "Metrics",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Targets missing a required label",
+      "description": "Scrape targets lacking one of the five universal labels, counted from `up` so it measures targets rather than series — recording rules and kube-state-metrics both drop target labels legitimately. Empty is the expected state; a row means a monitor landed without the operator's standard relabeling.",
+      "gridPos": { "x": 0, "y": 11, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${metrics}" },
+      "targets": [
+        {
+          "refId": "A",
+          "instant": true,
+          "format": "table",
+          "expr": "label_replace(count by (job) (up{job=\"\"}), \"missing\", \"job\", \"\", \"\") or label_replace(count by (job) (up{instance=\"\"}), \"missing\", \"instance\", \"\", \"\") or label_replace(count by (job) (up{namespace=\"\"}), \"missing\", \"namespace\", \"\", \"\") or label_replace(count by (job) (up{service=\"\"}), \"missing\", \"service\", \"\", \"\") or label_replace(count by (job) (up{endpoint=\"\"}), \"missing\", \"endpoint\", \"\", \"\")"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": { "Value": "targets" }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "align": "auto" } },
+        "overrides": []
+      },
+      "options": { "showHeader": true, "cellHeight": "sm" }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Label collisions",
+      "description": "Series where the exposition carried a label the scrape also sets, so Prometheus renamed the exposed one to `exported_*`. Correct for an exporter reporting on itself, wrong for one reporting on something else.",
+      "gridPos": { "x": 12, "y": 11, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${metrics}" },
+      "targets": [
+        {
+          "refId": "A",
+          "instant": true,
+          "format": "table",
+          "expr": "label_replace(count by (job) ({exported_job!=\"\"}), \"collision\", \"job\", \"\", \"\") or label_replace(count by (job) ({exported_instance!=\"\"}), \"collision\", \"instance\", \"\", \"\") or label_replace(count by (job) ({exported_namespace!=\"\"}), \"collision\", \"namespace\", \"\", \"\") or label_replace(count by (job) ({exported_service!=\"\"}), \"collision\", \"service\", \"\", \"\") or label_replace(count by (job) ({exported_pod!=\"\"}), \"collision\", \"pod\", \"\", \"\") or label_replace(count by (job) ({exported_endpoint!=\"\"}), \"collision\", \"endpoint\", \"\", \"\")"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": { "Value": "series" }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "series", "desc": true }]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "align": "auto" } },
+        "overrides": []
+      },
+      "options": { "showHeader": true, "cellHeight": "sm" }
+    }
+  ]
+}

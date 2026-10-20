@@ -1,3 +1,5 @@
+@extern(embed)
+
 package kubeprometheusstack
 
 // cSpell:ignore Kanidm kubeprometheusstack lokiexplore mcp Mem nodememoryhighutilization pkce runbook zfs
@@ -17,7 +19,26 @@ bundle: schema.#Bundle & {
 		"pod-security.kubernetes.io/enforce": "privileged"
 		"pod-security.kubernetes.io/warn":    "privileged"
 	}
+	before: [_dashboards.out]
 	releases: [_kps]
+}
+
+// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
+// the package directory, which is why this file lives here.
+_labelConformance: _ @embed(file="files/label-conformance.json", type=text)
+
+// Cross-signal: the panels read both stores, so the "belongs to the store the
+// panels read" rule that places loki's logs dashboard does not decide this one.
+// It lives with Grafana instead.
+_dashboards: schema.#ConfigMapFiles & {
+	name: "kube-prometheus-stack-dashboards"
+	ns:   bundle.namespace
+	labels: {
+		grafana_dashboard:            "1"
+		"app.kubernetes.io/name":     "kube-prometheus-stack"
+		"app.kubernetes.io/instance": "kube-prometheus-stack"
+	}
+	files: "label-conformance.json": _labelConformance
 }
 
 _prometheusCommunity: schema.#HelmRepo & {

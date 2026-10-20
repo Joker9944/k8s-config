@@ -4,14 +4,15 @@ title: Telemetry label convention
 description: The label set every log stream and metric series should carry, why `cluster` is an anchor rather than an identity, why `service_name` needs no rule of its own, and why the two signals do not spell the service the same way.
 tags: [prometheus, loki, alloy, labels, logs, metrics]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-17T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-18T00:00:00Z }
 ---
 
 The label set to aim at. What the pipeline emits today is
 [observability](/platform/observability.md); what a label costs is upstream
 behaviour, in [Loki stream labels](/reference/loki-stream-labels.md) and
 [Prometheus metric labels](/reference/prometheus-metric-labels.md). Neither the
-sourcing rules nor the gap between this set and the current one belong here.
+sourcing rules nor the gap between this set and the current one belong here —
+the `label-conformance` dashboard reports that gap.
 
 # Logs
 
@@ -25,11 +26,19 @@ Five indexed stream labels:
 | `container` | the container within the pod                |
 | `job`       | `<namespace>/<container>`                   |
 
-**`service_name` needs no rule of its own.** `app` sits second in Loki's
-discover chain, ahead of `container` and `job`, so a stream carrying `app` never
-reaches the fallback and arrives with `service_name` already equal to it. The
-corollary is the useful half: `unknown_service` is not a separate defect to
-chase, it is what a missing `app` looks like from the other side.
+**`service_name` needs no rule of its own.** `discover_service_name` is narrowed
+to `app`, so Loki writes `service_name` from it and `unknown_service` means
+exactly "missing `app`" — in Drilldown, in the label API and in a selector alike.
+
+That is also why `app` must never be given a fallback that invents a plausible
+value: it would leave `{app=""}` permanently empty, with nothing left to measure.
+A source that cannot supply `app` has to arrive unset.
+
+**Two log sources are exempt.** `loki-canary` pushes to Loki directly rather than
+through Alloy and carries only `pod` and `stream`, so it satisfies none of this
+and is invisible to a `cluster`-anchored query besides. The cluster-events source
+is not a pod stream and has no container to name. Neither is a workload, and
+neither is a defect to chase.
 
 # `cluster` is an anchor, not an identity
 
@@ -48,8 +57,8 @@ constant would cost a slot and buy nothing, because the anchor already exists.
 
 # Metrics
 
-Eight target labels — the set prometheus-operator already emits for a Kubernetes
-target, which is why the metrics half of this convention asks for nothing new:
+Five target labels on every scrape, which prometheus-operator emits for any
+Kubernetes target:
 
 | label       | carries                                              |
 | ----------- | ---------------------------------------------------- |
@@ -57,10 +66,22 @@ target, which is why the metrics half of this convention asks for nothing new:
 | `instance`  | the scraped endpoint, `<host>:<port>`                |
 | `namespace` | the Service's namespace                              |
 | `service`   | the Service object's name                            |
-| `pod`       | the pod backing the endpoint                         |
-| `container` | the container exposing the port                      |
-| `node`      | the node the pod runs on                             |
 | `endpoint`  | the port's name, or its number if unnamed            |
+
+Three more where the target is a workload pod, and only there:
+
+| label       | carries                         |
+| ----------- | ------------------------------- |
+| `pod`       | the pod backing the endpoint    |
+| `container` | the container exposing the port |
+| `node`      | the node the pod runs on        |
+
+**The control-plane targets carry none of the second group.** `kubelet`,
+`apiserver` and `kube-proxy` are scraped through Endpoints that address nodes and
+control-plane members rather than pods, so there is no pod to name; `node`
+narrows further still and reaches only `kubelet`. Requiring the second group
+everywhere would make a permanent false positive out of a target that is
+behaving correctly.
 
 **`cluster` is deliberately absent here.** `{__name__!=""}` selects every series,
 so the anchor problem the log side has does not exist, and matching the log side

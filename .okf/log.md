@@ -6,6 +6,12 @@
 - Loki stream labels, the `limits_config` ceilings, and which Alloy construct sets each kind — [reference](/reference/loki-stream-labels.md)
 - Target label set for logs and metrics, `cluster` as the selector anchor, and `job` ruled out as a cross-signal key — [telemetry label convention](/platform/telemetry-labels.md)
 
+## 2026-10-18
+
+- `discover_service_name` narrowed to `app`, so `unknown_service` is the conformance signal, and a fallback may not invent a plausible name — [telemetry label convention](/platform/telemetry-labels.md)
+- The operator's target labels split universal from pod-only — [telemetry label convention](/platform/telemetry-labels.md)
+- A cross-signal dashboard belongs with Grafana, not with either store — [observability](/platform/observability.md)
+
 ## 2026-10-05
 
 - opencloud is one Go process for all services, pprof is off, and a bleve merge that OOMs retries forever — [diagnosing opencloud's memory](/workflows/opencloud-memory.md)

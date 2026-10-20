@@ -81,9 +81,6 @@
               fi
             '';
           }
-          {
-            package = pkgs.awscli;
-          }
         ];
         cueRender = pkgs.callPackage ./cue/render.nix { };
       in
