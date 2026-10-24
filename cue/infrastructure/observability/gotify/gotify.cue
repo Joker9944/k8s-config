@@ -71,7 +71,7 @@ _gotify: schema.#AppRelease & {
 			containers: gotify: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/joker9944/gotify-custom"
-					tag:        "3.0.0@sha256:b137b5dfec81bfed24029564b0528bc6156dbc5c0c9da46117f807aa78da5055"
+					tag:        "3.0.0@sha256:fc12c992a2228b48b87c1899aaf99751739ebe947b05a1f5ea0f192e2c6b6f26"
 				}
 				env: {
 					GOTIFY_SERVER_PORT:                     portHTTP
