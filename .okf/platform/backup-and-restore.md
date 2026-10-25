@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T02:40:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -59,5 +59,5 @@ Postgres images come from upstream: `cue/infrastructure/controllers/cnpg-config`
 
 - The `ObjectStore` sets `AWS_REQUEST_CHECKSUM_CALCULATION` and `AWS_RESPONSE_CHECKSUM_VALIDATION` to `when_required` in `instanceSidecarConfiguration`. This is a compatibility workaround for non-AWS S3 ([plugin-barman-cloud#541](https://github.com/cloudnative-pg/plugin-barman-cloud/issues/541)); removing it breaks Storj.
 - A `ScheduledBackup` can fail for months while the `Cluster` stays `Ready`: base backups and WAL archiving fail independently, and only the archive's own base-backup list shows which stopped. Abandoned generation prefixes are never pruned either, because nothing archives to them any more.
-- `ReplicationSource` exposes `moverAffinity` but no toleration field, and the chart's `tolerations` reach only the operator Deployment. Whether a mover can run on a `NoSchedule` node is therefore not something the manifests can state — it matters for jellyfin, whose volume lives on the reserved [`mother`](/platform/cluster-nyx.md).
+- Mover scheduling is placed by `moverAffinity` and — since chart 0.17.0 — `moverTolerations` on the `ReplicationSource`; the chart's own `tolerations` reach only the operator Deployment. `#VolsyncRestic` declares neither, so a mover still cannot land on a `NoSchedule` node. That bounds jellyfin, whose volume lives on the reserved [`mother`](/platform/cluster-nyx.md), and is now a gap in the schema rather than in the API.
 - volsync and CNPG are independent. An app with both a PVC and a database needs both restored, and neither system knows about the other's point in time.

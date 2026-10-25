@@ -171,6 +171,21 @@ _kps: schema.#Release & {
 				probeSelectorNilUsesHelmValues:          false
 				ruleSelectorNilUsesHelmValues:           false
 				scrapeConfigSelectorNilUsesHelmValues:   false
+
+				// controller-runtime guards its metrics endpoint with an authn/authz
+				// filter, so scraping one needs the service account token. A
+				// ServiceMonitor's own `authorization` is the Safe variant — Secret
+				// references only, no credentialsFile — so reading the projected token
+				// off disk is only possible from a scrape class, which is cluster-admin
+				// scoped. Monitors opt in by name; never `default: true`, which would
+				// hand this token to every target in the fleet.
+				scrapeClasses: [{
+					name: "service-account"
+					authorization: {
+						type:            "Bearer"
+						credentialsFile: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+					}
+				}]
 			}
 			ingress: {
 				enabled:     true

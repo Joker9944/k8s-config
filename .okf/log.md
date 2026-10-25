@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-10-25
+
+- A selected ServiceMonitor can still 401; the scrape class that carries the token and why the endpoint cannot — [observability](/platform/observability.md)
+- Capability-gated chart templates render only on upgrade, and the explicit `target` a post-renderer then needs — [flux topology](/architecture/flux-topology.md)
+- `moverTolerations` exists as of volsync 0.17.0; the mover scheduling gap moved to `#VolsyncRestic` — [backup and restore](/platform/backup-and-restore.md)
+
 ## 2026-10-17
 
 - Prometheus metric labels: job/instance, operator-derived target labels, `honor_labels` collisions and cardinality — [reference](/reference/prometheus-metric-labels.md)
