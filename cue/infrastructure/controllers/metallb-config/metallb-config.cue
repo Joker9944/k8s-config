@@ -5,7 +5,7 @@ package metallbconfig
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#ConfigBundle & {
-	dependsOn: ["metallb"]
+	needs: ["load-balancer"]
 	resources: [_pool, _advertisement]
 }
 

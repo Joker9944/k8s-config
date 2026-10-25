@@ -195,6 +195,52 @@ _appTemplateVersion: "5.3.0"
 	}
 }
 
+// What one bundle needs from another, named by the thing provided rather than
+// by the provider. A closed enum, so a mistyped need is a build error instead
+// of a Kustomization waiting forever on a name nobody owns; one provider per
+// capability, so moving a provider between tiers touches no consumer.
+//
+// A capability is something whose absence fails the apply — in practice a CRD.
+// Runtime coupling is not a capability: a PVC on a StorageClass that does not
+// exist yet stays Pending and binds later, so storage is deliberately absent
+// here. Declaring it would make traefik need longhorn, which needs traefik.
+//
+// The graph these build is documented in /architecture/capability-graph.md,
+// which is also where the cycle hazards live — nothing here detects one.
+#Capability: "ingress" | "certificate" | "ingress-certificate" |
+	"load-balancer" | "load-balancer-pool" | "redis" | "block-storage" |
+	"postgres" | "volsync" | "monitoring" | "object-storage" | "log-sink"
+
+_provider: [#Capability]: string
+_provider: {
+	ingress:               "traefik"               // Middleware CRD
+	certificate:           "cert-manager"          // Certificate CRD
+	"ingress-certificate": "certs-config"          // the wildcard cert and the intermediate CA
+	"load-balancer":       "metallb"               // IPAddressPool and L2Advertisement CRDs
+	"load-balancer-pool":  "metallb-config"        // the pool Traefik's Service draws from
+	redis:                 "redis-operator"        // RedisFailover CRD
+	"block-storage":       "longhorn"              // VolumeSnapshotClass, via the Kustomizations it creates
+	postgres:              "cnpg"                  // Cluster CRD and the barman plugin
+	volsync:               "volsync"               // ReplicationSource and Destination CRDs
+	monitoring:            "kube-prometheus-stack" // ServiceMonitor CRD and the scrape classes
+	"object-storage":      "garage"
+	"log-sink":            "loki"
+}
+
+// The edges a bundle contributes: what it declares, plus what its own fields
+// already imply. Deduplicated through a struct, because a capability can be
+// both needed explicitly and inferred.
+_edges: {
+	needs: [...#Capability]
+	inferred: [string]: bool
+
+	_set: {
+		for c in needs {(_provider[c]): true}
+		inferred
+	}
+	out: [for n, _ in _set {n}]
+}
+
 #Bundle: {
 	namespace: string
 
@@ -232,10 +278,22 @@ _appTemplateVersion: "5.3.0"
 	}
 	secretFiles: [for f, _ in _secretFileSet {f}]
 
-	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
-	// because the graph crosses tiers — loki (observability) waits on garage
-	// (storage) — and a typed reference would make the tier packages circular.
-	dependsOn: [...string] | *[]
+	// Capabilities this bundle needs that its own fields cannot imply, which in
+	// practice means the resource is emitted by a chart: CUE sees the HelmRelease,
+	// never what it renders. The three below are implied and never written.
+	needs: [...#Capability] | *[]
+
+	edges: (_edges & {
+		"needs": needs
+		// The Middleware set, #NamespaceCert and #VolsyncRestic respectively: each
+		// renders a CR another bundle installs the CRD for, so the field that
+		// switches it on is the edge.
+		inferred: {
+			if middlewares {traefik: true}
+			if namespaceCert {"cert-manager": true}
+			for r in releases if len(r.backups) > 0 {volsync: true}
+		}
+	}).out
 
 	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
 	healthChecks: [...] | *[]
@@ -279,10 +337,11 @@ _appTemplateVersion: "5.3.0"
 	// SOPS Secret manifests, module-relative, on the same terms as #Bundle's.
 	secretFiles: [...string] | *[]
 
-	// What the bundle's level-3 Kustomization needs. dependsOn is plain names
-	// because the graph crosses tiers — loki (observability) waits on garage
-	// (storage) — and a typed reference would make the tier packages circular.
-	dependsOn: [...string] | *[]
+	// As #Bundle's, with nothing to infer from: a config bundle has no releases,
+	// no middleware set and no namespace certificate.
+	needs: [...#Capability] | *[]
+
+	edges: (_edges & {"needs": needs, inferred: {}}).out
 
 	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
 	healthChecks: [...] | *[]
@@ -303,7 +362,7 @@ _appTemplateVersion: "5.3.0"
 	bundles: [string]: {
 		out: [...]
 		secretFiles: [...string]
-		dependsOn: [...string]
+		edges: [...string]
 		healthChecks: [...]
 		...
 	}
@@ -333,14 +392,22 @@ _appTemplateVersion: "5.3.0"
 		metadata: {"name": k, namespace: "flux-system"}
 		spec: {
 			interval: "10m"
-			timeout:  "5m"
-			prune:    true
+			// A blocked reconcile otherwise retries at interval, and the graph below
+			// is nine levels deep: at 10m a cold bootstrap would spend an hour and a
+			// half waiting rather than working.
+			retryInterval: "1m"
+			timeout:       "5m"
+			prune:         true
 			// source-root relative, not relative to the level-2 path above it
 			path: "./\(k)"
 			sourceRef: {kind: "OCIRepository", "name": name, namespace: "flux-system"}
 			decryption: {provider: "sops", secretRef: "name": "sops-age"}
-			if len(b.dependsOn) > 0 {
-				dependsOn: [for d in b.dependsOn {"name": d}]
+			// A bundle does not know its own name — bundles is keyed by it — so a
+			// provider that needs its own capability is filtered here rather than
+			// special-cased in the bundle.
+			_deps: [for d in b.edges if d != k {d}]
+			if len(_deps) > 0 {
+				dependsOn: [for d in _deps {"name": d}]
 			}
 			if len(b.healthChecks) > 0 {
 				healthChecks: b.healthChecks

@@ -8,6 +8,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "blocky"
+	needs: ["postgres", "redis"]
 	// DNS is served on a LoadBalancer, so there is no ingress to protect
 	middlewares: false
 	repositories: [

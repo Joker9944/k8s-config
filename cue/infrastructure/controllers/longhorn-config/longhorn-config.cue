@@ -8,7 +8,7 @@ import (
 )
 
 bundle: schema.#ConfigBundle & {
-	dependsOn: ["longhorn"]
+	needs: ["block-storage"]
 	resources: list.Concat([_storageClasses, [_snapshotClass]])
 }
 

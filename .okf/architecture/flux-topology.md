@@ -1,7 +1,7 @@
 ---
 type: Architecture
 title: Flux topology
-description: The three-level Kustomization graph that reconciles nyx, and the ordering constraints encoded in it.
+description: The three-level Kustomization graph that reconciles nyx, its per-tier OCI artifacts and their signature verification.
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
@@ -14,16 +14,16 @@ generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
 
 **2. Tiers.** `clusters/nyx/flux/{app,infrastructure}-sync.yaml` define an `OCIRepository` and a Kustomization per tier, both in `flux-system`. Each Kustomization reconciles `./sync` inside its own artifact, at a 30m interval with `prune: true`.
 
-| Tier            | Artifact                                         | `dependsOn`   |
-| --------------- | ------------------------------------------------ | ------------- |
-| `controllers`   | `oci://ghcr.io/joker9944/k8s-config/controllers` | —             |
-| `plugins`       | `…/plugins`                                      | —             |
-| `observability` | `…/observability`                                | `controllers` |
-| `security`      | `…/security`                                     | `controllers` |
-| `storage`       | `…/storage`                                      | `controllers` |
-| `cloud`         | `…/cloud`                                        | `controllers` |
-| `media`         | `…/media`                                        | `controllers` |
-| `utility`       | `…/utility`                                      | `controllers` |
+| Tier            | Artifact                                         |
+| --------------- | ------------------------------------------------ |
+| `controllers`   | `oci://ghcr.io/joker9944/k8s-config/controllers` |
+| `plugins`       | `…/plugins`                                      |
+| `observability` | `…/observability`                                |
+| `security`      | `…/security`                                     |
+| `storage`       | `…/storage`                                      |
+| `cloud`         | `…/cloud`                                        |
+| `media`         | `…/media`                                        |
+| `utility`       | `…/utility`                                      |
 
 Both files are generated — `cue cmd --inject out=.. bootstrap ./clusters/nyx/flux` from `cue/` — and committed, because level 1 reconciles them out of git. They are the only place that names the registry.
 
@@ -33,46 +33,7 @@ Both files are generated — `cue cmd --inject out=.. bootstrap ./clusters/nyx/f
 
 # Ordering
 
-Level-3 `dependsOn` edges exist where a workload needs a CRD, a Secret or a StorageClass another one creates:
-
-- `<x>-config` → `<x>`: `certs-config`→`cert-manager`, `metallb-config`→`metallb`, `longhorn-config`→`longhorn`, `cnpg-config`→`cnpg`.
-- `traefik` → `certs-config`, `metallb-config`, `redis-operator`.
-- `loki` → `garage`; `alloy` → `loki`; `gotify` → `kube-prometheus-stack`.
-
-`certs-config` also declares `healthChecks` on the `wildcard-vonarx-online` and `nyx-intermediate-ca` Certificates, so the controllers tier blocks until [PKI](/platform/certificates-and-pki.md) is actually issued rather than merely applied.
-
-# What dependsOn does not buy
-
-**An edge is satisfied when the other bundle's manifests apply, not when its controller runs.** A bundle whose content is a HelmRelease goes Ready as soon as that object exists, so the chart may not have installed and its CRDs may not be established. `healthChecks` are the only thing that closes the gap, and `certs-config` is the only bundle using them — which is why `traefik → certs-config` is the one edge in the fleet that genuinely waits for a working controller.
-
-`longhorn-config → longhorn` shows how little a declared edge buys: the CRDs it needs come from `snapshot-crds` and `snapshot-controller`, two Kustomizations the longhorn bundle _creates_, so the edge is satisfied the moment those objects are applied — long before they have reconciled anything.
-
-Every other cross-bundle CRD need is undeclared and resolved by retrying until the CRD appears. On a cold cluster that surfaces as `dry-run failed: no matches for kind …`:
-
-| CR emitted            | CRD comes from                                                           | Trips                                              |
-| --------------------- | ------------------------------------------------------------------------ | -------------------------------------------------- |
-| `Middleware`          | traefik                                                                  | every bundle with `#Bundle.middlewares` on         |
-| `Certificate`         | cert-manager                                                             | every bundle with `namespaceCert` on               |
-| `Bundle`              | trust-manager, a cert-manager release                                    | `certs-config` — its own `dependsOn` cannot help   |
-| `Cluster`             | cnpg                                                                     | nextcloud, servarr                                 |
-| `ObjectStore`         | the cnpg barman plugin                                                   | servarr                                            |
-| `L2Advertisement`     | metallb                                                                  | `metallb-config`, declared but still webhook-raced |
-| `VolumeSnapshotClass` | external-snapshotter, via two Kustomizations the longhorn bundle creates | `longhorn-config`, declared and still no help      |
-
-A `no matches for kind` message outlives its cause: kustomize-controller's discovery cache keeps failing the dry-run for a while after the CRD is established, so the fix is a reconcile rather than more waiting. Compare the CRD's `creationTimestamp` with the condition's `lastTransitionTime` before believing the message.
-
-Level-3 Kustomizations set `interval: 10m` and no `retryInterval`, so every hop of a chain costs up to ten minutes and a cold bootstrap takes far longer to settle than to succeed. Forcing the whole set is one command, and repeating it each minute walks the graph as fast as the CRDs establish:
-
-```sh
-kubectl annotate kustomization -n flux-system --all \
-  reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
-```
-
-The critical path a cold bootstrap walks, each hop gated on the previous one's CRDs or health:
-
-`cert-manager` → `certs-config` (blocks on real ACME issuance) → `traefik` → Middleware CRDs → every bundle with middlewares → `longhorn` → snapshot CRDs → `longhorn-config` → StorageClasses → every stateful workload.
-
-Only the first hop is a `healthChecks` gate; the rest are retries. Expect three or four forced rounds end to end.
+A tier is a packaging boundary and carries no ordering: no level-2 Kustomization declares `dependsOn`, and none sets `wait`. All ordering is per-bundle at level 3, derived from capability declarations — see [capability graph](/architecture/capability-graph.md) for the registry, the chains and the cycle hazards.
 
 The `sops-age` Secret is not read until level 3, so levels 1 and 2 going Ready proves nothing about whether the key is right or even parseable. `age-keygen -y` against the Secret's data is the cheap check; it prints only public keys.
 

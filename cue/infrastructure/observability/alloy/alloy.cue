@@ -10,7 +10,7 @@ import (
 
 bundle: schema.#Bundle & {
 	namespace: "alloy"
-	dependsOn: ["loki"]
+	needs: ["log-sink"]
 	middlewares: false
 	repositories: [_grafana]
 	before: [_config.out]

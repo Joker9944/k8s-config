@@ -9,7 +9,8 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 # Architecture
 
 - [Repository layout](architecture/repo-layout.md) - the top-level trees and the one CUE module.
-- [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph, its artifacts and its ordering constraints.
+- [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph, its artifacts and their signature verification.
+- [Capability graph](architecture/capability-graph.md) - how level-3 ordering is derived, the chains it produces, and the cycles that must not be closed.
 - [App-template pattern](architecture/app-template-pattern.md) - the shape every workload package takes.
 - [CUE layout](architecture/cue-layout.md) - the CUE tree: a package per workload, a collector per tier.
 

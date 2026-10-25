@@ -2,6 +2,9 @@
 
 ## 2026-10-25
 
+- Level-3 ordering derived from a closed capability enum; the graph, its chains and its cycle hazards — [capability graph](/architecture/capability-graph.md)
+- Tiers are packaging boundaries only; level-2 dependsOn removed and the ordering sections moved out — [flux topology](/architecture/flux-topology.md)
+- Claims that a whole tier waits on something corrected to the capability chain that actually does — [certificates](/platform/certificates-and-pki.md), [storage](/platform/storage.md), [networking](/platform/networking-and-ingress.md), [adding an app](/workflows/adding-an-app.md)
 - A selected ServiceMonitor can still 401; the scrape class that carries the token and why the endpoint cannot — [observability](/platform/observability.md)
 - Capability-gated chart templates render only on upgrade, and the explicit `target` a post-renderer then needs — [flux topology](/architecture/flux-topology.md)
 - `moverTolerations` exists as of volsync 0.17.0; the mover scheduling gap moved to `#VolsyncRestic` — [backup and restore](/platform/backup-and-restore.md)

@@ -4,7 +4,7 @@ title: Adding an app
 description: The end-to-end sequence for introducing a new workload, including the steps Flux cannot do for you.
 tags: [playbook, onboarding]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-07T22:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
 ---
 
 Read [the app-template pattern](/architecture/app-template-pattern.md) first; this is the ordering, not the content.
@@ -27,7 +27,7 @@ If the app has a PVC worth keeping, add a `#VolsyncRestic` with its `secretFile`
 
 # 5. Register with the tier
 
-Add the package to its tier collector — `cue/<tree>/<tier>/<tier>.cue`. Nothing is deployed until this step. Add `dependsOn` on the bundle only for a real ordering requirement: a CRD, a Secret or a StorageClass another workload creates.
+Add the package to its tier collector — `cue/<tree>/<tier>/<tier>.cue`. Nothing is deployed until this step. A tier is a packaging boundary, so it implies no ordering; declare `needs` on the bundle for any CRD a chart of yours renders that another bundle installs, and nothing else — `ingress`, `certificate` and `volsync` are inferred, and a StorageClass is not a capability. See [capability graph](/architecture/capability-graph.md).
 
 # 6. The manual steps
 

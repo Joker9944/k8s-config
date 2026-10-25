@@ -8,7 +8,7 @@ import (
 )
 
 bundle: schema.#ConfigBundle & {
-	dependsOn: ["cert-manager"]
+	needs: ["certificate"]
 
 	// Nothing downstream can serve TLS until these two exist, so the reconcile
 	// blocks on them rather than on the Kustomization merely applying.

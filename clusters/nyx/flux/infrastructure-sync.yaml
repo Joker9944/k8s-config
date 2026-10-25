@@ -78,8 +78,6 @@ metadata:
   name: observability
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true
@@ -109,8 +107,6 @@ metadata:
   name: security
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true
@@ -140,8 +136,6 @@ metadata:
   name: storage
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true

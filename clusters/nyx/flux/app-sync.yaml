@@ -20,8 +20,6 @@ metadata:
   name: cloud
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true
@@ -51,8 +49,6 @@ metadata:
   name: media
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true
@@ -82,8 +78,6 @@ metadata:
   name: utility
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: controllers
   interval: 30m
   path: ./sync
   prune: true

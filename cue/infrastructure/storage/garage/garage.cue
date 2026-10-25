@@ -6,6 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "garage"
+	needs: ["monitoring"]
 	repositories: [_garageRepo]
 	releases: [_garage]
 }

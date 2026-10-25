@@ -6,6 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "nextcloud"
+	needs: ["postgres"]
 	extraSecretFiles: ["apps/cloud/nextcloud/secrets/nextcloud.secret.yaml"]
 	repositories: [
 		schema.#HelmRepo & {name: "nextcloud", url: "https://nextcloud.github.io/helm/"},

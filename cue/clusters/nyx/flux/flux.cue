@@ -15,16 +15,14 @@ import (
 
 _registry: "oci://ghcr.io/joker9944/k8s-config"
 
-// The tier graph. Everything that puts workloads on the cluster waits for
-// controllers, which brings up cert-manager, MetalLB, Traefik, Longhorn and CNPG.
-// plugins advertises node devices and needs none of it.
-_tiers: [string]: {
-	tree: "apps" | "infrastructure"
-	dependsOn: [...string] | *["controllers"]
-}
+// The tiers. A tier is a packaging boundary and nothing more: it decides which
+// artifact a workload ships in, not when it reconciles. Ordering lives entirely
+// at level 3, where the graph is per-bundle and tier-blind — see
+// /architecture/capability-graph.md.
+_tiers: [string]: tree: "apps" | "infrastructure"
 _tiers: {
-	controllers: {tree: "infrastructure", dependsOn: []}
-	plugins: {tree: "infrastructure", dependsOn: []}
+	controllers: tree:   "infrastructure"
+	plugins: tree:       "infrastructure"
 	observability: tree: "infrastructure"
 	security: tree:      "infrastructure"
 	storage: tree:       "infrastructure"
@@ -67,7 +65,6 @@ _source: {
 // the decryption only level 3 carries.
 _sync: {
 	name: string
-	dependsOn: [...string]
 	out: fluxKustomize.#Kustomization & {
 		apiVersion: "kustomize.toolkit.fluxcd.io/v1"
 		kind:       "Kustomization"
@@ -77,9 +74,6 @@ _sync: {
 			path:     "./sync"
 			prune:    true
 			sourceRef: {kind: "OCIRepository", "name": name}
-			if len(dependsOn) > 0 {
-				"dependsOn": [for d in dependsOn {"name": d}]
-			}
 		}
 	}
 }
@@ -91,7 +85,7 @@ sync: {
 			for name, t in _tiers if t.tree == tree
 			for r in [
 				(_source & {"name": name}).out,
-				(_sync & {"name": name, dependsOn: t.dependsOn}).out,
+				(_sync & {"name": name}).out,
 			] {r},
 		]
 	}

@@ -446,6 +446,7 @@ _scheduledBackup: {
 
 bundle: schema.#Bundle & {
 	namespace: "servarr"
+	needs: ["postgres"]
 	extraSecretFiles: [
 		"apps/media/servarr/secrets/cnpg.secret.yaml",
 		"apps/media/servarr/secrets/prowlarr.secret.yaml",

@@ -10,7 +10,7 @@ generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
 
 # The tier
 
-Four workloads, chained by `dependsOn` back to [Garage](/platform/storage.md):
+Four workloads, chained by capability back to [Garage](/platform/storage.md) — see the [capability graph](/architecture/capability-graph.md):
 
 ```
 garage → loki → alloy

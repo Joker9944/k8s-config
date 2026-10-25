@@ -6,7 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "traefik-system"
-	dependsOn: ["certs-config", "metallb-config", "redis-operator"]
+	needs: ["ingress-certificate", "load-balancer-pool", "redis"]
 	extraSecretFiles: ["infrastructure/controllers/traefik/secrets/traefik.secret.yaml"]
 
 	// The ingress controller's own namespace serves nothing, so it installs no

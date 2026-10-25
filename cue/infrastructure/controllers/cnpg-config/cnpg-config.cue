@@ -5,7 +5,7 @@ package cnpgconfig
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#ConfigBundle & {
-	dependsOn: ["cnpg"]
+	needs: ["postgres"]
 	resources: [_artifacts.out, _sync]
 }
 

@@ -11,6 +11,7 @@ import (
 
 bundle: schema.#Bundle & {
 	namespace: "opencloud"
+	needs: ["monitoring"]
 	// kanidm's LDAPS certificate chains to the private CA; trust-manager writes
 	// the bundle here for the volume the postRenderer mounts.
 	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
