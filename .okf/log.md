@@ -1,5 +1,14 @@
 # Update Log
 
+## 2026-10-27
+
+- nextcloud retired; the cloud tier is opencloud alone, which already served both its hosts — [capability graph](/architecture/capability-graph.md)
+- Garage's only cloud consumer is opencloud — [storage](/platform/storage.md)
+- blocky and gotify are the two Postgres clusters with no off-cluster copy — [backup and restore](/platform/backup-and-restore.md)
+- Ten workloads ship a `kanidm-oidc.txt` — [identity](/platform/identity-kanidm.md)
+- kube-prometheus-stack is now the two-ingress case `#IngressAnnotations` exists for — [CUE layout](/architecture/cue-layout.md)
+- The `user_oidc` claim-pairing citation dropped with its client — [claim mapping](/reference/oidc-claim-mapping.md)
+
 ## 2026-10-25
 
 - Eleven providers gate on readiness via `wait`; `healthChecks` dropped fleet-wide and the per-bundle timeout that replaces the flat one — [capability graph](/architecture/capability-graph.md)

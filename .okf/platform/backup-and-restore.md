@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -45,7 +45,7 @@ The plugin is a HelmRelease of its own in the `cnpg` namespace, `plugin-barman-c
 - **`ScheduledBackup`** for base backups.
 - **Roles are declared, not created by hand**: `spec.managed.roles` lists each consumer with its own `passwordSecret`, one Secret per app.
 
-Its cluster bootstraps from `recovery`, not `initdb` — `spec.bootstrap.recovery.source` names an `externalClusters` entry reading the object store, so a cluster recreated from scratch restores rather than starting empty. blocky, gotify and nextcloud declare a `Cluster` and nothing else: no `ObjectStore`, no WAL archiver plugin, no `ScheduledBackup`, and an `initdb` bootstrap — their databases have no off-cluster copy at all.
+Its cluster bootstraps from `recovery`, not `initdb` — `spec.bootstrap.recovery.source` names an `externalClusters` entry reading the object store, so a cluster recreated from scratch restores rather than starting empty. blocky and gotify declare a `Cluster` and nothing else: no `ObjectStore`, no WAL archiver plugin, no `ScheduledBackup`, and an `initdb` bootstrap — their databases have no off-cluster copy at all.
 
 ## Rotating servarr's archive path
 

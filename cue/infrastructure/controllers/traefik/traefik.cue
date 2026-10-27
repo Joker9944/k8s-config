@@ -49,9 +49,9 @@ _traefik: schema.#Release & {
 		// needs a raw additionalArguments entry, not `safeNaming: false`.
 		providers: kubernetesCRD: safeNaming: true
 
-		// Backends that derive variable names from header names (nextcloud and
-		// collabora on PHP-FPM, pgadmin on WSGI) read `X_Auth_User` as
-		// `X-Auth-User`, so a client can spoof what Traefik manages.
+		// Backends that derive variable names from header names (pgadmin on
+		// WSGI) read `X_Auth_User` as `X-Auth-User`, so a client can spoof
+		// what Traefik manages.
 		ports: {
 			web: http: aliasHeadersStrategy:       "delete"
 			websecure: http: aliasHeadersStrategy: "delete"

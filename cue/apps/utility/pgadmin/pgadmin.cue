@@ -50,7 +50,6 @@ _pgadmin: schema.#Release & {
 			servers: {
 				blocky: _server & {Name: "Blocky", _ns: "blocky"}
 				servarr: _server & {Name: "Servarr", _ns: "servarr"}
-				nextcloud: _server & {Name: "Nextcloud", _ns: "nextcloud"}
 			}
 		}
 

@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -47,14 +47,14 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 32 bundles, 42 edges, six levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 31 bundles, 40 edges, six levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
 L0  cert-manager  cnpg  metallb  redis-operator  reflector  reloader
     generic-device-plugin  nvidia-device-plugin
 L1  blocky  certs-config  cnpg-config  metallb-config
 L2  traefik
-L3  kube-prometheus-stack  longhorn  nextcloud  pgadmin  servarr
+L3  kube-prometheus-stack  longhorn  pgadmin  servarr
 L4  garage  longhorn-config  opencloud  volsync
 L5  audiobookshelf  gotify  jellyfin  jellyseerr  kanidm  komga  loki
     openaudible  qbittorrent

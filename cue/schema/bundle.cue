@@ -12,7 +12,8 @@ import (
 // The Traefik annotations an ingress carries. The middleware reference is
 // computed from the namespace it is given, which is what stops an ingress from
 // naming another namespace's middleware. A chart with more than one ingress
-// (nextcloud) builds a second instance rather than writing the string.
+// (kube-prometheus-stack) builds a second instance rather than writing the
+// string.
 #IngressAnnotations: {
 	ns:    string
 	chain: #Chain | *"chain-country-whitelist"

@@ -5,7 +5,7 @@ description: How kanidm resolves an OAuth2 client_id, which OIDC claim carries w
 tags: [kanidm, oidc, oauth2, claims, sso]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-11T14:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
 sources:
   - id: kanidm-oauth2
     resource: https://github.com/kanidm/kanidm/blob/v1.11.1/server/lib/src/idm/oauth2.rs
@@ -30,9 +30,6 @@ sources:
   - id: compact-jwt
     resource: https://docs.rs/compact_jwt/latest/compact_jwt/oidc/struct.OidcClaims.html
     title: compact_jwt — OidcClaims
-  - id: user-oidc
-    resource: https://github.com/nextcloud/user_oidc/blob/master/lib/Service/ProviderService.php
-    title: Nextcloud user_oidc — ProviderService
 ---
 
 Everything here is read off kanidm's source at the tag [`identity-kanidm`](/platform/identity-kanidm.md) pins, currently `1.11.1`. It is upstream behaviour, not repo configuration — re-verify against the tag when that image bumps.
@@ -79,8 +76,6 @@ This is not an attribute-mapping mechanism. The value comes from the group, so a
 
 A consumer keys its local user record on whichever claim it maps to its user ID, so that claim has to be immutable — a client that does not implement rename provisions a second account and orphans the first. `name` carries `displayname`, which is free text a person edits, so it is the wrong choice there. Use `sub`, or `preferred_username` when a readable ID is worth treating renames as a manual migration.
 
-Nextcloud's `user_oidc` defaults `mappingUid` to `sub` and `mappingDisplayName` to `name`,[^user-oidc] which is already that pairing; the other clients registered through [`identity-kanidm`](/platform/identity-kanidm.md) name the two settings differently.
-
 # Client identifiers are case-folded
 
 A client's `client_id` is the name given to `kanidm system oauth2 create`. The name syntax reads as lowercase-only — `INAME_RE` is `^[a-z][a-z0-9-_\.]{0,63}$`[^kanidm-value] — which makes a vendor that ships a fixed mixed-case `client_id` look unregistrable. It is not: `Value::new_iname` lowercases before it validates,[^kanidm-value] so creation normalises rather than erroring, and the token path looks the client up through `client_id.to_lowercase()`.[^kanidm-oauth2] Both ends fold, so the ID the client sends resolves to the lowercase entry.
@@ -96,5 +91,3 @@ A client's `client_id` is the name given to `kanidm system oauth2 create`. The n
 [^kanidm-book-claims]: kanidm book — Custom Claim Maps
 
 [^compact-jwt]: compact_jwt — `OidcClaims`
-
-[^user-oidc]: Nextcloud user_oidc — ProviderService
