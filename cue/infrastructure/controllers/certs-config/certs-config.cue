@@ -10,19 +10,21 @@ import (
 bundle: schema.#ConfigBundle & {
 	needs: ["certificate"]
 
-	// Nothing downstream can serve TLS until these two exist, so the reconcile
-	// blocks on them rather than on the Kustomization merely applying.
-	healthChecks: [for c in [_wildcardCert, _intermediateCert] {
-		apiVersion: c.apiVersion
-		kind:       c.kind
-		name:       c.metadata.name
-		namespace:  c.metadata.namespace
-	}]
+	// Nothing downstream can serve TLS until the chain is issued, so the
+	// reconcile blocks on readiness rather than on the Kustomization merely
+	// applying. Every certificate and issuer below carries a real Ready
+	// condition; the trust Bundles do not, and deliberately are not gated —
+	// their CA travels to consumers as a reflector-copied Secret, so a pod waits
+	// on a volume rather than an apply failing.
+	//
+	// The timeout is the fleet's longest because ACME validates the apex and the
+	// wildcard sequentially against one TXT name. Observed around 20 minutes.
+	wait:    true
+	timeout: "40m"
 	secretFiles: ["infrastructure/controllers/certs-config/secrets/cloudflare.secret.yaml"]
 	resources: list.Concat([
-		[_rootCert, _rootIssuer, _intermediateCert, _intermediateIssuer],
+		[_rootCert, _rootIssuer, _intermediateCert, _intermediateIssuer, _cloudflareIssuer],
 		_bundles,
-		_cloudflareIssuers,
 		[_wildcardCert],
 	])
 }
@@ -116,23 +118,20 @@ _bundles: [for bundleName, useDefaults in {
 // ------------------------------------------------------------ the public cert
 // Let's Encrypt over DNS-01, because the wildcards cannot be validated by HTTP.
 
-_cloudflareIssuers: [for issuerName, acmeServer in {
-	"cloudflare-production": "https://acme-v02.api.letsencrypt.org/directory"
-	"cloudflare-staging":    "https://acme-staging-v02.api.letsencrypt.org/directory"
-} {
+_cloudflareIssuer: {
 	apiVersion: "cert-manager.io/v1"
 	kind:       "ClusterIssuer"
-	metadata: name: issuerName
+	metadata: name: "cloudflare-production"
 	spec: acme: {
 		"email": email
-		privateKeySecretRef: name: "\(issuerName)-account-key"
-		server: acmeServer
+		privateKeySecretRef: name: "cloudflare-production-account-key"
+		server: "https://acme-v02.api.letsencrypt.org/directory"
 		solvers: [{dns01: cloudflare: {
 			apiTokenSecretRef: {name: "cloudflare-api-token", key: "token"}
 			"email": email
 		}}]
 	}
-}]
+}
 
 // One certificate for every host the fleet serves. reflector copies it into each
 // namespace that needs it, which is why the ingresses all name the same secret.

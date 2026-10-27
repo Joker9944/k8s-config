@@ -4,6 +4,14 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "longhorn-system"
+
+	// Waiting here also gates the two snapshot Kustomizations in `after`, which
+	// is where the VolumeSnapshotClass CRD longhorn-config needs comes from —
+	// the one thing a plain edge to longhorn never covered. The timeout exceeds
+	// the release's own, so the Kustomization never fails while Helm is still
+	// rolling out.
+	wait:    true
+	timeout: "35m"
 	repositories: [
 		schema.#HelmRepo & {name: "longhorn", url: "https://charts.longhorn.io"},
 		_snapshotter,
@@ -50,6 +58,13 @@ _longhorn: schema.#Release & {
 	// renovate: datasource=helm packageName=longhorn registryUrl=https://charts.longhorn.io
 	version:    "1.13.0"
 	sourceName: "longhorn"
+
+	// A manager DaemonSet plus CSI plugins roll across all four nodes, so the
+	// fleet default is far too tight. And no rollback: upstream does not support
+	// downgrading Longhorn, so a failed upgrade must stay failed for a human
+	// rather than re-applying the previous chart over a live storage layer.
+	timeout:        "30m"
+	upgradeRetries: 0
 
 	host:  "longhorn.vonarx.online"
 	chain: "chain-network-internal-whitelist"

@@ -6,6 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace:   "cert-manager"
+	wait:        true
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "jetstack", url: "https://charts.jetstack.io"},

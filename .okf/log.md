@@ -2,6 +2,10 @@
 
 ## 2026-10-25
 
+- Eleven providers gate on readiness via `wait`; `healthChecks` dropped fleet-wide and the per-bundle timeout that replaces the flat one — [capability graph](/architecture/capability-graph.md)
+- Upgrade rollback-and-retry, no install remediation, and why longhorn is exempt — [decision](/decisions/helm-remediation-policy.md)
+- `certs-config` waits on its whole chain; the trust Bundles are deliberately ungated; `cloudflare-staging` removed — [certificates](/platform/certificates-and-pki.md)
+- Destinations ship disabled, and the install timeout a restore bootstrap needs — [backup and restore](/platform/backup-and-restore.md)
 - Level-3 ordering derived from a closed capability enum; the graph, its chains and its cycle hazards — [capability graph](/architecture/capability-graph.md)
 - Tiers are packaging boundaries only; level-2 dependsOn removed and the ordering sections moved out — [flux topology](/architecture/flux-topology.md)
 - Claims that a whole tier waits on something corrected to the capability chain that actually does — [certificates](/platform/certificates-and-pki.md), [storage](/platform/storage.md), [networking](/platform/networking-and-ingress.md), [adding an app](/workflows/adding-an-app.md)

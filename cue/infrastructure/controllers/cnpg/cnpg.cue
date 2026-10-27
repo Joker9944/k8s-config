@@ -4,6 +4,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace:   "cnpg"
+	wait:        true
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "cnpg", url: "https://cloudnative-pg.github.io/charts/"},

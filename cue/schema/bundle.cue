@@ -50,12 +50,26 @@ import (
 	chain:      #Chain | *"chain-country-whitelist"
 	extraMiddlewares: [...string] | *[]
 
-	// Helm owns the CRD lifecycle and a failed install or upgrade is retried three
-	// times. Only for a chart with a real Helm `crds/` directory — a chart that
-	// renders its CRDs as ordinary templates (cert-manager, cnpg, volsync,
-	// metallb) never reaches this code path, so setting it there is a lie.
+	// Helm owns the CRD lifecycle. Only for a chart with a real Helm `crds/`
+	// directory — a chart that renders its CRDs as ordinary templates
+	// (cert-manager, cnpg, volsync, metallb) never reaches this code path, so
+	// setting it there is a lie.
 	crds: bool | *false
-	_lifecycle: {"crds": "CreateReplace", remediation: retries: 3}
+
+	// An upgrade failure rolls back and retries. Because a non-zero count also
+	// flips remediateLastFailure, the release ends on the last working revision
+	// rather than on the broken one. Install remediation is deliberately left
+	// off: there it is an uninstall, and blocky's and gotify's Postgres Clusters
+	// are Helm-managed, carry no resource-policy, and have no off-cluster copy.
+	upgradeRetries: int | *3
+
+	// Ceilings on readiness, not delays: helm-controller waits for the chart's
+	// resources before judging the action. Install is generous because a restore
+	// bootstrap populates a PVC inside the install, and because upgradeRetries
+	// does not apply there — a hit install timeout is terminal until the spec
+	// changes or someone forces a reconcile.
+	timeout:        string | *"10m"
+	installTimeout: string | *"60m"
 
 	// The volsync repositories this release backs up to. Declaring one is what
 	// ships its credential Secret, so the two cannot drift apart.
@@ -90,9 +104,18 @@ import (
 				if version != "" {"version": version}
 				sourceRef: {kind: sourceKind, name: sourceName, "namespace": namespace}
 			}
-			if crds {
-				install: _lifecycle
-				upgrade: _lifecycle
+			"timeout": timeout
+			install: {
+				"timeout": installTimeout
+				if crds {"crds": "CreateReplace"}
+			}
+			// Guarded as a whole: longhorn sets neither, and an empty struct cannot
+			// resolve against the field's `null | {...}` disjunction.
+			if crds || upgradeRetries > 0 {
+				upgrade: {
+					if crds {"crds": "CreateReplace"}
+					if upgradeRetries > 0 {remediation: retries: upgradeRetries}
+				}
 			}
 			if hasValues {"values": values}
 			if len(postRenderers) > 0 {"postRenderers": postRenderers}
@@ -295,8 +318,19 @@ _edges: {
 		}
 	}).out
 
-	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
-	healthChecks: [...] | *[]
+	// Gate the bundle's own resources on readiness rather than on their apply.
+	// For a bundle whose content is a HelmRelease this is the gate a consumer
+	// wants: Flux assesses the HelmRelease, and helm-controller has already
+	// waited for the chart's resources. Only providers set it — a gate on a leaf
+	// helps nobody. Flux ignores healthChecks when this is set, which is why the
+	// fleet carries no healthChecks at all.
+	wait: bool | *false
+
+	// Ceiling on the assessment above.
+	timeout:         string | *_defaultTimeout
+	_defaultTimeout: string
+	if wait {_defaultTimeout: "15m"}
+	if !wait {_defaultTimeout: "5m"}
 
 	// Pod Security admission levels and the like. Eight namespaces in the fleet
 	// carry one; the rest render a bare Namespace.
@@ -343,8 +377,16 @@ _edges: {
 
 	edges: (_edges & {"needs": needs, inferred: {}}).out
 
-	// Readiness the level-3 reconcile blocks on. certs-config is the only user.
-	healthChecks: [...] | *[]
+	// As #Bundle's. certs-config is the only config bundle that gates: its CA
+	// chain, issuers and wildcard all carry a real Ready condition, so waiting
+	// on the whole inventory is both stronger and simpler than naming two of
+	// them.
+	wait: bool | *false
+
+	timeout:         string | *_defaultTimeout
+	_defaultTimeout: string
+	if wait {_defaultTimeout: "15m"}
+	if !wait {_defaultTimeout: "5m"}
 
 	out: resources
 }
@@ -363,7 +405,8 @@ _edges: {
 		out: [...]
 		secretFiles: [...string]
 		edges: [...string]
-		healthChecks: [...]
+		wait:    bool
+		timeout: string
 		...
 	}
 
@@ -392,11 +435,11 @@ _edges: {
 		metadata: {"name": k, namespace: "flux-system"}
 		spec: {
 			interval: "10m"
-			// A blocked reconcile otherwise retries at interval, and the graph below
-			// is nine levels deep: at 10m a cold bootstrap would spend an hour and a
-			// half waiting rather than working.
+			// A blocked reconcile otherwise retries at interval, and the graph is
+			// six levels deep: at 10m a cold bootstrap would spend an hour waiting
+			// rather than working.
 			retryInterval: "1m"
-			timeout:       "5m"
+			timeout:       b.timeout
 			prune:         true
 			// source-root relative, not relative to the level-2 path above it
 			path: "./\(k)"
@@ -409,9 +452,7 @@ _edges: {
 			if len(_deps) > 0 {
 				dependsOn: [for d in _deps {"name": d}]
 			}
-			if len(b.healthChecks) > 0 {
-				healthChecks: b.healthChecks
-			}
+			if b.wait {wait: true}
 		}
 	}]
 }

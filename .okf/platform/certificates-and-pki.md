@@ -10,11 +10,11 @@ generated: { by: claude-code/fable-5, at: 2026-10-25T00:00:00Z }
 
 # Public path
 
-`cloudflare-production` (and an unused `cloudflare-staging`) are ACME `ClusterIssuer`s solving DNS-01 against Cloudflare, with the API token in `cloudflare-secret.sops.yaml`. They issue a single Certificate, `wildcard-vonarx-online` in the `cert-manager` namespace, covering `vonarx.online`, `*.vonarx.online`, `*.s3.vonarx.online` and `*.web.vonarx.online`.
+`cloudflare-production` is the one ACME `ClusterIssuer`, solving DNS-01 against Cloudflare with the API token in `cloudflare-secret.sops.yaml`. They issue a single Certificate, `wildcard-vonarx-online` in the `cert-manager` namespace, covering `vonarx.online`, `*.vonarx.online`, `*.s3.vonarx.online` and `*.web.vonarx.online`.
 
 Every public ingress in the repo references `secretName: wildcard-vonarx-online-cert` — the one wildcard is the whole public TLS story.
 
-**It is the slowest thing in a cold bootstrap, by construction.** `vonarx.online` and `*.vonarx.online` are separate ACME challenges sharing one TXT name, `_acme-challenge.vonarx.online`, so cert-manager validates them in sequence: the wildcard first, then its record is torn down and the apex's published, which only then starts its own propagation clock. The other names finish long before it, so `Waiting for DNS-01 challenge propagation` on the last challenge is the normal state rather than a fault — check `dig TXT _acme-challenge.vonarx.online` against the pending challenge's `spec.key` before touching anything. Because `certs-config` health-checks this Certificate and `traefik` needs it, everything behind Traefik in the [capability graph](/architecture/capability-graph.md) waits on that last challenge — which is most of the fleet.
+**It is the slowest thing in a cold bootstrap, by construction.** `vonarx.online` and `*.vonarx.online` are separate ACME challenges sharing one TXT name, `_acme-challenge.vonarx.online`, so cert-manager validates them in sequence: the wildcard first, then its record is torn down and the apex's published, which only then starts its own propagation clock. The other names finish long before it, so `Waiting for DNS-01 challenge propagation` on the last challenge is the normal state rather than a fault — check `dig TXT _acme-challenge.vonarx.online` against the pending challenge's `spec.key` before touching anything. Because `certs-config` waits on this Certificate and `traefik` needs it, everything behind Traefik in the [capability graph](/architecture/capability-graph.md) waits on that last challenge — which is most of the fleet. Its Kustomization `timeout` is 40m for the same reason, the longest in the fleet.
 
 # Private path
 
@@ -47,4 +47,6 @@ Delivery to a namespace is not delivery to a process: a `subPath` mount copies t
 
 # Ordering
 
-`certs-config` declares Flux `healthChecks` on `wildcard-vonarx-online` and `nyx-intermediate-ca`, so nothing that depends on it proceeds until both are genuinely issued. `traefik` depends on `certs-config` for exactly this reason. A `TODO healthcheck for bundle` records that Bundle readiness is not yet gated — a namespace can therefore start before its CA bundle lands.
+`certs-config` sets `wait: true`, so nothing that depends on it proceeds until its whole chain is genuinely issued — both CA Certificates, their Issuer and ClusterIssuer, the ACME ClusterIssuer and the wildcard. `traefik` depends on it for exactly this reason.
+
+The two trust `Bundle`s are the deliberate exception: a namespace can still start before its CA bundle lands. Gating them would need a `healthCheckExprs` entry, because a Bundle's status carries only `Synced`, and nothing needs one — the CA arrives as a Secret that reflector copies, so a pod missing it waits in `ContainerCreating` while kubelet retries rather than failing an apply.

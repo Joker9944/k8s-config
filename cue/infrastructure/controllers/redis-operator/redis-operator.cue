@@ -6,6 +6,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace:   "redis-operator"
+	wait:        true
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "ot-helm", url: "https://ot-container-kit.github.io/helm-charts", interval: "30m"},

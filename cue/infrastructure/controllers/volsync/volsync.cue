@@ -8,6 +8,7 @@ import (
 bundle: schema.#Bundle & {
 	namespace: "volsync-system"
 	needs: ["monitoring"]
+	wait:        true
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "backube", url: "https://backube.github.io/helm-charts/"},

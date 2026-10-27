@@ -9,6 +9,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "loki"
 	needs: ["object-storage"]
+	wait:        true
 	middlewares: false
 	extraSecretFiles: ["infrastructure/observability/loki/secrets/loki.secret.yaml"]
 	repositories: [_grafana]

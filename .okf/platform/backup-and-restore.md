@@ -26,7 +26,9 @@ The PVC references the destination through `dataSourceRef`, and the mover runs u
 
 **Restore is deliberately two-step and manual.** The destination normally ships disabled, so a reconcile never restores by itself. To recover: set `dest-<vol>.enabled: true`, let the destination populate a snapshot, then let the PVC bind from it. Leaving it enabled afterwards is the failure mode to watch for — the manual trigger fires once, but a PVC recreated later restores from that stale snapshot instead of starting empty.
 
-`#VolsyncRestic` currently enables every destination, so the cluster being bootstrapped restores all nine volumes rather than coming up blank. That default reverts once they have.
+`#VolsyncRestic` ships every destination `enabled: false`, so none render and the cluster has no `ReplicationDestination`s at all. A restore bootstrap flips them, and that is the one case where an install takes a long time: the PVC populates from the snapshot inside the Helm install, which is why `#Release.installTimeout` is 60m while the ordinary timeout is 10m.
+
+That generous install timeout is not merely cautious. `upgradeRetries` does not apply to an install, and install remediation is left off deliberately — there it is an _uninstall_, and blocky's and gotify's Postgres `Cluster`s are Helm-managed with no `resource-policy`, so one would garbage-collect their instance PVCs through the Cluster's `ownerReference`. Neither database has an off-cluster copy. An install that overruns its timeout therefore just sits failed until the spec changes or someone forces a reconcile, which is the safe direction to fail in.
 
 `dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted.
 

@@ -4,6 +4,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace:   "metallb-system"
+	wait:        true
 	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "metallb", url: "https://metallb.github.io/metallb"},

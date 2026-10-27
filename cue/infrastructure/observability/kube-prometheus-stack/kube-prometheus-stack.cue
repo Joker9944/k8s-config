@@ -8,6 +8,7 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "kube-prometheus-stack"
+	wait:      true
 	extraSecretFiles: [
 		"infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml",
 		"infrastructure/observability/kube-prometheus-stack/secrets/joker9944.secret.yaml",
