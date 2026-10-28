@@ -3,6 +3,8 @@
 ## 2026-10-28
 
 - App-level log configuration comes before an Alloy pipeline; garage's JSON mode and its two `RUST_LOG` directives — [observability](/platform/observability.md)
+- Pipelines promote `level` only, bar two fields with a named consumer; the request-field extraction dropped fleet-wide — [observability](/platform/observability.md)
+- Structured metadata gets an admission test; `container_runtime` named as the second constant the anchor rules out — [telemetry labels](/platform/telemetry-labels.md)
 
 ## 2026-10-27
 

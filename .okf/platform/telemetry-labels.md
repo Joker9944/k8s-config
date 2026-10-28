@@ -4,7 +4,7 @@ title: Telemetry label convention
 description: The label set every log stream and metric series should carry, why `cluster` is an anchor rather than an identity, why `service_name` needs no rule of its own, and why the two signals do not spell the service the same way.
 tags: [prometheus, loki, alloy, labels, logs, metrics]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-18T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-10-28T00:00:00Z }
 ---
 
 The label set to aim at. What the pipeline emits today is
@@ -111,5 +111,18 @@ already present. Structured metadata keeps them queryable after the selector
 without creating a stream per value, which is what an identifier that changes on
 every restart or every image bump would otherwise do.
 
-`env` is excluded outright rather than demoted: there is one environment, so the
-label would carry no information in either place.
+**Demotion is not admission.** A value earns a place in structured metadata only
+if something cannot reach it otherwise: it is absent from the stored line, or it
+has a named consumer that reads fields rather than lines. Anything still in the
+line is a filter expression's job — Loki's own default, and free. Getting this
+wrong is invisible to the `label-conformance` dashboard and will stay that way:
+structured metadata is not an index label, cannot appear in a stream selector,
+and the label API does not list it, so no panel can enumerate what a pipeline
+attaches. It is not free for being index-free either — it is extracted onto every
+returned line, so a metric query over a stream carrying a lot of it can exhaust
+its series budget.
+
+`env` and `container_runtime` are excluded outright rather than demoted: there is
+one environment and one container runtime (`containerd`), so neither would carry
+information in either place. `container_runtime` is the second constant the
+anchor above rules out — it spends one of the fifteen slots and buys nothing.

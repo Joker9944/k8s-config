@@ -36,8 +36,11 @@ loki.process "servarr" {
 		firstline = "^\\[\\w+?\\] .+?:.*$"
 	}
 
+	// Only the level is read; the unit and message stay in the line, where a
+	// filter expression reaches them. Nothing matches to end of record, so neither
+	// (?s) nor a `$` anchor applies.
 	stage.regex {
-		expression = "(?s)^\\[(?P<level>\\w+?)\\] (?P<unit>.+?): (?P<message>.+?)\\s*$"
+		expression = "^\\[(?P<level>\\w+?)\\] "
 	}
 
 	stage.template {
@@ -48,7 +51,6 @@ loki.process "servarr" {
 	stage.structured_metadata {
 		values = {
 			level = "level",
-			unit  = "unit",
 		}
 	}
 }

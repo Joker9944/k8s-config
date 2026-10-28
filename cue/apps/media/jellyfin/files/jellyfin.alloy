@@ -36,16 +36,13 @@ loki.process "jellyfin" {
 		firstline = "^\\[\\d{2}:\\d{2}:\\d{2}\\] \\["
 	}
 
-	// `[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}`.
-	// Timestamp and thread are matched but not captured — the container runtime
-	// supplies the one, nothing groups by the other. The message is where the
-	// expression stops, so it needs neither (?s) nor an anchor.
-	//
-	// `unit` excludes the newline on purpose: a negated class crosses one, so
-	// after the fold above `[^:]+` backtracks to the last colon in the whole
-	// record and captures the stack trace's exception type instead.
+	// `[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}`,
+	// of which only the level is read: the timestamp is supplied by the container
+	// runtime, and the rest stays in the line for a filter expression. Stopping at
+	// the level is also what keeps this clear of the fold above — a negated class
+	// crosses a newline, so a capture reaching past it reads the stack trace.
 	stage.regex {
-		expression = "^\\[[^\\]]+\\] \\[(?P<level>\\w+)\\] \\[\\d+\\] (?P<unit>[^:\\n]+): "
+		expression = "^\\[[^\\]]+\\] \\[(?P<level>\\w+)\\] "
 	}
 
 	// Serilog's three-letter `u3` vocabulary (LevelOutputFormat.cs), which Loki's
@@ -60,7 +57,6 @@ loki.process "jellyfin" {
 	stage.structured_metadata {
 		values = {
 			level = "level",
-			unit  = "unit",
 		}
 	}
 }

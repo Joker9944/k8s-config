@@ -48,22 +48,13 @@ loki.process "kanidm" {
 		drop_counter_reason = "healthcheck_call"
 	}
 
-	// tracing-forest pads the level to a fixed column and indents children three
-	// further, so the gap after it is variable — a fixed count fits INFO at depth
-	// zero and nothing else. (?s) with a \s*$ tail is what makes the anchor
-	// reachable: lines carry a trailing newline and RE2's `$` is end-of-text only.
+	// tracing-forest pads the level out to a fixed column, so the gap after it is
+	// variable — a fixed count fits INFO at depth zero and nothing else. Only the
+	// level is read; the kopid, the request's method, uri and status_code are all
+	// in the record, where a filter expression reaches them. Nothing matches to
+	// end of record, so neither (?s) nor a `$` anchor applies.
 	stage.regex {
-		expression = "(?s)^(?P<event_id>[0-9a-f-]{36}) (?P<level>\\w+)\\s+(?P<message>.+?)\\s*$"
-	}
-
-	// Folding puts the request line at a known position, so its fields can be
-	// lifted out. No (?s) here: `.` cannot cross a newline, which is what keeps
-	// the match on the root line. `[^ ?]+` stops at the query string, leaving the
-	// path — the part worth grouping by. Roots that are not requests do not match,
-	// and a stage.regex that misses writes nothing.
-	stage.regex {
-		source     = "message"
-		expression = "^request \\[.*?\\] method: (?P<method>\\w+) \\| uri: (?P<uri>[^ ?]+).*? \\| status_code: (?P<status_code>\\d+)"
+		expression = "^[0-9a-f-]{36} (?P<level>\\w+)\\s"
 	}
 
 	// The level of a folded record is the worst level in it, not the level of its
@@ -77,15 +68,9 @@ loki.process "kanidm" {
 		template = "{{ if regexMatch \"(?m)^[0-9a-f-]{36} ERROR\" .Entry }}error{{ else if regexMatch \"(?m)^[0-9a-f-]{36} WARN\" .Entry }}warn{{ else }}{{ ToLower .Value }}{{ end }}"
 	}
 
-	// event_id is the kopid kanidm's own error text tells you to search for.
-	// Structured metadata rather than labels: one value per request.
 	stage.structured_metadata {
 		values = {
-			level       = "level",
-			event_id    = "event_id",
-			method      = "method",
-			uri         = "uri",
-			status_code = "status_code",
+			level = "level",
 		}
 	}
 }

@@ -9,14 +9,11 @@ loki.process "k8s_events" {
 	// Without this, discover_log_levels reaches its content heuristic and reads
 	// severity out of the message — longhorn's `Removed unknown replica … in
 	// mode ERR from engine` is a Normal event that arrived as error.
+	// `reason` is extracted for the drop below, not to be promoted.
 	stage.json {
 		expressions = {
-			level      = "type",
-			reason     = "reason",
-			kind       = "kind",
-			object     = "name",
-			controller = "reportingcontroller",
-			node       = "sourcehost",
+			level  = "type",
+			reason = "reason",
 		}
 	}
 
@@ -39,17 +36,13 @@ loki.process "k8s_events" {
 		template = "{{ if eq .Value \"Normal\" }}info{{ else if eq .Value \"Warning\" }}warn{{ else }}unknown{{ end }}"
 	}
 
-	// The line stays the full JSON, so what is not promoted here is still
-	// searchable. `node` is set only on kubelet-reported events; stage.json
-	// leaves an absent key unset rather than empty, so this skips it.
+	// Only the level, which the line cannot supply: `type` is Normal or Warning,
+	// not a severity. The line stays the source's JSON, so every other field is
+	// reachable with LogQL's own `json` parser — promoting any of them here would
+	// duplicate what the query can already do.
 	stage.structured_metadata {
 		values = {
-			level      = "level",
-			reason     = "reason",
-			kind       = "kind",
-			object     = "object",
-			controller = "controller",
-			node       = "node",
+			level = "level",
 		}
 	}
 }

@@ -41,39 +41,10 @@ loki.process "gotify" {
 	// zerolog's console writer, `<RFC3339> <LVL> <message> <k=v...>`. Colour would
 	// break this, and cannot occur: gotify sets NoColor from !isatty(stdout) and a
 	// container's stdout is a pipe. The timestamp is matched but not captured —
-	// the container runtime already supplies one. `.` cannot cross a newline, so
-	// the message needs neither (?s) nor an anchor.
+	// the container runtime already supplies one, and the message is left in the
+	// line, where the dashboard's filter expression reads it.
 	stage.regex {
-		expression = "^\\S+ (?P<level>[A-Z?]{3}) (?P<message>.+)"
-	}
-
-	// Only the access log carries fields; websocket and startup lines do not. A
-	// second pass leaves those untouched — a stage.regex that misses writes
-	// nothing — where one expression with an optional group would stamp an empty
-	// field on every one of them.
-	stage.regex {
-		source     = "message"
-		expression = "^HTTP (?P<fields>.+)"
-	}
-
-	// The tail is already logfmt, so parsing it beats hand-rolling a regex per
-	// field: durations arrive as both `1.7ms` and `"824µs"` — quoted because the
-	// micro sign is not ASCII — and this reads either without being told which.
-	stage.logfmt {
-		source  = "fields"
-		mapping = {
-			ip     = "",
-			method = "",
-			path   = "",
-			status = "",
-		}
-	}
-
-	// gotify appends the query string to the path (router.go:280), having first
-	// masked any token in it. The path alone is the part worth grouping by.
-	stage.regex {
-		source     = "path"
-		expression = "^(?P<path>[^?]+)"
+		expression = "^\\S+ (?P<level>[A-Z?]{3}) "
 	}
 
 	// zerolog's console vocabulary (FormattedLevels, globals.go), plus the `???`
@@ -85,13 +56,11 @@ loki.process "gotify" {
 		template = "{{ if eq .Value \"INF\" }}info{{ else if eq .Value \"WRN\" }}warn{{ else if eq .Value \"ERR\" }}error{{ else if eq .Value \"DBG\" }}debug{{ else if eq .Value \"TRC\" }}trace{{ else if eq .Value \"FTL\" }}critical{{ else if eq .Value \"PNC\" }}critical{{ else }}unknown{{ end }}"
 	}
 
+	// Only the level is promoted. The access log's ip, method, path and status are
+	// all still in the line, where a filter expression reaches them.
 	stage.structured_metadata {
 		values = {
-			level  = "level",
-			ip     = "ip",
-			method = "method",
-			path   = "path",
-			status = "status",
+			level = "level",
 		}
 	}
 }
