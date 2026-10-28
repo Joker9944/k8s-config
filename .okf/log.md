@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-10-28
+
+- App-level log configuration comes before an Alloy pipeline; garage's JSON mode and its two `RUST_LOG` directives — [observability](/platform/observability.md)
+
 ## 2026-10-27
 
 - opencloud revisions are unbounded and `revisions purge` is how they are reclaimed; the fractional-seconds blind spot — [reclaiming revisions](/workflows/opencloud-revisions.md)

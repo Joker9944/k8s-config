@@ -1,3 +1,5 @@
+@extern(embed)
+
 package garage
 
 // cSpell:ignore Deuxfleurs deuxfleurs
@@ -8,8 +10,18 @@ bundle: schema.#Bundle & {
 	namespace: "garage"
 	needs: ["monitoring"]
 	wait: true
+	before: [_logs.out]
 	repositories: [_garageRepo]
 	releases: [_garage]
+}
+
+_garageLogs: _ @embed(file="files/garage.alloy", type=text)
+
+// garage's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "garage"
+	ns:     bundle.namespace
+	config: _garageLogs
 }
 
 // The chart lives in the project's own git repository rather than a chart
@@ -39,6 +51,21 @@ _garage: schema.#Release & {
 	let wildcardHost = "*.\(host)"
 
 	values: {
+		// The chart has no pod-specific label value; commonLabels is what reaches
+		// the pod template. garage.selectorLabels is a separate helper, so the
+		// StatefulSet's immutable selector is untouched.
+		commonLabels: _logs.podLabels
+
+		// Logging is configured at the app rather than parsed in alloy: the JSON
+		// mode removes the format regex, and the two level directives keep the
+		// steady-state resync and gc chatter — 84% of this workload's volume —
+		// from ever being emitted. Setting RUST_LOG replaces garage's own default
+		// (main.rs:193-199), so the stock pair has to be restated.
+		environment: [
+			{name: "GARAGE_LOG_FORMAT", value: "json"},
+			{name: "RUST_LOG", value: "netapp=info,garage=info,garage_block::resync=warn,garage_table::gc=warn"},
+		]
+
 		"garage": s3: {
 			api: {region: "nyx", rootDomain: ".s3.vonarx.online"}
 			web: rootDomain: ".web.vonarx.online"

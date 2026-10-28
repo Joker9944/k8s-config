@@ -1,0 +1,66 @@
+// The garage log pipeline. Loaded into alloy's config graph by the sidecar that
+// watches ConfigMaps labelled alloy_config; the base config lives with alloy and
+// supplies loki.process.common and the target set read below.
+
+discovery.relabel "garage" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "garage"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "garage" {
+	targets    = discovery.relabel.garage.output
+	forward_to = [loki.process.garage.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "garage" {
+	forward_to = [loki.process.common.receiver]
+
+	// GARAGE_LOG_FORMAT=json puts tracing-subscriber in its JSON mode, so there is
+	// no human format to regex and no ANSI to strip — garage gates colour on
+	// NO_COLOR alone and writes escape sequences into a pipe. The timestamp is
+	// read but discarded: the container runtime already supplies one.
+	stage.json {
+		expressions = {
+			level   = "",
+			target  = "",
+			message = "",
+		}
+	}
+
+	// tracing writes the level uppercase, and the global logs dashboard matches
+	// detected_level against a lowercase list with a case-sensitive =~.
+	stage.template {
+		source   = "level"
+		template = "{{ ToLower .Value }}"
+	}
+
+	// Only the two envelope fields are promoted. Everything in the request log —
+	// the client, the access key, the method, the path, the error status — is
+	// still in the stored line, where a filter expression reaches it; attaching
+	// it here would buy nothing and the client's ephemeral port would put
+	// unbounded cardinality on every returned line.
+	stage.structured_metadata {
+		values = {
+			level  = "level",
+			target = "target",
+		}
+	}
+
+	// Store the message rather than the JSON envelope: the envelope's two fields
+	// are promoted above, and the message is what a filter expression reads. A
+	// line that did not parse as JSON has no `message` and is left as it arrived.
+	stage.output {
+		source = "message"
+	}
+}
