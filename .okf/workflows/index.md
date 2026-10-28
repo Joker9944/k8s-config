@@ -9,3 +9,5 @@ What to do, and what the tooling does for you.
 - [Commit conventions](commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](images-and-ci.md) - Nix-built OCI images, signing, and renovate.
 - [Jellyfin's config](jellyfin-config.md) - where Jellyfin keeps its settings and how to reach them.
+- [Diagnosing opencloud's memory](opencloud-memory.md) - one process, no pprof, and the bleve merge that bounds the limit.
+- [Reclaiming opencloud file revisions](opencloud-revisions.md) - unbounded versions, the purge tool, and what it cannot reach.

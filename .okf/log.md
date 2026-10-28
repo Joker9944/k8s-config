@@ -2,6 +2,7 @@
 
 ## 2026-10-27
 
+- opencloud revisions are unbounded and `revisions purge` is how they are reclaimed; the fractional-seconds blind spot — [reclaiming revisions](/workflows/opencloud-revisions.md)
 - nextcloud retired; the cloud tier is opencloud alone, which already served both its hosts — [capability graph](/architecture/capability-graph.md)
 - Garage's only cloud consumer is opencloud — [storage](/platform/storage.md)
 - blocky and gotify are the two Postgres clusters with no off-cluster copy — [backup and restore](/platform/backup-and-restore.md)
