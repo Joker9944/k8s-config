@@ -50,14 +50,6 @@ discovery.relabel "k8s_pod_logs" {
 		separator     = "/"
 		replacement   = "$1"
 	}
-
-	rule {
-		source_labels = ["__meta_kubernetes_pod_container_id"]
-		action        = "replace"
-		target_label  = "container_runtime"
-		regex         = "^(\\S+):\\/\\/.+$"
-		replacement   = "$1"
-	}
 }
 
 // Everything a workload pipeline needs: the standard labels, written once.
@@ -76,7 +68,6 @@ discovery.relabel "k8s_pod_logs_default" {
 	}
 }
 
-// The one place `cluster` is stamped. Every branch, generic or per-app, ends here.
 loki.process "common" {
 	forward_to = [loki.write.default.receiver]
 
@@ -84,6 +75,21 @@ loki.process "common" {
 		values = {
 			cluster = "nyx",
 		}
+	}
+
+	stage.structured_metadata {
+		values = {
+			pod  = "pod",
+			node = "node",
+		}
+	}
+
+	// `instance` is the loki.source.* components' own, not a relabel rule, so
+	// there is nothing upstream to delete. It arrives as `<namespace>/<pod>:
+	// <container>` on a pod branch and as the component id on the events branch;
+	// both are concatenations of values already present.
+	stage.label_drop {
+		values = ["instance"]
 	}
 }
 
