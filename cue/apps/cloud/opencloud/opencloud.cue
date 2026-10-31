@@ -142,7 +142,7 @@ _opencloud: schema.#Release & {
 			// the memory profile, so it is pinned like every other image here.
 			image: {
 				repository: "apache/tika"
-				tag:        "4.1.0-full@sha256:d69fab827fa004a5e1db786e6d78da947a6cfeedbf595bc5c353ef99622bb2e2"
+				tag:        "4.2.0-full@sha256:4774eaac44f86cdf648ae7b5a367016eaf6f9052adec31e5cff07cff1a0c6e24"
 			}
 
 			// That child takes MaxRAMPercentage=60 of the limit and shares the cgroup
