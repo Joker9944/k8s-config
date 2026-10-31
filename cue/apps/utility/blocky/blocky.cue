@@ -108,7 +108,7 @@ _blocky: schema.#AppRelease & {
 				postgresql: schema.#Hardened & {
 					image: {
 						repository: "ghcr.io/joker9944/postgresql-client"
-						tag:        "4.0.0@sha256:719e7a88ac4c96ac585eb43219c80c8434155b0f92c05b9785fd32a17777c7a3"
+						tag:        "4.0.0@sha256:b24a7024fd314687028f02ff2a0ed4a006b9bec91ceaade10cc3c30bbe65e649"
 					}
 					env: {
 						PGHOST: valueFrom: secretKeyRef: {name: cnpgSecret, key: "host"}
