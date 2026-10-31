@@ -20,7 +20,7 @@ _reloader: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "reloader"
 	// renovate: datasource=helm packageName=reloader registryUrl=https://stakater.github.io/stakater-charts
-	version:    "2.2.18"
+	version:    "2.2.19"
 	sourceName: "stakater"
 	hasValues:  false
 }
