@@ -19,7 +19,7 @@ _pool: {
 	apiVersion: "metallb.io/v1beta1"
 	kind:       "IPAddressPool"
 	metadata: {name: "internal", namespace: ns}
-	spec: addresses: ["192.168.0.128/25"]
+	spec: addresses: ["192.168.1.128/25"]
 }
 
 // L2 rather than BGP, advertised on both physical interfaces.

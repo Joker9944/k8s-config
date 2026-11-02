@@ -277,7 +277,7 @@ _mediaDataPath: "/chronos/media-data"
 
 #MediaData: {
 	type:   "nfs"
-	server: "192.168.0.24"
+	server: "192.168.1.24"
 	path:   _mediaDataPath
 	...
 }

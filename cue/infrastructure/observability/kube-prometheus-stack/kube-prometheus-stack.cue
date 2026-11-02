@@ -247,10 +247,10 @@ _kps: schema.#Release & {
 		// nix-config; the 127.0.0.1 default is unreachable from the Prometheus
 		// pod.
 		kubeProxy: endpoints: [
-			"192.168.0.21",
-			"192.168.0.22",
-			"192.168.0.23",
-			"192.168.0.24",
+			"192.168.1.21",
+			"192.168.1.22",
+			"192.168.1.23",
+			"192.168.1.24",
 		]
 	}
 }

@@ -134,7 +134,7 @@ _blocky: schema.#AppRelease & {
 			dns: {
 				controller: "blocky"
 				type:       "LoadBalancer"
-				annotations: "metallb.io/loadBalancerIPs": "192.168.0.129"
+				annotations: "metallb.io/loadBalancerIPs": "192.168.1.129"
 				ports: {
 					"dns-tcp": {port: 53, protocol: "TCP"}
 					"dns-udp": {port: 53, protocol: "UDP"}

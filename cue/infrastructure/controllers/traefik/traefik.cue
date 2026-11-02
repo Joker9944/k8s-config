@@ -82,7 +82,7 @@ _traefik: schema.#Release & {
 		}
 
 		service: {
-			annotations: "metallb.io/loadBalancerIPs": "192.168.0.128"
+			annotations: "metallb.io/loadBalancerIPs": "192.168.1.128"
 			spec: externalTrafficPolicy:               "Local"
 		}
 	}
