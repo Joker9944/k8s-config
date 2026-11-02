@@ -4,7 +4,7 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-27T20:15:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-02T21:15:00Z }
 ---
 
 # Longhorn classes
@@ -20,6 +20,16 @@ The chart's default `longhorn` class is replicated. `cue/infrastructure/controll
 The single-replica classes are a deliberate trade: replication is delegated to the application (three CNPG instances with required anti-affinity, Garage's own redundancy, Loki's `replication_factor: 3`) instead of being paid for twice. Putting an app with no replication of its own on `longhorn-local-strict` means one node loss is data loss.
 
 Longhorn schedules against reserved size, never used size, and `storage-over-provisioning-percentage` is 100 against a `storageReserved` of 0 — so each node's ceiling is its whole disk, and `spec.size × numberOfReplicas` counts against it from the moment a volume exists, however empty it stays. A claim size is therefore a capacity decision rather than a limit, and the chart default is rarely the right one. `strict-local` sharpens this: its replica is placed when the pod attaches, not when the PVC binds, so an oversized volume provisions cleanly and only fails once its pod lands on a node without room. `mother`'s headroom is reachable only by replicated volumes, since Longhorn tolerates its `reserved=storage` taint but [almost no workload does](/platform/cluster-nyx.md).
+
+**Three mechanisms leave bytes behind, and no one task addresses more than one** — which is why `longhorn-config` declares three RecurringJobs rather than one, staggered from 04:00 and clear of the midnight volsync window. All three run in the `default` group, which Longhorn applies to every volume that names no job of its own, so nothing is labelled per volume; giving one volume an explicit job silently drops it out of the group.
+
+- `snapshot-delete` — Longhorn keeps the snapshot a CSI clone is taken from and never reaps it, so every volsync `Clone` source gains one per daily run, forever. This is the only task that considers every snapshot on a volume rather than just the ones its own job created, so it is the only one that reaches a clone's; the corollary is that it overrules any other job's retention on the same volume. It does not purge — deleting the CR suffices, because the snapshot controller purges on `MarkRemoved` and attaches a detached volume to do it.
+- `snapshot-cleanup` — deletes nothing at all; it is only a volume-wide purge. Its use is the snapshot a replica rebuild leaves marked removed but still pinning its whole size, which the controller skips for as long as it is the parent of `volume-head` rather than hold the volume attached. Nothing else ever unsticks that.
+- `filesystem-trim` — the larger waste, and the one with no snapshot involved: neither purge discards blocks the guest filesystem freed, so a volume reads as full at its reserved size while holding a fraction of that. It runs last because `remove-snapshots-during-filesystem-trim` is false, so trim reaches only what the purges have already collapsed into `volume-head`.
+
+Snapshots back no restore here, so a retain count is scheduling headroom rather than a recovery window. Orphaned replica directories are reclaimed by none of the three — `orphan-resource-auto-deletion` is unset, so a replica left behind by a rebuild holds its full size until its `Orphan` resource is deleted by hand.
+
+**`actualSize` against the filesystem's own usage is the measurement that matters**, and kubelet's `/stats/summary` per-PVC `usedBytes` is where the second number comes from; neither Longhorn's UI nor a node's `df` shows the gap. A volume far above its contents is untrimmed slack, not data.
 
 A `VolumeSnapshotClass` named `longhorn` backs volsync's `copyMethod: Snapshot`; see [backup and restore](/platform/backup-and-restore.md).
 

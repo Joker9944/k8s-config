@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-02
+
+- Three reclaim RecurringJobs, one per mechanism: the clone snapshot Longhorn never reaps, the removed snapshot stuck as volume-head's parent, and untrimmed slack — plus `actualSize` vs kubelet `usedBytes` as the measurement, and orphans needing a manual delete — [storage](/platform/storage.md)
+
 ## 2026-10-28
 
 - App-level log configuration comes before an Alloy pipeline; garage's JSON mode and its two `RUST_LOG` directives — [observability](/platform/observability.md)

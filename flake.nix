@@ -127,20 +127,19 @@
           k8s = pkgs.mkShell {
             name = "kubernetes-dev";
 
-            packages = lib.map (
-              {
-                package,
-                ...
-              }:
-              package
-            ) envParts;
+            packages =
+              (lib.map (
+                {
+                  package,
+                  ...
+                }:
+                package
+              ) envParts)
+              ++ self.checks.${system}.preCommitHooks.enabledPackages;
 
             shellHook =
               lib.pipe
                 [
-                  ''
-                    PS1=$(echo "$PS1" | sed 's/\\u@\\h/\$name/g')
-                  ''
                   (lib.pipe envParts [
                     (lib.filter (
                       {
@@ -151,21 +150,13 @@
                     ))
                     (lib.map ({ shellHook, ... }: shellHook))
                   ])
+                  self.checks.${system}.preCommitHooks.shellHook
                 ]
                 [
                   lib.flatten
                   lib.concatLines
                 ];
           };
-
-          preCommitHooks =
-            let
-              inherit (self.checks.${system}.preCommitHooks) shellHook enabledPackages;
-            in
-            pkgs.mkShell {
-              inherit shellHook;
-              buildInputs = enabledPackages;
-            };
 
           ci = pkgs.mkShell {
             name = "ci";
