@@ -1,6 +1,6 @@
 package tier
 
-// cSpell:ignore certmanager certsconfig cnpgconfig longhornconfig metallbconfig redisoperator
+// cSpell:ignore certmanager certsconfig cnpgconfig longhornconfig redisoperator
 // cSpell:ignore tailscaleconfig tailscaleoperator
 
 import (
@@ -11,8 +11,6 @@ import (
 	cnpgconfig "github.com/joker9944/k8s-config/infrastructure/controllers/cnpg-config:cnpgconfig"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/longhorn"
 	longhornconfig "github.com/joker9944/k8s-config/infrastructure/controllers/longhorn-config:longhornconfig"
-	"github.com/joker9944/k8s-config/infrastructure/controllers/metallb"
-	metallbconfig "github.com/joker9944/k8s-config/infrastructure/controllers/metallb-config:metallbconfig"
 	redisoperator "github.com/joker9944/k8s-config/infrastructure/controllers/redis-operator:redisoperator"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reflector"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reloader"
@@ -35,8 +33,6 @@ tier: schema.#Tier & {
 		"cnpg-config":        cnpgconfig.bundle
 		"longhorn":           longhorn.bundle
 		"longhorn-config":    longhornconfig.bundle
-		"metallb":            metallb.bundle
-		"metallb-config":     metallbconfig.bundle
 		"redis-operator":     redisoperator.bundle
 		"reflector":          reflector.bundle
 		"reloader":           reloader.bundle

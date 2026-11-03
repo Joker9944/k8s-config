@@ -7,7 +7,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "traefik-system"
 	wait:      true
-	needs: ["ingress-certificate", "load-balancer-pool", "redis"]
+	needs: ["ingress-certificate", "redis"]
 	extraSecretFiles: ["infrastructure/controllers/traefik/secrets/traefik.secret.yaml"]
 
 	// The ingress controller's own namespace serves nothing, so it installs no
@@ -37,9 +37,12 @@ _traefik: schema.#Release & {
 	crds:       true
 
 	values: {
-		// a DaemonSet so externalTrafficPolicy: Local routes node-locally
+		// a DaemonSet so externalTrafficPolicy: Local routes node-locally, on the
+		// WireGuard spokes only — a packet reaching a node with no tunnel and no
+		// pod is dropped rather than forwarded
 		deployment: kind: "DaemonSet"
-		tolerations: [schema.#Reserved.any]
+
+		nodeSelector: "\(schema.#IngressSpoke)": "true"
 
 		ingressClass: enabled: false
 
@@ -53,10 +56,28 @@ _traefik: schema.#Release & {
 		// WSGI) read `X_Auth_User` as `X-Auth-User`, so a client can spoof
 		// what Traefik manages.
 		ports: {
-			web: http: aliasHeadersStrategy:       "delete"
-			websecure: http: aliasHeadersStrategy: "delete"
-			traefik: http: aliasHeadersStrategy:   "delete"
-			metrics: http: aliasHeadersStrategy:   "delete"
+			// the edge's nginx answers :80 itself, so nothing reaches this one
+			web: {
+				http: aliasHeadersStrategy: "delete"
+				expose: default:            false
+			}
+			websecure: {
+				http: aliasHeadersStrategy: "delete"
+
+				// the tunnel's own port, fixed because the edge's nginx upstream
+				// and the spokes' firewall rule both name it
+				exposedPort: 8443
+				nodePort:    schema.#EdgeNodePort
+
+				// Only the hub may speak PROXY protocol. Get this wrong and every
+				// request carries the hub's address instead of the client's —
+				// which geoblock reads as a local request and allows, so the
+				// country whitelist fails open.
+				proxyProtocol: trustedIPs: [schema.#WireGuardHubIP]
+				forwardedHeaders: trustedIPs: [schema.#WireGuardHubIP]
+			}
+			traefik: http: aliasHeadersStrategy: "delete"
+			metrics: http: aliasHeadersStrategy: "delete"
 		}
 
 		// the two plugins #Middlewares references: geoblock backs the country
@@ -81,9 +102,9 @@ _traefik: schema.#Release & {
 			fields: headers: defaultMode: "keep"
 		}
 
-		service: {
-			annotations: "metallb.io/loadBalancerIPs": "192.168.1.128"
-			spec: externalTrafficPolicy:               "Local"
+		service: spec: {
+			type:                  "NodePort"
+			externalTrafficPolicy: "Local"
 		}
 	}
 }

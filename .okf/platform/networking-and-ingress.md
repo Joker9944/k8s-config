@@ -1,15 +1,25 @@
 ---
 type: Infrastructure
 title: Networking and ingress
-description: MetalLB address allocation, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
-tags: [traefik, metallb, ingress, middleware, tailscale]
+description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
+tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
 ---
 
-# Address allocation
+# The edge
 
-MetalLB owns a single `IPAddressPool` named `internal`, `192.168.1.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.1.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (blocky's DNS service on `192.168.1.129` is the only one). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
+**The cluster is behind CGNAT and cannot listen.** Public traffic arrives at a VPS, `wopr` (`62.83.98.27`), which runs nginx, terminates no TLS, and shovels raw TCP into a hub-spoke WireGuard network. The spokes dial the hub, never the reverse. There is no `LoadBalancer` service in the fleet and no address pool — the cluster side of the tunnel is **one NodePort, 30443**, on the chart's own Traefik Service.
+
+Transit addressing, the WireGuard keys and the firewall rules live in [`nix-config`](https://github.com/Joker9944/nix-config), not here. This repo names only what Traefik has to agree with the edge about, in `schema.cue`: `#IngressSpoke`, `#WireGuardHubIP` (`10.100.0.254/32`) and `#EdgeNodePort`.
+
+Three things have to line up, and each fails differently:
+
+- **`nodeSelector` on `#IngressSpoke`** places the Traefik DaemonSet on exactly the nodes that terminate a tunnel. `mother` is an agent, runs no Traefik pod and is not a spoke — which is also why Traefik carries no [`#Reserved`](/platform/cluster-nyx.md) toleration any more.
+- **`externalTrafficPolicy: Local`** keeps the hub's source address off kube-proxy's SNAT, and stops a packet arriving on a spoke from being forwarded to a node with no tunnel. Dropping it does not break connectivity; it silently replaces every client IP with a node's.
+- **`proxyProtocol.trustedIPs` and `forwardedHeaders.trustedIPs`, both `#WireGuardHubIP`.** The hub speaks PROXY protocol; nothing else may. **This fails open.** Get the trusted range wrong and every request presents the hub's `10.100.0.254` — which `country-whitelist` reads as a local request and allows, so the whitelist passes the world while looking healthy. The access log is the test: a `ClientHost` of `10.100.0.254` means it did not take.
+
+The `websecure` entrypoint keeps its name — every `router.entrypoints` annotation `#IngressAnnotations` writes names it — and moves to `exposedPort: 8443`. `web` is still an entrypoint but is not exposed on the Service: the edge's nginx answers `:80` itself.
 
 # Traefik
 
@@ -51,7 +61,7 @@ The underscore is `safeNaming`, on in the chart values. It applies to every name
 
 # Tailnet ingress
 
-The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to MetalLB and Traefik rather than behind them. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chains above: no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
+The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to Traefik rather than behind it. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chains above: no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
 
 It carries everything that is not public: pgadmin, openaudible, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
 
@@ -72,11 +82,9 @@ The tailnet settings an Ingress depends on are not in this repo — MagicDNS, HT
 
 **Spreading those replicas is a `ProxyClass` concern.** `ProxyGroup.spec` carries no scheduling fields at all, and the operator applies neither affinity rules nor topology spread constraints of its own, so three replicas may share one node. The `spread` ProxyClass supplies a `topologySpreadConstraint` over `kubernetes.io/hostname` and selects on a label it adds through `pod.labels` — the operator's own pod labels are not a documented interface. `nodeTaintsPolicy: Honor` keeps the [reserved node](/platform/cluster-nyx.md) out of the skew calculation, leaving three domains for three replicas.
 
-# DNS
+# Pod DNS behind a VPN sidecar
 
-`blocky` (`cue/apps/utility/blocky`) serves DNS over DoH upstreams with denylist filtering. Its `files/config.yml` is a **jinja template**, not a finished config: a `#ConfigMapFiles` volume mounts it at `/templates`, and a `ghcr.io/joker9944/jinja-cli` init container renders it to an `emptyDir` so `{{ environ(...) }}` can pull in the namespace and the Postgres URI at start-up. Query logs go to its own CNPG cluster; the cache goes to a standalone `redis` release from the ot-helm operator.
-
-## Pod DNS behind a VPN sidecar
+The cluster serves no LAN DNS of its own; that moved off-cluster with the address pool.
 
 Pods inherit the node's search domains, so every pod's `resolv.conf` carries the tailnet domain (`#TailnetDomain`, `stoat-herring.ts.net`) after the three `.cluster.local` entries, at `ndots:5`. That is harmless until a VPN sidecar owns the resolver.
 

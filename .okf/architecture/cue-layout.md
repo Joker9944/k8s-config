@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -62,18 +62,18 @@ collector, so the name is free.
 
 A workload is a package. A tier is a package that imports its workloads and is also the OCI artifact boundary, so `cue export ./apps/media -e rendered` is both the unit of rendering and the unit of blast radius.
 
-`#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the MetalLB pool, the CNPG image catalogs. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
+`#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the CNPG image catalogs, the tailnet ProxyGroup. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
 
 **The kustomize `components/` tree has no successor.** Its contents are definitions in `schema/`:
 
-| Component                                  | Becomes                                                                                                                                 |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `common-middlewares`                       | `#Middlewares`                                                                                                                          |
-| `bjw-s-helm-repository`, `ot-helm-…`       | A `HelmRepository` emitted by `#Bundle` from the chart the releases name                                                                |
-| `common-sync-patch`                        | `#Tier.sync`, which generates the level-3 `Kustomization`s rather than patching them                                                    |
-| `namespace-cert`, `namespace-cert-kanidm`  | `#NamespaceCert`, switched on with `#Bundle.namespaceCert`. Taking the namespace as a parameter retires the kustomize#5953 duplication. |
-| `common-kustomizeconfig`                   | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.                                           |
-| `blocky`/`komga` `kustomization-hack.yaml` | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                                                            |
+| Component                                 | Becomes                                                                                                                                 |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `common-middlewares`                      | `#Middlewares`                                                                                                                          |
+| `bjw-s-helm-repository`, `ot-helm-…`      | A `HelmRepository` emitted by `#Bundle` from the chart the releases name                                                                |
+| `common-sync-patch`                       | `#Tier.sync`, which generates the level-3 `Kustomization`s rather than patching them                                                    |
+| `namespace-cert`, `namespace-cert-kanidm` | `#NamespaceCert`, switched on with `#Bundle.namespaceCert`. Taking the namespace as a parameter retires the kustomize#5953 duplication. |
+| `common-kustomizeconfig`                  | Nothing. It teaches kustomize to chase name references; CUE has no such indirection to teach.                                           |
+| `komga`'s `kustomization-hack.yaml`       | `#ConfigMapFiles`, whose stable name leaves nothing to chase                                                                            |
 
 Both `PLACEHOLDER` mechanisms go with it — `namespace` is an ordinary field, and the middleware annotation is computed by `#Release`.
 
@@ -87,7 +87,7 @@ The annotations come from `#IngressAnnotations`, which derives the middleware re
 
 `#TailnetIngress` is the same shape for [the other ingress path](/platform/networking-and-ingress.md), holding the class, the proxy-group annotation and the host derived from a label. `#Release.tailnet` switches between the two: it picks which definition fills `ingressAnnotations`, exposes `ingressClass` for the chart to place, and collapses `chain` and `extraMiddlewares` to sentinels so a chain on a tailnet ingress conflicts instead of being ignored. kube-prometheus-stack straddles both — grafana public, alertmanager and prometheus on the tailnet — so it builds its instances by hand and leaves the release's own pair unused.
 
-`#Release.crds` switches on the `install`/`upgrade` block — `crds: CreateReplace` with three remediation retries. It only bites on a chart with a Helm `crds/` directory at a chart root, which is four of the fleet: traefik, redis-operator, kube-prometheus-stack (its `crds` subchart) and nvidia-device-plugin (its node-feature-discovery subchart). cert-manager, cnpg, barman-cloud, volsync and metallb render their CRDs as ordinary templates — `templates/crds/` and a subchart _named_ `crds` both count as templates — so the flag never reaches them. garage is a third shape: it _has_ a CRD, `garagenodes.deuxfleurs.fr`, but the chart ships only RBAC to create it and garage creates it itself at startup for Kubernetes discovery — the live object carries no Helm ownership metadata, so Helm has nothing to adopt. `#Release.postRenderers` passes kustomize patches through to the HelmRelease, for what a chart exposes no knob for — opencloud mounts the private CA bundle that way. `#GitRepo` takes `branch` or `tag` plus an optional `ignore` because its three users differ on both axes, and only one of them is a chart: garage pins a tag and ships one directory, external-snapshotter pins a tag and takes the whole repository, and cnpg-artifacts tracks `main` for one directory.
+`#Release.crds` switches on the `install`/`upgrade` block — `crds: CreateReplace` with three remediation retries. It only bites on a chart with a Helm `crds/` directory at a chart root, which is four of the fleet: traefik, redis-operator, kube-prometheus-stack (its `crds` subchart) and nvidia-device-plugin (its node-feature-discovery subchart). cert-manager, cnpg, barman-cloud and volsync render their CRDs as ordinary templates — `templates/crds/` and a subchart _named_ `crds` both count as templates — so the flag never reaches them. garage is a third shape: it _has_ a CRD, `garagenodes.deuxfleurs.fr`, but the chart ships only RBAC to create it and garage creates it itself at startup for Kubernetes discovery — the live object carries no Helm ownership metadata, so Helm has nothing to adopt. `#Release.postRenderers` passes kustomize patches through to the HelmRelease, for what a chart exposes no knob for — opencloud mounts the private CA bundle that way. `#GitRepo` takes `branch` or `tag` plus an optional `ignore` because its three users differ on both axes, and only one of them is a chart: garage pins a tag and ships one directory, external-snapshotter pins a tag and takes the whole repository, and cnpg-artifacts tracks `main` for one directory.
 
 `#Bundle` takes `middlewares` (off where there is no ingress), `namespaceCert` (an in-cluster certificate off the private CA, for a workload that serves TLS to Traefik rather than plain HTTP), `repositories` (defaulting to the bjw-s one, replaced by a bundle on a foreign chart) and `namespaceLabels` (Pod Security admission).
 

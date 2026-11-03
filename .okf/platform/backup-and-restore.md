@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -28,7 +28,7 @@ The PVC references the destination through `dataSourceRef`, and the mover runs u
 
 `#VolsyncRestic` ships every destination `enabled: false`, so none render and the cluster has no `ReplicationDestination`s at all. A restore bootstrap flips them, and that is the one case where an install takes a long time: the PVC populates from the snapshot inside the Helm install, which is why `#Release.installTimeout` is 60m while the ordinary timeout is 10m.
 
-That generous install timeout is not merely cautious. `upgradeRetries` does not apply to an install, and install remediation is left off deliberately — there it is an _uninstall_, and blocky's and gotify's Postgres `Cluster`s are Helm-managed with no `resource-policy`, so one would garbage-collect their instance PVCs through the Cluster's `ownerReference`. Neither database has an off-cluster copy. An install that overruns its timeout therefore just sits failed until the spec changes or someone forces a reconcile, which is the safe direction to fail in.
+That generous install timeout is not merely cautious. `upgradeRetries` does not apply to an install, and install remediation is left off deliberately — there it is an _uninstall_, and gotify's Postgres `Cluster` is Helm-managed with no `resource-policy`, so one would garbage-collect its instance PVCs through the Cluster's `ownerReference`. That database has no off-cluster copy. An install that overruns its timeout therefore just sits failed until the spec changes or someone forces a reconcile, which is the safe direction to fail in.
 
 `dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted.
 
@@ -45,7 +45,7 @@ The plugin is a HelmRelease of its own in the `cnpg` namespace, `plugin-barman-c
 - **`ScheduledBackup`** for base backups.
 - **Roles are declared, not created by hand**: `spec.managed.roles` lists each consumer with its own `passwordSecret`, one Secret per app.
 
-Its cluster bootstraps from `recovery`, not `initdb` — `spec.bootstrap.recovery.source` names an `externalClusters` entry reading the object store, so a cluster recreated from scratch restores rather than starting empty. blocky and gotify declare a `Cluster` and nothing else: no `ObjectStore`, no WAL archiver plugin, no `ScheduledBackup`, and an `initdb` bootstrap — their databases have no off-cluster copy at all.
+Its cluster bootstraps from `recovery`, not `initdb` — `spec.bootstrap.recovery.source` names an `externalClusters` entry reading the object store, so a cluster recreated from scratch restores rather than starting empty. gotify declares a `Cluster` and nothing else: no `ObjectStore`, no WAL archiver plugin, no `ScheduledBackup`, and an `initdb` bootstrap — its database has no off-cluster copy at all.
 
 ## Rotating servarr's archive path
 

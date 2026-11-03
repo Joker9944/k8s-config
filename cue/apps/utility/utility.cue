@@ -2,7 +2,6 @@ package tier
 
 import (
 	"github.com/joker9944/k8s-config/schema"
-	"github.com/joker9944/k8s-config/apps/utility/blocky"
 	"github.com/joker9944/k8s-config/apps/utility/pgadmin"
 )
 
@@ -13,7 +12,6 @@ tier: schema.#Tier & {
 	name: "utility"
 
 	bundles: {
-		"blocky":  blocky.bundle
 		"pgadmin": pgadmin.bundle
 	}
 }

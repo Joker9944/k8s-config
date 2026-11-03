@@ -36,7 +36,6 @@ kustomization
 kustomizations
 kustomizeconfig
 MagicDNS
-metallb
 metav
 opencloud
 pkgs

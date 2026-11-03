@@ -17,7 +17,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 # Platform
 
 - [The nyx cluster](platform/cluster-nyx.md) - node inventory, the label and taint scheme, and what lives outside this repo.
-- [Networking and ingress](platform/networking-and-ingress.md) - MetalLB, Traefik and its two middleware chains, and the tailnet ingress path beside them.
+- [Networking and ingress](platform/networking-and-ingress.md) - the WireGuard edge the cluster is reached through, Traefik and its two middleware chains, and the tailnet ingress path beside them.
 - [Certificates and PKI](platform/certificates-and-pki.md) - the public ACME wildcard, the private CA chain, and how both are distributed.
 - [Identity — kanidm](platform/identity-kanidm.md) - the OIDC provider, and why client registration is manual.
 - [Storage](platform/storage.md) - the three Longhorn classes, NFS media, and Garage object storage.

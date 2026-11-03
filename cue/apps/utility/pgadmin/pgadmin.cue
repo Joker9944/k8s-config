@@ -50,7 +50,6 @@ _pgadmin: schema.#Release & {
 		serverDefinitions: {
 			enabled: true
 			servers: {
-				blocky: _server & {Name: "Blocky", _ns: "blocky"}
 				servarr: _server & {Name: "Servarr", _ns: "servarr"}
 			}
 		}

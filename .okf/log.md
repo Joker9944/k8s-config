@@ -2,6 +2,12 @@
 
 ## 2026-11-03
 
+- The cluster is behind CGNAT; public traffic arrives over a WireGuard tunnel from an edge VPS and lands on NodePort 30443 — [networking and ingress](/platform/networking-and-ingress.md)
+- A wrong `proxyProtocol.trustedIPs` makes `country-whitelist` fail open, because geoblock reads the hub's address as a local request — [networking and ingress](/platform/networking-and-ingress.md)
+- MetalLB and both `load-balancer*` capabilities are gone; no `LoadBalancer` service is left in the fleet — [capability graph](/architecture/capability-graph.md)
+- blocky is retired; the cluster serves no LAN DNS and gotify is the only Postgres cluster with no off-cluster copy — [backup and restore](/platform/backup-and-restore.md)
+- `ingress-spoke` is the second repo-consumed node label, placing the Traefik DaemonSet on the tunnel-terminating nodes — [the nyx cluster](/platform/cluster-nyx.md)
+- Counts are 30/33 over seven levels; `longhorn` and `pgadmin` are roots and `traefik` stays at L2 on `cert-manager → certs-config` — [capability graph](/architecture/capability-graph.md)
 - Six operational ingresses move to the tailnet; the `tls` block names no Secret but is mandatory, because a rule host unequal to the full MagicDNS name is dropped — [networking and ingress](/platform/networking-and-ingress.md)
 - `chain-network-internal-whitelist` and `network-internal-whitelist` are gone; everything Traefik serves is now public — [networking and ingress](/platform/networking-and-ingress.md)
 - `#TailnetIngress` and the `tailnet` switch on `#Release`, which collapses the middleware fields to sentinels — [CUE layout](/architecture/cue-layout.md)

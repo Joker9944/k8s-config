@@ -317,5 +317,18 @@ _mediaDataPath: "/chronos/media-data"
 // proxy or firewalls its own egress has to name them, and naming them here is
 // what stops the next migration from missing a copy.
 
-#PodCIDR:     "10.42.0.0/16"
+#PodCIDR: "10.42.0.0/16"
+
 #ServiceCIDR: "10.43.0.0/16"
+
+// ---------------------------------------------------------------- edge ingress
+// The cluster is CGNAT'd, so public traffic arrives over a hub-spoke WireGuard
+// tunnel from the edge VPS. nginx there terminates nothing and prefixes each
+// connection with a PROXY protocol header; the hub's transit address is what
+// Traefik has to trust for the real client IP to survive — and for the country
+// whitelist to mean anything. `#EdgeNodePort` is mirrored by the edge's nginx
+// upstream and the spokes' firewall rule in nix-config.
+
+#IngressSpoke:   "vonarx.online/ingress-spoke"
+#WireGuardHubIP: "10.100.0.254/32"
+#EdgeNodePort:   30443

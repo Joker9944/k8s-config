@@ -4,7 +4,7 @@ title: The nyx cluster
 description: Node inventory, the label and taint scheme workloads schedule against, and what the cluster gets from nix-config rather than this repo.
 tags: [cluster, nodes, scheduling]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-16T20:15:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
 ---
 
 # Nodes
@@ -28,7 +28,7 @@ k3s's `runtimes` Addon ships RuntimeClasses for `nvidia`, `crun` and the wasm ha
 
 # Labels and taints
 
-Node labels live in the `vonarx.online/` namespace. Only `nfs-host` is consumed by anything in this repo — jellyfin's required affinity, which pins it here for a [hostPath on the pool](/platform/storage.md) rather than for NFS locality.
+Node labels live in the `vonarx.online/` namespace. Two are consumed by this repo: `nfs-host`, which jellyfin's required affinity uses to pin itself here for a [hostPath on the pool](/platform/storage.md) rather than for NFS locality, and `ingress-spoke`, which places the Traefik DaemonSet on the three nodes that terminate a [WireGuard tunnel from the edge](/platform/networking-and-ingress.md). Both come from nix-config; neither is reconciled by Flux, so `ingress-spoke` has to be on a node before Traefik can schedule there.
 
 `mother` carries `vonarx.online/reserved=storage:NoSchedule`, keeping its capacity for ZFS and NFS. [`#Reserved`](/architecture/cue-layout.md) supplies both answers to it: infrastructure that has to cover every node tolerates the key with `Exists`, and a workload deliberately placed there matches `value: storage`, so `grep` finds every such placement. Today that is jellyfin alone.
 
@@ -44,4 +44,4 @@ Talos applied its admission configuration from its own defaults rather than from
 
 The nodes run k3s on NixOS, configured in [`Joker9944/nix-config`](https://github.com/Joker9944/nix-config). Nothing here renders, patches or applies machine configuration — this repo starts at the Kubernetes API, and `clusters/nyx/` holds only the Flux entry point and the bootstrap script.
 
-The node labels above come from there, as do the API-server VIP and the tailnet routing: every node advertises the VIP and the [MetalLB range](/platform/networking-and-ingress.md) as tailnet routes, which is what makes both reachable off-LAN. None of it is visible in this repo, so none of it shows up in a diff when it changes.
+The node labels above come from there, as does the API-server VIP, which every node advertises as a tailnet route. So do the [WireGuard spoke units and the firewall rule that opens the NodePort](/platform/networking-and-ingress.md) — the cluster is behind CGNAT, so that tunnel is the whole of its reachability from the internet. None of it is visible in this repo, so none of it shows up in a diff when it changes.

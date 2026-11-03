@@ -78,15 +78,15 @@ import (
 
 	// Helm owns the CRD lifecycle. Only for a chart with a real Helm `crds/`
 	// directory — a chart that renders its CRDs as ordinary templates
-	// (cert-manager, cnpg, volsync, metallb) never reaches this code path, so
+	// (cert-manager, cnpg, volsync) never reaches this code path, so
 	// setting it there is a lie.
 	crds: bool | *false
 
 	// An upgrade failure rolls back and retries. Because a non-zero count also
 	// flips remediateLastFailure, the release ends on the last working revision
 	// rather than on the broken one. Install remediation is deliberately left
-	// off: there it is an uninstall, and blocky's and gotify's Postgres Clusters
-	// are Helm-managed, carry no resource-policy, and have no off-cluster copy.
+	// off: there it is an uninstall, and gotify's Postgres Cluster is
+	// Helm-managed, carries no resource-policy, and has no off-cluster copy.
 	upgradeRetries: int | *3
 
 	// Ceilings on readiness, not delays: helm-controller waits for the chart's
@@ -103,8 +103,8 @@ import (
 
 	values: {...}
 
-	// blocky-redis is the only release in the fleet that ships no values at all,
-	// and CUE cannot tell an unset struct from an empty one.
+	// Some releases ship no values at all, and CUE cannot tell an unset struct
+	// from an empty one.
 	hasValues: bool | *true
 
 	// Kustomize patches applied after Helm rendering, for what a chart exposes
@@ -266,17 +266,14 @@ _appTemplateVersion: "5.3.0"
 // The graph these build is documented in /architecture/capability-graph.md,
 // which is also where the cycle hazards live — nothing here detects one.
 #Capability: "ingress" | "certificate" | "ingress-certificate" |
-	"load-balancer" | "load-balancer-pool" | "redis" | "block-storage" |
-	"postgres" | "volsync" | "monitoring" | "object-storage" | "log-sink" |
-	"tailscale"
+	"redis" | "block-storage" | "postgres" | "volsync" | "monitoring" |
+	"object-storage" | "log-sink" | "tailscale"
 
 _provider: [#Capability]: string
 _provider: {
 	ingress:               "traefik"               // Middleware CRD
 	certificate:           "cert-manager"          // Certificate CRD
 	"ingress-certificate": "certs-config"          // the wildcard cert and the intermediate CA
-	"load-balancer":       "metallb"               // IPAddressPool and L2Advertisement CRDs
-	"load-balancer-pool":  "metallb-config"        // the pool Traefik's Service draws from
 	redis:                 "redis-operator"        // RedisFailover CRD
 	"block-storage":       "longhorn"              // VolumeSnapshotClass, via the Kustomizations it creates
 	postgres:              "cnpg"                  // Cluster CRD and the barman plugin

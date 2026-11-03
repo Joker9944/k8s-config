@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -19,8 +19,6 @@ A consumer declares what it needs, never who provides it. `#Capability` is a clo
 | `ingress`             | [`traefik`](/platform/networking-and-ingress.md)      | `Middleware`                                                   |
 | `certificate`         | [`cert-manager`](/platform/certificates-and-pki.md)   | `Certificate`                                                  |
 | `ingress-certificate` | [`certs-config`](/platform/certificates-and-pki.md)   | the wildcard cert and intermediate CA Traefik serves           |
-| `load-balancer`       | `metallb`                                             | `IPAddressPool`, `L2Advertisement`                             |
-| `load-balancer-pool`  | `metallb-config`                                      | the pool Traefik's Service draws an address from               |
 | `redis`               | `redis-operator`                                      | the ot-helm redis chart's CR                                   |
 | `block-storage`       | [`longhorn`](/platform/storage.md)                    | `VolumeSnapshotClass`, via the Kustomizations longhorn creates |
 | `postgres`            | [`cnpg`](/platform/backup-and-restore.md)             | `Cluster`, `ObjectStore`                                       |
@@ -48,15 +46,15 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 33 bundles, 41 edges, six levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 30 bundles, 33 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
-L0  cert-manager  cnpg  metallb  redis-operator  reflector  reloader
-    generic-device-plugin  nvidia-device-plugin  tailscale-operator
-L1  blocky  certs-config  cnpg-config  metallb-config  tailscale-config
+L0  cert-manager  cnpg  longhorn  pgadmin  redis-operator  reflector
+    reloader  generic-device-plugin  nvidia-device-plugin  tailscale-operator
+L1  certs-config  cnpg-config  longhorn-config  tailscale-config
 L2  traefik
-L3  kube-prometheus-stack  longhorn  pgadmin  servarr
-L4  garage  longhorn-config  opencloud  volsync
+L3  kube-prometheus-stack  servarr
+L4  garage  opencloud  volsync
 L5  audiobookshelf  gotify  jellyfin  jellyseerr  kanidm  komga  loki
     openaudible  qbittorrent
 L6  alloy
@@ -67,7 +65,7 @@ The two chains that set the depth:
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → volsync`
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → garage → loki → alloy`
 
-`traefik` at L2 is the fleet's articulation point: 10 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all.
+`traefik` at L2 is the fleet's articulation point: 10 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` and `pgadmin` are now roots. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
 
 Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Without it a blocked reconcile retries at the interval, so a six-hop chain costs an hour of waiting rather than six minutes.
 
@@ -77,13 +75,13 @@ Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Wit
 
 **Twelve of the thirteen providers set `wait: true`, so an edge to one of them means its chart is installed and its pods are up.** `disableWait` defaults to false, so helm-controller has already waited for the chart's resources before the HelmRelease goes Ready, and a bundle's inventory is just the Namespace, its sources, its HelmReleases and its Middleware set — assessing that inventory is therefore the gate a consumer wants, for one boolean. It also closes the webhook race that a plain edge never could: six admission webhooks are live, and applying a `Certificate` or `Cluster` against one with no endpoints fails.
 
-`certs-config` waits on its whole inventory rather than on named objects — root CA cert and Issuer, intermediate cert and ClusterIssuer, the ACME ClusterIssuer and the wildcard all carry a real `Ready`. `metallb-config` is the one provider that waits on nothing, because an `IPAddressPool` has no status to assess.
+`certs-config` waits on its whole inventory rather than on named objects — root CA cert and Issuer, intermediate cert and ClusterIssuer, the ACME ClusterIssuer and the wildcard all carry a real `Ready`.
 
 **The fleet uses no `healthChecks`.** Flux ignores them when `wait` is set, and `wait` covers strictly more, so a second mechanism would only invite a bundle to declare both. `healthCheckExprs` — CEL per GVK, evaluated under `wait` — is the escape hatch for a CR whose conditions kstatus cannot read, and is deliberately unused. Two objects qualify: the trust-manager `Bundle`, whose status carries only `Synced`, and the `ProxyGroup`, whose status carries `conditions`, `devices` and `url` — neither has a top-level `observedGeneration` or a `Reconciling`/`Stalled` condition. Its CA reaches kanidm and opencloud as a reflector-copied Secret, so a missing one leaves a pod in `ContainerCreating` rather than failing an apply — [runtime coupling](/platform/certificates-and-pki.md), the same category as a StorageClass.
 
 `wait: true` is never set on an app. A gate on a leaf helps nobody, and cnpg's `Cluster` carries a real `Ready` — so waiting on servarr would mean waiting on a barman restore.
 
-**An edge to a config bundle still only means "applied".** `longhorn-config → longhorn` used to show that limit; it no longer does, because waiting on longhorn also assesses the two `snapshot-crds`/`snapshot-controller` Kustomizations in its `after`, which is where the `VolumeSnapshotClass` CRD comes from. What remains applied-only is an edge to `metallb-config`, and every edge between apps. `tailscale-config` waits, but on a `ProxyGroup` kstatus most likely cannot read.
+**An edge to a config bundle still only means "applied".** `longhorn-config → longhorn` used to show that limit; it no longer does, because waiting on longhorn also assesses the two `snapshot-crds`/`snapshot-controller` Kustomizations in its `after`, which is where the `VolumeSnapshotClass` CRD comes from. What remains applied-only is every edge between apps. `tailscale-config` waits, but on a `ProxyGroup` kstatus most likely cannot read.
 
 A `no matches for kind` message therefore still happens, and it outlives its cause: kustomize-controller's discovery cache keeps failing the dry-run for a while after the CRD is established, so the fix is a reconcile rather than more waiting. Compare the CRD's `creationTimestamp` with the condition's `lastTransitionTime` before believing the message.
 
