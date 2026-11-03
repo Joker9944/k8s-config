@@ -24,6 +24,6 @@ _tailscaleOperator: schema.#Release & {
 	values: {
 		fullnameOverride: "tailscale-operator"
 		operatorConfig: defaultTags: ["tag:nyx-operator"]
-		proxyConfig: defaultTags: ["tag:nyx-internal"]
+		proxyConfig: defaultTags: "tag:nyx-internal"
 	}
 }
