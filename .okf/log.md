@@ -1,5 +1,12 @@
 # Update Log
 
+## 2026-11-03
+
+- A `tailscale` capability and the `tailscale-config` bundle; the counts are 33/41 and `ProxyGroup` becomes the second CR kstatus may not read, this time under a `wait` — [capability graph](/architecture/capability-graph.md)
+- Tailnet ingress bypasses the middleware chains, and spreading the ProxyGroup is a `ProxyClass` concern because the operator supplies none — [networking and ingress](/platform/networking-and-ingress.md)
+- The proxies run in the operator's own namespace, from a fieldRef with no separate knob, which is why it is named `tailscale` — [networking and ingress](/platform/networking-and-ingress.md)
+- The MetalLB pool and its two pinned addresses are in `192.168.1.128/25`; the `/23` whitelist already spanned both — [networking and ingress](/platform/networking-and-ingress.md)
+
 ## 2026-11-02
 
 - Three reclaim RecurringJobs, one per mechanism: the clone snapshot Longhorn never reaps, the removed snapshot stuck as volume-head's parent, and untrimmed slack — plus `actualSize` vs kubelet `usedBytes` as the measurement, and orphans needing a manual delete — [storage](/platform/storage.md)

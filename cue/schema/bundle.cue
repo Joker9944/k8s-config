@@ -233,7 +233,8 @@ _appTemplateVersion: "5.3.0"
 // which is also where the cycle hazards live — nothing here detects one.
 #Capability: "ingress" | "certificate" | "ingress-certificate" |
 	"load-balancer" | "load-balancer-pool" | "redis" | "block-storage" |
-	"postgres" | "volsync" | "monitoring" | "object-storage" | "log-sink"
+	"postgres" | "volsync" | "monitoring" | "object-storage" | "log-sink" |
+	"tailscale"
 
 _provider: [#Capability]: string
 _provider: {
@@ -249,6 +250,7 @@ _provider: {
 	monitoring:            "kube-prometheus-stack" // ServiceMonitor CRD and the scrape classes
 	"object-storage":      "garage"
 	"log-sink":            "loki"
+	tailscale:             "tailscale-operator" // ProxyGroup and ProxyClass CRDs
 }
 
 // The edges a bundle contributes: what it declares, plus what its own fields

@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T00:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -28,6 +28,7 @@ A consumer declares what it needs, never who provides it. `#Capability` is a clo
 | `monitoring`          | [`kube-prometheus-stack`](/platform/observability.md) | `ServiceMonitor`, and the scrape classes one names             |
 | `object-storage`      | [`garage`](/platform/storage.md)                      | the S3 endpoint                                                |
 | `log-sink`            | [`loki`](/platform/observability.md)                  | the push endpoint                                              |
+| `tailscale`           | `tailscale-operator`                                  | `ProxyGroup`, `ProxyClass`                                     |
 
 **A capability is something whose absence fails the apply, which in practice means a CRD.** Runtime coupling is not a capability: a PVC naming a StorageClass that does not exist yet stays `Pending` and binds later, so storage classes are deliberately absent from the enum. Declaring them would also close a cycle — `traefik`'s OIDC Redis volumes are on the default `longhorn` class, and longhorn's own bundle needs `ingress`.
 
@@ -47,12 +48,12 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 31 bundles, 40 edges, six levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 33 bundles, 41 edges, six levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
 L0  cert-manager  cnpg  metallb  redis-operator  reflector  reloader
-    generic-device-plugin  nvidia-device-plugin
-L1  blocky  certs-config  cnpg-config  metallb-config
+    generic-device-plugin  nvidia-device-plugin  tailscale-operator
+L1  blocky  certs-config  cnpg-config  metallb-config  tailscale-config
 L2  traefik
 L3  kube-prometheus-stack  longhorn  pgadmin  servarr
 L4  garage  longhorn-config  opencloud  volsync
@@ -74,15 +75,15 @@ Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Wit
 
 # What an edge means
 
-**Eleven of the twelve providers set `wait: true`, so an edge to one of them means its chart is installed and its pods are up.** `disableWait` defaults to false, so helm-controller has already waited for the chart's resources before the HelmRelease goes Ready, and a bundle's inventory is just the Namespace, its sources, its HelmReleases and its Middleware set — assessing that inventory is therefore the gate a consumer wants, for one boolean. It also closes the webhook race that a plain edge never could: six admission webhooks are live, and applying a `Certificate` or `Cluster` against one with no endpoints fails.
+**Twelve of the thirteen providers set `wait: true`, so an edge to one of them means its chart is installed and its pods are up.** `disableWait` defaults to false, so helm-controller has already waited for the chart's resources before the HelmRelease goes Ready, and a bundle's inventory is just the Namespace, its sources, its HelmReleases and its Middleware set — assessing that inventory is therefore the gate a consumer wants, for one boolean. It also closes the webhook race that a plain edge never could: six admission webhooks are live, and applying a `Certificate` or `Cluster` against one with no endpoints fails.
 
 `certs-config` waits on its whole inventory rather than on named objects — root CA cert and Issuer, intermediate cert and ClusterIssuer, the ACME ClusterIssuer and the wildcard all carry a real `Ready`. `metallb-config` is the one provider that waits on nothing, because an `IPAddressPool` has no status to assess.
 
-**The fleet uses no `healthChecks`.** Flux ignores them when `wait` is set, and `wait` covers strictly more, so a second mechanism would only invite a bundle to declare both. `healthCheckExprs` — CEL per GVK, evaluated under `wait` — is the escape hatch for a CR whose conditions kstatus cannot read, and is deliberately unused: the fleet's one such object is the trust-manager `Bundle`, whose status carries only `Synced` and no top-level `observedGeneration`, and nothing waits on it. Its CA reaches kanidm and opencloud as a reflector-copied Secret, so a missing one leaves a pod in `ContainerCreating` rather than failing an apply — [runtime coupling](/platform/certificates-and-pki.md), the same category as a StorageClass.
+**The fleet uses no `healthChecks`.** Flux ignores them when `wait` is set, and `wait` covers strictly more, so a second mechanism would only invite a bundle to declare both. `healthCheckExprs` — CEL per GVK, evaluated under `wait` — is the escape hatch for a CR whose conditions kstatus cannot read, and is deliberately unused. Two objects qualify: the trust-manager `Bundle`, whose status carries only `Synced`, and the `ProxyGroup`, whose status carries `conditions`, `devices` and `url` — neither has a top-level `observedGeneration` or a `Reconciling`/`Stalled` condition. Its CA reaches kanidm and opencloud as a reflector-copied Secret, so a missing one leaves a pod in `ContainerCreating` rather than failing an apply — [runtime coupling](/platform/certificates-and-pki.md), the same category as a StorageClass.
 
 `wait: true` is never set on an app. A gate on a leaf helps nobody, and cnpg's `Cluster` carries a real `Ready` — so waiting on servarr would mean waiting on a barman restore.
 
-**An edge to a config bundle still only means "applied".** `longhorn-config → longhorn` used to show that limit; it no longer does, because waiting on longhorn also assesses the two `snapshot-crds`/`snapshot-controller` Kustomizations in its `after`, which is where the `VolumeSnapshotClass` CRD comes from. What remains applied-only is an edge to `metallb-config`, and every edge between apps.
+**An edge to a config bundle still only means "applied".** `longhorn-config → longhorn` used to show that limit; it no longer does, because waiting on longhorn also assesses the two `snapshot-crds`/`snapshot-controller` Kustomizations in its `after`, which is where the `VolumeSnapshotClass` CRD comes from. What remains applied-only is an edge to `metallb-config`, and every edge between apps. `tailscale-config` waits, but on a `ProxyGroup` kstatus most likely cannot read.
 
 A `no matches for kind` message therefore still happens, and it outlives its cause: kustomize-controller's discovery cache keeps failing the dry-run for a while after the CRD is established, so the fix is a reconcile rather than more waiting. Compare the CRD's `creationTimestamp` with the condition's `lastTransitionTime` before believing the message.
 
@@ -95,7 +96,7 @@ kubectl annotate kustomization -n flux-system --all \
 
 # Traps
 
-- **A `wait` on a bundle whose inventory holds a CR kstatus cannot read is unproven.** kstatus assesses a custom resource generically: top-level `observedGeneration`, then `Reconciling`/`Stalled`. An object with none of those — the trust-manager `Bundle` is the fleet's only one — depends on what that fallback does with nothing to read, and it has not been observed here either way. If a waiting bundle ever sits `Progressing` with every named object Ready, that is the cause, and the fix is a `healthCheckExprs` entry for the GVK rather than dropping the wait.
+- **A `wait` on a bundle whose inventory holds a CR kstatus cannot read is unproven.** kstatus assesses a custom resource generically: top-level `observedGeneration`, then `Reconciling`/`Stalled`. An object with none of those — the trust-manager `Bundle` and the `ProxyGroup` — depends on what that fallback does with nothing to read, and it has not been observed here either way. `tailscale-config` is the first bundle to wait on such a CR, so it is where this gets settled: the expectation is that the fallback reports `Current` immediately, making the gate weak rather than hanging. If a waiting bundle ever sits `Progressing` with every named object Ready, that is the cause, and the fix is a `healthCheckExprs` entry for the GVK rather than dropping the wait.
 - **Nothing detects a cycle.** Whether kustomize-controller reports one or merely stalls every node in it is unverified, and CUE will not catch it either — `_provider` is a flat map, and the graph only exists once rendered. A new `needs` is therefore checked by topologically sorting the rendered `sync/*-sync.yaml`, not by `cue vet`. This document is the guard.
 - **Two near-misses are live.** `garage → kube-prometheus-stack` means KPS must never need `object-storage` — putting Thanos on Garage would close it. `longhorn → traefik` means Traefik must never need `block-storage`, which is why the default StorageClass is not a capability.
 - **A capability with two providers is not expressible.** One name, one bundle. Two bundles providing the same CRD would need the consumers to pick, which the enum deliberately does not allow.

@@ -3,7 +3,7 @@ package tailscaleoperator //cSpell:ignore tailscaleoperator
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
-	namespace: "tailscale-operator"
+	namespace: "tailscale"
 	extraSecretFiles: ["infrastructure/controllers/tailscale-operator/secrets/tailscale-oauth.secret.yaml"]
 	wait:        true
 	middlewares: false
@@ -21,5 +21,9 @@ _tailscaleOperator: schema.#Release & {
 	version:    "1.104.4"
 	sourceName: "tailscale"
 	interval:   "5m"
-	values: fullnameOverride: "tailscale-operator"
+	values: {
+		fullnameOverride: "tailscale-operator"
+		operatorConfig: defaultTags: ["tag:nyx-operator"]
+		proxyConfig: defaultTags: ["tag:nyx-internal"]
+	}
 }

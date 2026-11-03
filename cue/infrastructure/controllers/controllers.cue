@@ -1,6 +1,7 @@
 package tier
 
 // cSpell:ignore certmanager certsconfig cnpgconfig longhornconfig metallbconfig redisoperator
+// cSpell:ignore tailscaleconfig tailscaleoperator
 
 import (
 	"github.com/joker9944/k8s-config/schema"
@@ -15,7 +16,8 @@ import (
 	redisoperator "github.com/joker9944/k8s-config/infrastructure/controllers/redis-operator:redisoperator"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reflector"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reloader"
-	tailscaleoperator "github.com/joker9944/k8s-config/infrastructure/controllers/tailscale-operator:tailscaleoperator" // cSpell:ignore tailscaleoperator
+	tailscaleconfig "github.com/joker9944/k8s-config/infrastructure/controllers/tailscale-config:tailscaleconfig"
+	tailscaleoperator "github.com/joker9944/k8s-config/infrastructure/controllers/tailscale-operator:tailscaleoperator"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/traefik"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/volsync"
 )
@@ -38,6 +40,7 @@ tier: schema.#Tier & {
 		"redis-operator":     redisoperator.bundle
 		"reflector":          reflector.bundle
 		"reloader":           reloader.bundle
+		"tailscale-config":   tailscaleconfig.bundle
 		"tailscale-operator": tailscaleoperator.bundle
 		"traefik":            traefik.bundle
 		"volsync":            volsync.bundle

@@ -4,12 +4,12 @@ title: Networking and ingress
 description: MetalLB address allocation, Traefik entrypoints and plugins, the three middleware chains that gate every exposed service, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, metallb, ingress, middleware]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T00:00:00Z }
 ---
 
 # Address allocation
 
-MetalLB owns a single `IPAddressPool` named `internal`, `192.168.0.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.0.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (blocky's DNS service on `192.168.0.129` is the only one). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
+MetalLB owns a single `IPAddressPool` named `internal`, `192.168.1.128/25`, advertised in L2 mode (`cue/infrastructure/controllers/metallb-config`). Traefik takes `192.168.1.128` with `externalTrafficPolicy: Local`; any other `LoadBalancer` service pins its own address with a `metallb.io/loadBalancerIPs` annotation (blocky's DNS service on `192.168.1.129` is the only one). The `metallb.universe.tf` prefix that spelling supersedes is deprecated upstream and no longer used here.
 
 # Traefik
 
@@ -51,6 +51,14 @@ The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept 
 Middleware references are namespace-qualified (`<namespace>_<chain>@kubernetescrd`). `#IngressAnnotations` derives the prefix from the namespace it is handed, so an ingress cannot name a middleware that does not exist in its own namespace. That used to be the most common source of breakage here.
 
 The underscore is `safeNaming`, on in the chart values. It applies to every name the **kubernetesCRD** provider generates — middlewares and the [kanidm](/platform/identity-kanidm.md) ServersTransport — joining namespace and name with `_` and skipping the normalization the legacy scheme applied; only that first separator changes, so `chain-country-whitelist` keeps its own dashes. Routers and services from the Ingress provider (`@kubernetes`) are untouched. The chart emits the flag only when it is true, so returning to the legacy `-` scheme means a raw `additionalArguments` entry, not `safeNaming: false` — that renders nothing and Traefik warns that the option is unset. Two sites write a reference outside `#IngressAnnotations`: the kanidm Service annotation, and a `mustReject` fixture in `cue/probe`.
+
+# Tailnet ingress
+
+The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to MetalLB and Traefik rather than behind them. An `Ingress` with `ingressClassName: tailscale` and a `tailscale.com/proxy-group` annotation is served by tailnet proxy pods, which means it is **not** behind the middleware chains above — no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead.
+
+`cue/infrastructure/controllers/tailscale-config` holds the one `ProxyGroup`, `ingress-proxies`, at three replicas. The proxy pods run in the operator's own namespace, `tailscale`: the operator reads `OPERATOR_NAMESPACE` from its own `metadata.namespace` through a fieldRef and creates every proxy StatefulSet there, with no separate knob — which is why that namespace is named for the tailnet rather than for the operator. Nothing declares a capability on it: an `Ingress` is core API and applies cleanly against a missing ProxyGroup, so the coupling is at runtime — see [capability graph](/architecture/capability-graph.md).
+
+**Spreading those replicas is a `ProxyClass` concern.** `ProxyGroup.spec` carries no scheduling fields at all, and the operator applies neither affinity rules nor topology spread constraints of its own, so three replicas may share one node. The `spread` ProxyClass supplies a `topologySpreadConstraint` over `kubernetes.io/hostname` and selects on a label it adds through `pod.labels` — the operator's own pod labels are not a documented interface. `nodeTaintsPolicy: Honor` keeps the [reserved node](/platform/cluster-nyx.md) out of the skew calculation, leaving three domains for three replicas.
 
 # DNS
 
