@@ -15,6 +15,7 @@ import (
 	redisoperator "github.com/joker9944/k8s-config/infrastructure/controllers/redis-operator:redisoperator"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reflector"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/reloader"
+	tailscaleoperator "github.com/joker9944/k8s-config/infrastructure/controllers/tailscale-operator:tailscaleoperator" // cSpell:ignore tailscaleoperator
 	"github.com/joker9944/k8s-config/infrastructure/controllers/traefik"
 	"github.com/joker9944/k8s-config/infrastructure/controllers/volsync"
 )
@@ -26,18 +27,19 @@ tier: schema.#Tier & {
 	name: "controllers"
 
 	bundles: {
-		"cert-manager":    certmanager.bundle
-		"certs-config":    certsconfig.bundle
-		"cnpg":            cnpg.bundle
-		"cnpg-config":     cnpgconfig.bundle
-		"longhorn":        longhorn.bundle
-		"longhorn-config": longhornconfig.bundle
-		"metallb":         metallb.bundle
-		"metallb-config":  metallbconfig.bundle
-		"redis-operator":  redisoperator.bundle
-		"reflector":       reflector.bundle
-		"reloader":        reloader.bundle
-		"traefik":         traefik.bundle
-		"volsync":         volsync.bundle
+		"cert-manager":       certmanager.bundle
+		"certs-config":       certsconfig.bundle
+		"cnpg":               cnpg.bundle
+		"cnpg-config":        cnpgconfig.bundle
+		"longhorn":           longhorn.bundle
+		"longhorn-config":    longhornconfig.bundle
+		"metallb":            metallb.bundle
+		"metallb-config":     metallbconfig.bundle
+		"redis-operator":     redisoperator.bundle
+		"reflector":          reflector.bundle
+		"reloader":           reloader.bundle
+		"tailscale-operator": tailscaleoperator.bundle
+		"traefik":            traefik.bundle
+		"volsync":            volsync.bundle
 	}
 }
