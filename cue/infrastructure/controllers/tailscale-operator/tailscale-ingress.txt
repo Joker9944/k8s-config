@@ -1,0 +1,57 @@
+cSpell:ignore autogroup tagOwners autoApprovers jsonpath
+
+Tailnet settings an Ingress depends on. Nothing in this repo applies them; they
+live in the tailscale admin console and the tailnet policy file. Set them before
+the first reconcile of a tailnet Ingress — the operator's validateIngress also
+fails while the ProxyGroup is not Available, so a premature apply just logs.
+
+1. DNS -> MagicDNS: enabled.
+
+2. DNS -> HTTPS Certificates: enabled.
+   Without it the proxy cannot obtain a certificate and the Ingress answers
+   nothing. The repo declares no TLS secret for these ingresses on purpose.
+
+3. Policy file. Advertising a hosted Tailscale Service is a double opt-in
+   action, and a ProxyGroup-backed Ingress is one Service per Ingress. Without
+   the autoApprovers entry each one waits on a manual approval in the admin
+   console and the proxy pods never get the VIP in their AllowedIPs:
+
+     "tagOwners": {
+       "tag:nyx-operator": ["autogroup:admin"],
+       "tag:nyx-internal": ["tag:nyx-operator"],
+     },
+     "autoApprovers": {
+       "services": {
+         "tag:nyx-internal": ["tag:nyx-internal"],
+       },
+     },
+
+   The tags are the operator's operatorConfig.defaultTags and
+   proxyConfig.defaultTags.
+
+4. Reaching the service. A tailnet-wide grant may already cover it — `*` in a
+   dst expands to Tailscale IPs and approved subnet routes, and whether a
+   Service's Virtual IPs fall inside that is not settled by the docs. If a name
+   resolves and still refuses to connect, grant it explicitly:
+
+     "grants": [
+       {
+         "src": ["autogroup:member"],
+         "dst": ["svc:longhorn"],   // one per ingress
+         "ip":  ["tcp:443"],
+       },
+     ],
+
+   The name is "svc:" + the label the operator cut from the ingress host, so it
+   tracks `host` in the release and nothing else.
+
+Checking the result:
+
+  kubectl get ingress -A                 # ADDRESS fills with the ts.net name
+  kubectl describe ingress <name> -n <ns>   # events first: see below
+  kubectl get ingress <name> -n <ns> -o jsonpath='{.status}{"\n"}'
+  kubectl -n tailscale logs -l tailscale.com/parent-resource=ingress-proxies
+
+A rule whose host does not equal the full MagicDNS name is dropped with a
+Warning Event and nothing else, so an Ingress can be Ready, carry an ADDRESS and
+still serve no route. Read the events before the logs.

@@ -4,7 +4,7 @@ title: Adding an app
 description: The end-to-end sequence for introducing a new workload, including the steps Flux cannot do for you.
 tags: [playbook, onboarding]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
 ---
 
 Read [the app-template pattern](/architecture/app-template-pattern.md) first; this is the ordering, not the content.
@@ -19,7 +19,7 @@ One shape: a `Secret` manifest under `secrets/`, `data`/`stringData` encrypted. 
 
 # 3. Ingress
 
-Set `host` and, if the default `chain-country-whitelist` is wrong, `chain` — internal whitelist for anything operational. `#AppRelease` places the annotations and computes the middleware reference from the namespace, so an ingress cannot name another namespace's middleware. See [networking and ingress](/platform/networking-and-ingress.md).
+Decide which ingress path it is on. Public means a `host` on `vonarx.online` and, if the default `chain-country-whitelist` is wrong, `chain`; `#AppRelease` places the annotations and computes the middleware reference from the namespace, so an ingress cannot name another namespace's middleware. Anything operational means `tailnet: true` and a `host` in the tailnet domain instead — no chain, no TLS secret. See [networking and ingress](/platform/networking-and-ingress.md).
 
 # 4. Backup
 

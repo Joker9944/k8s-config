@@ -12,6 +12,10 @@ bundle: schema.#Bundle & {
 	// rolling out.
 	wait:    true
 	timeout: "35m"
+	// the only ingress here is served from the tailnet, so no Traefik middleware.
+	// This also drops longhorn's inferred `ingress` edge, retiring the
+	// longhorn -> traefik near-miss cycle.
+	middlewares: false
 	repositories: [
 		schema.#HelmRepo & {name: "longhorn", url: "https://charts.longhorn.io"},
 		_snapshotter,
@@ -66,8 +70,8 @@ _longhorn: schema.#Release & {
 	timeout:        "30m"
 	upgradeRetries: 0
 
-	host:  "longhorn.vonarx.online"
-	chain: "chain-network-internal-whitelist"
+	host:    "longhorn.\(schema.#TailnetDomain)"
+	tailnet: true
 
 	values: {
 		// longhorn has to run on the reserved node — that is where the storage is.
@@ -79,13 +83,17 @@ _longhorn: schema.#Release & {
 
 		persistence: defaultDataLocality: "best-effort"
 
-		// the longhorn chart takes one ingress, not a keyed set
+		// The longhorn chart takes one ingress, not a keyed set. It writes
+		// secretName unconditionally whenever tls is set, and the operator never
+		// reads that field, so the stale wildcard name is inert rather than
+		// something to patch out.
 		ingress: {
-			enabled:     true
-			annotations: _longhorn.ingressAnnotations
-			"host":      host
-			tls:         true
-			tlsSecret:   "wildcard-vonarx-online-cert"
+			enabled:          true
+			ingressClassName: _longhorn.ingressClass
+			annotations:      _longhorn.ingressAnnotations
+			"host":           host
+			tls:              true
+			tlsSecret:        "wildcard-vonarx-online-cert"
 		}
 	}
 }

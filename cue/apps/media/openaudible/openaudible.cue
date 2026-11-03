@@ -6,6 +6,8 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "openaudible"
+	// the only ingress here is served from the tailnet, so no Traefik middleware
+	middlewares: false
 	releases: [_openaudible]
 }
 
@@ -16,8 +18,8 @@ _openaudible: schema.#AppRelease & {
 	let uid = 6012
 	let gid = 6000
 	let portHTTP = 3000
-	host:  "openaudible.vonarx.online"
-	chain: "chain-network-internal-whitelist"
+	host:    "openaudible.\(schema.#TailnetDomain)"
+	tailnet: true
 
 	let configSize = "500Mi"
 
@@ -85,7 +87,8 @@ _openaudible: schema.#AppRelease & {
 
 		ingress: openaudible: {
 			hosts: [{"host": host, paths: [{path: "/", service: {identifier: "openaudible", port: "http"}}]}]
-			tls: [{hosts: [host], secretName: "wildcard-vonarx-online-cert"}]
+			// tailscale provisions and serves the certificate; no Secret is involved
+			tls: [{hosts: [host]}]
 		}
 
 		persistence: {

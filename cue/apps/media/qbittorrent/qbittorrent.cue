@@ -9,6 +9,8 @@ bundle: schema.#Bundle & {
 	extraSecretFiles: ["apps/media/qbittorrent/secrets/qbittorrent.secret.yaml"]
 	// gluetun runs as root with NET_ADMIN to bring up the tunnel
 	namespaceLabels: "pod-security.kubernetes.io/enforce": "privileged"
+	// the only ingress here is served from the tailnet, so no Traefik middleware
+	middlewares: false
 	releases: [_qbittorrent]
 }
 
@@ -21,10 +23,10 @@ _qbittorrent: schema.#AppRelease & {
 	let portHTTP = 8080
 	let vpnInterface = "wg0"
 	let vpnSecret = "qbittorrent-vpn-config"
-	host: "downloader.vonarx.online"
 
-	// the UI is reachable only from the internal network
-	chain: "chain-network-internal-whitelist"
+	// the UI is reachable only from the tailnet
+	host:    "downloader.\(schema.#TailnetDomain)"
+	tailnet: true
 
 	let configSize = "500Mi"
 	let partOf = "servarr"
@@ -163,7 +165,8 @@ _qbittorrent: schema.#AppRelease & {
 
 		ingress: qbittorrent: {
 			hosts: [{"host": host, paths: [{path: "/", service: {identifier: "qbittorrent", port: "http"}}]}]
-			tls: [{hosts: [host], secretName: "wildcard-vonarx-online-cert"}]
+			// tailscale provisions and serves the certificate; no Secret is involved
+			tls: [{hosts: [host]}]
 		}
 
 		persistence: {

@@ -6,6 +6,8 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "pgadmin"
+	// the only ingress here is served from the tailnet, so no Traefik middleware
+	middlewares: false
 	extraSecretFiles: ["apps/utility/pgadmin/secrets/pgadmin.secret.yaml"]
 	repositories: [
 		schema.#HelmRepo & {name: "runix", url: "https://helm.runix.net"},
@@ -34,8 +36,8 @@ _pgadmin: schema.#Release & {
 	sourceName: "runix"
 	interval:   "5m"
 
-	host:  "pgadmin.vonarx.online"
-	chain: "chain-network-internal-whitelist"
+	host:    "pgadmin.\(schema.#TailnetDomain)"
+	tailnet: true
 
 	values: {
 		// The chart routes PGADMIN_DEFAULT_PASSWORD through this Secret and stops
@@ -53,13 +55,16 @@ _pgadmin: schema.#Release & {
 			}
 		}
 
-		// the pgadmin4 chart takes one ingress, not a keyed set, so the
-		// annotations #Release computes are spliced in here
+		// the pgadmin4 chart takes one ingress, not a keyed set, so the class and
+		// annotations #Release computes are spliced in here. The chart gates the
+		// TLS secret on its own presence, so the entry carries only the host the
+		// operator reads the MagicDNS name from.
 		ingress: {
-			enabled:     true
-			annotations: _pgadmin.ingressAnnotations
+			enabled:          true
+			ingressClassName: _pgadmin.ingressClass
+			annotations:      _pgadmin.ingressAnnotations
 			hosts: [{"host": host, paths: [{path: "/", pathType: "Prefix"}]}]
-			tls: [{secretName: "wildcard-vonarx-online-cert", hosts: [host]}]
+			tls: [{hosts: [host]}]
 		}
 
 		persistentVolume: enabled: false

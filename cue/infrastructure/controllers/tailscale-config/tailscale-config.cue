@@ -46,7 +46,9 @@ _proxyClass: {
 _proxyGroup: {
 	apiVersion: "tailscale.com/v1alpha1"
 	kind:       "ProxyGroup"
-	metadata: name: "ingress-proxies"
+	// Named in schema so the ingresses' proxy-group annotation and this object
+	// cannot drift apart.
+	metadata: name: schema.#TailnetProxyGroup
 	spec: {
 		type:       "ingress"
 		replicas:   3

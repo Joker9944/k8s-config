@@ -48,8 +48,33 @@ import (
 	// them, a foreign chart splices `ingressAnnotations` at its own path.
 	host:       string | *"" // "" means no ingress
 	ingressKey: string | *name
-	chain:      #Chain | *"chain-country-whitelist"
-	extraMiddlewares: [...string] | *[]
+
+	// Serve the ingress from the tailnet instead of Traefik. The middleware
+	// fields below collapse to sentinels, so naming a chain on a tailnet
+	// ingress is a conflict rather than a field nothing reads.
+	tailnet: bool | *false
+
+	chain:       _chainField
+	_chainField: _
+	if !tailnet {_chainField: #Chain | *"chain-country-whitelist"}
+	if tailnet {_chainField: ""}
+
+	extraMiddlewares:  _middlewaresField
+	_middlewaresField: _
+	if !tailnet {_middlewaresField: [...string] | *[]}
+	if tailnet {_middlewaresField: []}
+
+	// The ingressClassName the chart has to set. Empty on the Traefik path,
+	// which relies on the default class; a foreign chart splices this wherever
+	// its own schema puts the class.
+	ingressClass: string | *""
+	if tailnet {ingressClass: _tailnet.class}
+
+	// The label is cut from the host exactly as the operator cuts it, and
+	// unifying `host` back in under `tailnet` asserts the caller actually wrote
+	// a name in the tailnet domain: `pgadmin.vonarx.online` conflicts here.
+	_tailnet: #TailnetIngress & {label: strings.Split(host, ".")[0]}
+	if tailnet {_tailnet: "host": host}
 
 	// Helm owns the CRD lifecycle. Only for a chart with a real Helm `crds/`
 	// directory — a chart that renders its CRDs as ordinary templates
@@ -86,11 +111,15 @@ import (
 	// no knob for.
 	postRenderers: [...] | *[]
 
-	ingressAnnotations: (#IngressAnnotations & {
+	ingressAnnotations:  _ingressAnnotations
+	_ingressAnnotations: _
+	if !tailnet {_ingressAnnotations: (#IngressAnnotations & {
 		ns:      namespace
 		"chain": chain
 		extra:   extraMiddlewares
 	}).out
+	}
+	if tailnet {_ingressAnnotations: _tailnet.annotations}
 
 	out: fluxHelm.#HelmRelease & {
 		apiVersion: "helm.toolkit.fluxcd.io/v2"
@@ -143,6 +172,7 @@ _appTemplateVersion: "5.3.0"
 	host:               _
 	ingressKey:         _
 	ingressAnnotations: _
+	ingressClass:       _
 	backups:            _
 
 	// open at every level a constraint is added: a definition closes what it
@@ -150,7 +180,11 @@ _appTemplateVersion: "5.3.0"
 	values: {
 		global: {alwaysAppendIdentifierToResourceName: true, ...}
 		if host != "" {
-			ingress: (ingressKey): {annotations: ingressAnnotations, ...}
+			ingress: (ingressKey): {
+				annotations: ingressAnnotations
+				if ingressClass != "" {className: ingressClass}
+				...
+			}
 		}
 		if len(backups) > 0 {
 			rawResources: {for b in backups {b.out}}

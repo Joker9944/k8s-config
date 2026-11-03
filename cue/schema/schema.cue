@@ -52,7 +52,7 @@ import "list"
 	...
 }
 
-#Chain: "chain-basic" | "chain-country-whitelist" | "chain-network-internal-whitelist"
+#Chain: "chain-basic" | "chain-country-whitelist"
 
 // ------------------------------------------------------------------ middleware
 // Replaces components/common-middlewares. The namespace is a parameter, so the
@@ -78,7 +78,6 @@ import "list"
 		}},
 		{_m, metadata: {name: "chain-basic", namespace: ns}, spec: chain: middlewares: _basics},
 		{_m, metadata: {name: "chain-country-whitelist", namespace: ns}, spec: chain: middlewares: list.Concat([[{name: "country-whitelist"}], _basics])},
-		{_m, metadata: {name: "chain-network-internal-whitelist", namespace: ns}, spec: chain: middlewares: list.Concat([[{name: "network-internal-whitelist"}], _basics])},
 		{_m, metadata: {name: "compress", namespace: ns}, spec: compress: {}},
 		{_m, metadata: {name: "country-whitelist", namespace: ns}, spec: plugin: geoblock: {
 			allowLocalRequests:    true
@@ -96,12 +95,33 @@ import "list"
 			silentStartUp:             true
 			unknownCountryApiResponse: "nil"
 		}},
-		// LAN, link-local, both tailnet families, and the pod network
-		{_m, metadata: {name: "network-internal-whitelist", namespace: ns}, spec: ipAllowList: {
-			ipStrategy: depth: 0
-			sourceRange: ["192.168.0.0/23", "fe80::/10", "100.0.0.0/8", "fd7a:115c:a1e0::/48", #PodCIDR]
-		}},
 	]
+}
+
+// ---------------------------------------------------------------------- tailnet
+// The tailscale operator is a second ingress path, parallel to Traefik rather
+// than behind it, so none of the chains above apply to a tailnet ingress: no
+// rate limit, no secure headers, no allow-list. The tailnet is the perimeter.
+
+#TailnetDomain:     "stoat-herring.ts.net"
+#TailnetProxyGroup: "ingress-proxies"
+
+// What a chart needs in order to be served by the operator: the class, the
+// annotation naming the ProxyGroup, and the host. Only those two fields are
+// read — `shouldExpose` wants nothing else, and tags come from the operator's
+// own proxyConfig.defaultTags.
+//
+// The host must be the FQDN, not the bare label the upstream example shows: the
+// operator cuts the advertised name at the first dot, but it also drops any
+// rule whose host is non-empty and unequal to the full name — which would leave
+// the Ingress reconciled, addressed and serving nothing. No Secret is involved
+// either way; tailscale provisions and serves the certificate, and
+// `spec.tls[].secretName` is never read.
+#TailnetIngress: {
+	label: string
+	host:  "\(label).\(#TailnetDomain)"
+	class: "tailscale"
+	annotations: "tailscale.com/proxy-group": #TailnetProxyGroup
 }
 
 // -------------------------------------------------------------------- volsync

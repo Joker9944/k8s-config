@@ -2,6 +2,13 @@
 
 ## 2026-11-03
 
+- Six operational ingresses move to the tailnet; the `tls` block names no Secret but is mandatory, because a rule host unequal to the full MagicDNS name is dropped — [networking and ingress](/platform/networking-and-ingress.md)
+- `chain-network-internal-whitelist` and `network-internal-whitelist` are gone; everything Traefik serves is now public — [networking and ingress](/platform/networking-and-ingress.md)
+- `#TailnetIngress` and the `tailnet` switch on `#Release`, which collapses the middleware fields to sentinels — [CUE layout](/architecture/cue-layout.md)
+- Each tailnet ingress is a Tailscale Service whose advertisement needs `autoApprovers.services`, or it waits on manual approval — [networking and ingress](/platform/networking-and-ingress.md)
+- `longhorn → traefik` is retired and the `ingress` fan-in drops to 10 — [capability graph](/architecture/capability-graph.md)
+- Adding an app now starts by choosing an ingress path — [adding an app](/workflows/adding-an-app.md)
+- Prometheus and Alertmanager are on the tailnet; the bundle keeps its middleware set for grafana — [observability](/platform/observability.md)
 - A `tailscale` capability and the `tailscale-config` bundle; the counts are 33/41 and `ProxyGroup` becomes the second CR kstatus may not read, this time under a `wait` — [capability graph](/architecture/capability-graph.md)
 - Tailnet ingress bypasses the middleware chains, and spreading the ProxyGroup is a `ProxyClass` concern because the operator supplies none — [networking and ingress](/platform/networking-and-ingress.md)
 - The proxies run in the operator's own namespace, from a fieldRef with no separate knob, which is why it is named `tailscale` — [networking and ingress](/platform/networking-and-ingress.md)

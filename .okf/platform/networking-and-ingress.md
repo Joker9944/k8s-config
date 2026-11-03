@@ -1,10 +1,10 @@
 ---
 type: Infrastructure
 title: Networking and ingress
-description: MetalLB address allocation, Traefik entrypoints and plugins, the three middleware chains that gate every exposed service, and how a VPN sidecar rewrites pod DNS.
-tags: [traefik, metallb, ingress, middleware]
+description: MetalLB address allocation, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
+tags: [traefik, metallb, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
 ---
 
 # Address allocation
@@ -28,19 +28,16 @@ The converse also holds. Every Traefik pod logs a burst of `middleware ... does 
 
 # Middleware chains
 
-`#Middlewares` installs the same set into every namespace, taking the namespace as a parameter; a bundle with no ingress switches it off. Three chains are meant to be referenced from an ingress:
+`#Middlewares` installs the same set into every namespace, taking the namespace as a parameter; a bundle with no ingress switches it off. Two chains are meant to be referenced from an ingress:
 
-| Chain                              | Composition                                                                                                                              |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `chain-basic`                      | `basic-ratelimit` (600 avg / 400 burst) + `basic-secure-headers` (HSTS 2y, nosniff, XSS filter, `X-Forwarded-Proto: https`) + `compress` |
-| `chain-network-internal-whitelist` | `network-internal-whitelist` + the three basic middlewares                                                                               |
-| `chain-country-whitelist`          | `country-whitelist` + the three basic middlewares                                                                                        |
+| Chain                     | Composition                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `chain-basic`             | `basic-ratelimit` (600 avg / 400 burst) + `basic-secure-headers` (HSTS 2y, nosniff, XSS filter, `X-Forwarded-Proto: https`) + `compress` |
+| `chain-country-whitelist` | `country-whitelist` + the three basic middlewares                                                                                        |
 
-`network-internal-whitelist` admits the LAN (`192.168.0.0/23`, `fe80::/10`), the tailnet (`100.0.0.0/8`, `fd7a:115c:a1e0::/48`) and the pod network, which comes from [`#PodCIDR`](/architecture/cue-layout.md).
+`country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries. **The cluster networks are k3s's, not kubeadm's**: pods are `10.42.0.0/16` and services `10.43.0.0/16`, against the `10.244.0.0/16` and `10.96.0.0/12` a kubeadm cluster would use. The move off Talos changed both, and the old values survived in every workload that trusts the reverse proxy or firewalls its own egress; [`#PodCIDR`](/architecture/cue-layout.md) names them once.
 
-**The cluster networks are k3s's, not kubeadm's**: pods are `10.42.0.0/16` and services `10.43.0.0/16`, against the `10.244.0.0/16` and `10.96.0.0/12` a kubeadm cluster would use. The move off Talos changed both, and the old values survived in five places — the allow-list itself plus every workload that trusts the reverse proxy or firewalls its own egress. A wrong pod CIDR here rejects any in-cluster caller of an internally-whitelisted ingress, silently and with a plain 403; Traefik's JSON access log is what names the `ClientHost` it actually saw. `country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries.
-
-The chain is selected per-service: infrastructure dashboards (Longhorn, Prometheus, Alertmanager) take the internal whitelist; public-facing apps take the country whitelist. There is no third option: `#Release` has no field for a bare middleware, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed.
+There is no third chain and no bare middleware: `#Release` has no field for one, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed. Everything Traefik serves is public, because an ingress that should not be is served from the tailnet instead.
 
 The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept under their original names for compatibility with other TrueCharts charts still in use.
 
@@ -54,9 +51,24 @@ The underscore is `safeNaming`, on in the chart values. It applies to every name
 
 # Tailnet ingress
 
-The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to MetalLB and Traefik rather than behind them. An `Ingress` with `ingressClassName: tailscale` and a `tailscale.com/proxy-group` annotation is served by tailnet proxy pods, which means it is **not** behind the middleware chains above — no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead.
+The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to MetalLB and Traefik rather than behind them. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chains above: no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
 
-`cue/infrastructure/controllers/tailscale-config` holds the one `ProxyGroup`, `ingress-proxies`, at three replicas. The proxy pods run in the operator's own namespace, `tailscale`: the operator reads `OPERATOR_NAMESPACE` from its own `metadata.namespace` through a fieldRef and creates every proxy StatefulSet there, with no separate knob — which is why that namespace is named for the tailnet rather than for the operator. Nothing declares a capability on it: an `Ingress` is core API and applies cleanly against a missing ProxyGroup, so the coupling is at runtime — see [capability graph](/architecture/capability-graph.md).
+It carries everything that is not public: pgadmin, openaudible, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
+
+**The advertised name is `spec.tls[0].hosts[0]` cut at the first dot**, and the cut has to leave a valid DNS label. That is the whole of the hostname interface — there is no hostname annotation — and the `tls` block is mandatory despite naming no Secret, because it feeds two things:
+
+- the name, which without it falls back to `<namespace>-<name>-ingress`;
+- **rule matching.** A `spec.rules[].host` that is non-empty and does not equal the _full_ MagicDNS FQDN is discarded, one warning Event per rule. Discard them all and the handler map is empty: the Ingress still reconciles and still reports an ADDRESS, but serves nothing.
+
+So the host has to be the FQDN, not the bare label the upstream example shows. That example omits the rule host entirely, which is the only other way to satisfy the comparison and is unavailable here — app-template requires `host` on a host entry, and longhorn, pgadmin4 and kube-prometheus-stack always write one. `#Release` derives the label from `host` exactly as the operator does and unifies the FQDN back, so a tailnet release left on a `vonarx.online` host conflicts at build time rather than reconciling into silence.
+
+**No certificate is declared or stored.** Tailscale provisions and serves it, and `spec.tls[].secretName` is never read — which is why longhorn's chart writing `secretName` unconditionally whenever `ingress.tls` is set needs no postRenderer: the stale wildcard name is inert. The operator does reject more than one `tls` entry, or more than one host inside it.
+
+The tailnet settings an Ingress depends on are not in this repo — MagicDNS, HTTPS Certificates and the policy-file grants. `tailscale-operator/tailscale-ingress.txt` is the runbook, in the spirit of the [kanidm](/platform/identity-kanidm.md) ones.
+
+**Each Ingress is one Tailscale Service, `svc:` plus the cut label, and advertising one is a double opt-in action.** Without an `autoApprovers.services` entry for the proxy tag, every name waits on a manual approval in the admin console and the proxy pods never get the VIP in their AllowedIPs — the operator's own comment is the clearest statement of it. That, not the grants, is the setting a new tailnet ingress is most likely to be blocked on. Whether a tailnet-wide grant also reaches the Service is unsettled: `*` in a `dst` expands to Tailscale IPs and approved subnet routes, and the docs do not say whether a Service's Virtual IPs are inside that set. `dst: ["svc:<label>"]` is the unambiguous form if a name resolves but refuses to connect.
+
+`cue/infrastructure/controllers/tailscale-config` holds the one `ProxyGroup`, named from `#TailnetProxyGroup` so it cannot drift from the annotation every ingress writes, at three replicas. The proxy pods run in the operator's own namespace, `tailscale`: the operator reads `OPERATOR_NAMESPACE` from its own `metadata.namespace` through a fieldRef and creates every proxy StatefulSet there, with no separate knob — which is why that namespace is named for the tailnet rather than for the operator. Nothing declares a capability on it: an `Ingress` is core API and applies cleanly against a missing ProxyGroup, so the coupling is at runtime — see [capability graph](/architecture/capability-graph.md).
 
 **Spreading those replicas is a `ProxyClass` concern.** `ProxyGroup.spec` carries no scheduling fields at all, and the operator applies neither affinity rules nor topology spread constraints of its own, so three replicas may share one node. The `spread` ProxyClass supplies a `topologySpreadConstraint` over `kubernetes.io/hostname` and selects on a label it adds through `pod.labels` — the operator's own pod labels are not a documented interface. `nodeTaintsPolicy: Honor` keeps the [reserved node](/platform/cluster-nyx.md) out of the skew calculation, leaving three domains for three replicas.
 
@@ -66,7 +78,7 @@ The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a
 
 ## Pod DNS behind a VPN sidecar
 
-Pods inherit the node's search domains, so every pod's `resolv.conf` carries `stoat-herring.ts.net` after the three `.cluster.local` entries, at `ndots:5`. That is harmless until a VPN sidecar owns the resolver.
+Pods inherit the node's search domains, so every pod's `resolv.conf` carries the tailnet domain (`#TailnetDomain`, `stoat-herring.ts.net`) after the three `.cluster.local` entries, at `ndots:5`. That is harmless until a VPN sidecar owns the resolver.
 
 gluetun points `resolv.conf` at its own server on `127.0.0.1` — one file, bind-mounted into every container of the pod and rewritten on each `DNS_UPDATE_PERIOD` — and answers **`NOERROR` with zero answers, not `NXDOMAIN`**, for any name it cannot resolve. Only `.cluster.local` gets a true `NXDOMAIN`. musl reads `NOERROR` as "the name exists, with no address of this type" and abandons the search walk there, so a relative lookup dies on the tailnet suffix and the absolute name is never queried. In qBittorrent every tracker then reports `Host not found (authoritative)` — Boost.Asio's rendering of `EAI_NODATA`, which reads like an upstream NXDOMAIN and is not one.
 

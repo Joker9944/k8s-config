@@ -58,15 +58,13 @@ _kps: schema.#Release & {
 	sourceName: _prometheusCommunity.name
 	crds:       true
 
-	// Three ingresses on one chart, on two different chains, so each builds its
-	// own annotation set rather than reading the release's single one.
-	_internal: (schema.#IngressAnnotations & {
-		ns:    namespace
-		chain: "chain-network-internal-whitelist"
-	}).out
+	// Three ingresses on one chart on two different ingress paths, so each builds
+	// its own set rather than reading the release's single one. Grafana stays
+	// public behind Traefik; the other two are served from the tailnet, which is
+	// why this bundle keeps its middleware set.
 	_public: (schema.#IngressAnnotations & {ns: namespace}).out
-
-	let tlsSecret = "wildcard-vonarx-online-cert"
+	_alertmanager: schema.#TailnetIngress & {label: "alertmanager"}
+	_prometheus: schema.#TailnetIngress & {label: "prometheus"}
 
 	// The bridge picks its Gotify application from a ?token= on the webhook URL,
 	// so the URL is a credential. url_file keeps it out of the artifact: the
@@ -92,11 +90,13 @@ _kps: schema.#Release & {
 				]
 			}
 			ingress: {
-				enabled:     true
-				annotations: _internal
-				hosts: ["alertmanager.vonarx.online"]
+				enabled:          true
+				ingressClassName: _alertmanager.class
+				annotations:      _alertmanager.annotations
+				hosts: [_alertmanager.host]
 				paths: ["/"]
-				tls: [{secretName: tlsSecret, hosts: ["alertmanager.vonarx.online"]}]
+				// no TLS secret: tailscale provisions and serves the certificate
+				tls: [{hosts: [_alertmanager.host]}]
 			}
 		}
 
@@ -148,7 +148,7 @@ _kps: schema.#Release & {
 				annotations: _public
 				hosts: ["grafana.vonarx.online"]
 				paths: ["/"]
-				tls: [{secretName: tlsSecret, hosts: ["grafana.vonarx.online"]}]
+				tls: [{secretName: "wildcard-vonarx-online-cert", hosts: ["grafana.vonarx.online"]}]
 			}
 		}
 
@@ -189,11 +189,13 @@ _kps: schema.#Release & {
 				}]
 			}
 			ingress: {
-				enabled:     true
-				annotations: _internal
-				hosts: ["prometheus.vonarx.online"]
+				enabled:          true
+				ingressClassName: _prometheus.class
+				annotations:      _prometheus.annotations
+				hosts: [_prometheus.host]
 				paths: ["/"]
-				tls: [{secretName: tlsSecret, hosts: ["prometheus.vonarx.online"]}]
+				// no TLS secret: tailscale provisions and serves the certificate
+				tls: [{hosts: [_prometheus.host]}]
 			}
 		}
 
