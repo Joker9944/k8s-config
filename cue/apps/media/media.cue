@@ -6,7 +6,6 @@ import (
 	"github.com/joker9944/k8s-config/apps/media/jellyfin"
 	"github.com/joker9944/k8s-config/apps/media/jellyseerr"
 	"github.com/joker9944/k8s-config/apps/media/komga"
-	"github.com/joker9944/k8s-config/apps/media/openaudible"
 	"github.com/joker9944/k8s-config/apps/media/qbittorrent"
 	"github.com/joker9944/k8s-config/apps/media/servarr"
 )
@@ -22,7 +21,6 @@ tier: schema.#Tier & {
 		"jellyfin":       jellyfin.bundle
 		"jellyseerr":     jellyseerr.bundle
 		"komga":          komga.bundle
-		"openaudible":    openaudible.bundle
 		"qbittorrent":    qbittorrent.bundle
 		"servarr":        servarr.bundle
 	}

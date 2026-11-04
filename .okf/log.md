@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-04
+
+- openaudible is retired; counts are 29/32 over seven levels and no selkies image is left in the fleet — [capability graph](/architecture/capability-graph.md)
+
 ## 2026-11-03
 
 - The cluster is behind CGNAT; public traffic arrives over a WireGuard tunnel from an edge VPS and lands on NodePort 30443 — [networking and ingress](/platform/networking-and-ingress.md)

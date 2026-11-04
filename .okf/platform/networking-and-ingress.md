@@ -4,7 +4,7 @@ title: Networking and ingress
 description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-04T00:00:00Z }
 ---
 
 # The edge
@@ -63,7 +63,7 @@ The underscore is `safeNaming`, on in the chart values. It applies to every name
 
 The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to Traefik rather than behind it. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chains above: no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
 
-It carries everything that is not public: pgadmin, openaudible, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
+It carries everything that is not public: pgadmin, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
 
 **The advertised name is `spec.tls[0].hosts[0]` cut at the first dot**, and the cut has to leave a valid DNS label. That is the whole of the hostname interface — there is no hostname annotation — and the `tls` block is mandatory despite naming no Secret, because it feeds two things:
 
