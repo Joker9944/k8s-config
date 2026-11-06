@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-11-06
+
+- wopr's node-exporter is scraped by the fleet's only `ScrapeConfig`, under `job="node-exporter"`, and Prometheus is pinned to a tunnel-terminating node for it — [observability](/platform/observability.md)
+- An out-of-cluster static target carries none of the five required metric labels but `job` and `instance` — [telemetry label convention](/platform/telemetry-labels.md)
+
 ## 2026-11-04
 
 - openaudible is retired; counts are 29/32 over seven levels and no selkies image is left in the fleet — [capability graph](/architecture/capability-graph.md)

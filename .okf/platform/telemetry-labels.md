@@ -4,7 +4,7 @@ title: Telemetry label convention
 description: The label set every log stream and metric series should carry, why `cluster` is an anchor rather than an identity, why `service_name` needs no rule of its own, and why the two signals do not spell the service the same way.
 tags: [prometheus, loki, alloy, labels, logs, metrics]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-28T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
 ---
 
 The label set to aim at. What the pipeline emits today is
@@ -82,6 +82,11 @@ control-plane members rather than pods, so there is no pod to name; `node`
 narrows further still and reaches only `kubelet`. Requiring the second group
 everywhere would make a permanent false positive out of a target that is
 behaving correctly.
+
+**A target outside the cluster carries none of the first group either.** `namespace`, `service` and
+`endpoint` all come from a Kubernetes object, so a static target has no relabeling that could supply
+them — the `label-conformance` dashboard exempts it by `instance` rather than counting it as a defect.
+[wopr](/platform/observability.md) is the only one.
 
 **`cluster` is deliberately absent here.** `{__name__!=""}` selects every series,
 so the anchor problem the log side has does not exist, and matching the log side

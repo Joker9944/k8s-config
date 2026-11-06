@@ -329,6 +329,10 @@ _mediaDataPath: "/chronos/media-data"
 // whitelist to mean anything. `#EdgeNodePort` is mirrored by the edge's nginx
 // upstream and the spokes' firewall rule in nix-config.
 
-#IngressSpoke:   "vonarx.online/ingress-spoke"
-#WireGuardHubIP: "10.100.0.254/32"
-#EdgeNodePort:   30443
+#IngressSpoke: "vonarx.online/ingress-spoke"
+#EdgeNodePort: 30443
+
+// The hub's transit address. Traefik's trust lists want it as a /32; a scrape
+// target wants the bare address, so the CIDR is derived rather than restated.
+#WireGuardHubAddr: "10.100.0.254"
+#WireGuardHubIP:   "\(#WireGuardHubAddr)/32"

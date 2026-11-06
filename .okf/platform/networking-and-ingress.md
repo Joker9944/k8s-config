@@ -4,18 +4,18 @@ title: Networking and ingress
 description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-04T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
 ---
 
 # The edge
 
 **The cluster is behind CGNAT and cannot listen.** Public traffic arrives at a VPS, `wopr` (`62.83.98.27`), which runs nginx, terminates no TLS, and shovels raw TCP into a hub-spoke WireGuard network. The spokes dial the hub, never the reverse. There is no `LoadBalancer` service in the fleet and no address pool — the cluster side of the tunnel is **one NodePort, 30443**, on the chart's own Traefik Service.
 
-Transit addressing, the WireGuard keys and the firewall rules live in [`nix-config`](https://github.com/Joker9944/nix-config), not here. This repo names only what Traefik has to agree with the edge about, in `schema.cue`: `#IngressSpoke`, `#WireGuardHubIP` (`10.100.0.254/32`) and `#EdgeNodePort`.
+Transit addressing, the WireGuard keys and the firewall rules live in [`nix-config`](https://github.com/Joker9944/nix-config), not here. This repo names only what Traefik has to agree with the edge about, in `schema.cue`: `#IngressSpoke`, `#WireGuardHubAddr` (`10.100.0.254`, carried as a /32 in `#WireGuardHubIP`) and `#EdgeNodePort`. The tunnel also carries one scrape in the other direction — wopr's own node-exporter, on the hub address, which is why [Prometheus is pinned to a spoke](/platform/observability.md).
 
 Three things have to line up, and each fails differently:
 
-- **`nodeSelector` on `#IngressSpoke`** places the Traefik DaemonSet on exactly the nodes that terminate a tunnel. `mother` is an agent, runs no Traefik pod and is not a spoke — which is also why Traefik carries no [`#Reserved`](/platform/cluster-nyx.md) toleration any more.
+- **`nodeSelector` on `#IngressSpoke`** places the Traefik DaemonSet on exactly the nodes that terminate a tunnel. `mother` is an agent, runs no Traefik pod, terminates no tunnel and is not a spoke — which is also why Traefik carries no [`#Reserved`](/platform/cluster-nyx.md) toleration any more.
 - **`externalTrafficPolicy: Local`** keeps the hub's source address off kube-proxy's SNAT, and stops a packet arriving on a spoke from being forwarded to a node with no tunnel. Dropping it does not break connectivity; it silently replaces every client IP with a node's.
 - **`proxyProtocol.trustedIPs` and `forwardedHeaders.trustedIPs`, both `#WireGuardHubIP`.** The hub speaks PROXY protocol; nothing else may. **This fails open.** Get the trusted range wrong and every request presents the hub's `10.100.0.254` — which `country-whitelist` reads as a local request and allows, so the whitelist passes the world while looking healthy. The access log is the test: a `ClientHost` of `10.100.0.254` means it did not take.
 

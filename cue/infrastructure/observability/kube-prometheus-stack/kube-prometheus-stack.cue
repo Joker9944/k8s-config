@@ -21,6 +21,7 @@ bundle: schema.#Bundle & {
 		"pod-security.kubernetes.io/warn":    "privileged"
 	}
 	before: [_dashboards.out]
+	after: [_woprNodeExporter]
 	releases: [_kps]
 }
 
@@ -40,6 +41,34 @@ _dashboards: schema.#ConfigMapFiles & {
 		"app.kubernetes.io/instance": "kube-prometheus-stack"
 	}
 	files: "label-conformance.json": _labelConformance
+}
+
+// wopr is the edge VPS, outside the cluster and reachable only over the
+// WireGuard tunnel, so there is nothing for service discovery to find. It joins
+// the cluster node-exporter's job rather than its own: every mixin alert and the
+// local ZFS-aware NodeMemoryHighUtilization match `job="node-exporter"` exactly,
+// and TargetDown groups by namespace and service, which a static target lacks —
+// so a down wopr forms its own group instead of being diluted by the four
+// healthy DaemonSet targets. The price is that the two cluster-wide rollups with
+// no join, `:node_memory_MemAvailable_bytes:sum` and `cluster:node_cpu:ratio_rate5m`,
+// count a host that is not in the cluster. Neither is parameterizable from here.
+_woprNodeExporter: {
+	apiVersion: "monitoring.coreos.com/v1alpha1"
+	kind:       "ScrapeConfig"
+	metadata: {
+		name:      "wopr-node-exporter"
+		namespace: bundle.namespace
+	}
+	spec: {
+		staticConfigs: [{targets: ["\(schema.#WireGuardHubAddr):9100"]}]
+
+		// Without this the operator derives job from the ScrapeConfig's own name.
+		relabelings: [{
+			action:      "replace"
+			targetLabel: "job"
+			replacement: "node-exporter"
+		}]
+	}
 }
 
 _prometheusCommunity: schema.#HelmRepo & {
@@ -156,6 +185,11 @@ _kps: schema.#Release & {
 			prometheusSpec: {
 				retention:     "14d"
 				retentionSize: "30GB"
+
+				// The hub is reachable only from a node that terminates a tunnel.
+				// mother terminates none, and the Longhorn PVC attaches anywhere, so
+				// without this a reschedule there stops the wopr scrape silently.
+				nodeSelector: "\(schema.#IngressSpoke)": "true"
 				storageSpec: volumeClaimTemplate: spec: {
 					storageClassName: "longhorn"
 					accessModes: ["ReadWriteOnce"]

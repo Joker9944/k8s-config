@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
 ---
 
 # The tier
@@ -91,6 +91,10 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 Those two are the only app-level monitors in the fleet. **A .NET or Go workload exposing a `/metrics` endpoint is not on its own a reason to scrape it**: the common libraries (`prometheus-net`, the runtime's own meters) instrument the host process rather than the application, so the result can be hundreds of series of GC and threadpool internals with nothing in them about what the app does. Jellyfin was measured and rejected on exactly that basis — [its own decision](/decisions/jellyfin-metrics-not-scraped.md) carries the breakdown.
 
 **A monitor that is selected can still yield nothing, because the endpoint refuses the scrape.** controller-runtime guards its metrics port with an authn/authz filter, and volsync's chart emits a ServiceMonitor whose only endpoint config is `tlsConfig.insecureSkipVerify` — right for a cert the manager regenerates per pod start, silent about credentials — which on its own scrapes 401. Credentials cannot come from the monitor: an endpoint's `authorization` is the Safe variant, Secret references only with no `credentialsFile`, and `bearerTokenFile` is deprecated. The projected token is reachable only from `scrapeClasses` on the Prometheus CR, which a monitor opts into by name — `service-account` here, patched onto volsync's monitor by a post-renderer because the chart exposes no knob. Never give such a class `default: true`: it would hand the token to every target in the fleet. A 401 is the healthy-TLS reading, so `lastError` always tells a credential problem apart from a certificate one.
+
+**One target is not in the cluster.** [wopr](/platform/networking-and-ingress.md) is scraped by the fleet's only `ScrapeConfig`, a static target on the hub's transit address, and it joins `job="node-exporter"` rather than taking one of its own: every mixin alert and the ZFS rule match that job exactly, and `TargetDown` groups by namespace and service, which a static target lacks — so a down wopr forms its own group instead of being diluted by the four healthy DaemonSet targets. Two costs follow. The cluster-wide rollups that join through `node_namespace_pod:kube_pod_info:` drop it correctly, but `:node_memory_MemAvailable_bytes:sum` and `cluster:node_cpu:ratio_rate5m` have no join and so count a host that is not in the cluster; neither is parameterizable from this repo. And the target carries no `namespace`, `service` or `endpoint`, which the `label-conformance` dashboard exempts by `instance` — exempting by job would take the four conformant targets with it.
+
+**Prometheus therefore carries a `nodeSelector`.** The hub is reachable only from a node that terminates a tunnel, [mother](/platform/cluster-nyx.md) terminates none, and the Longhorn PVC attaches anywhere — so a reschedule there would stop that one scrape and nothing else. It reuses `#IngressSpoke`, which today means "has a tunnel" as well as "terminates ingress".
 
 Grafana's **Alertmanager datasource has no backend**, so `/api/datasources/uid/alertmanager/health` answers `HTTP 500 plugin.unavailable` every time ([grafana#83794](https://github.com/grafana/grafana/issues/83794)). The datasource provisions and works in the browser; only the server-side health API is unimplemented for this type. A health sweep — `check_datasources_health` on the MCP server — therefore reports it broken on a healthy cluster. Not a fault to chase.
 

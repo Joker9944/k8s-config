@@ -110,7 +110,7 @@
       "id": 5,
       "type": "table",
       "title": "Targets missing a required label",
-      "description": "Scrape targets lacking one of the five universal labels, counted from `up` so it measures targets rather than series — recording rules and kube-state-metrics both drop target labels legitimately. Empty is the expected state; a row means a monitor landed without the operator's standard relabeling.",
+      "description": "Scrape targets lacking one of the five universal labels, counted from `up` so it measures targets rather than series — recording rules and kube-state-metrics both drop target labels legitimately. Empty is the expected state; a row means a monitor landed without the operator's standard relabeling. wopr's node-exporter is exempt from `namespace`, `service` and `endpoint`: it is a static target outside the cluster, so no relabeling can supply them.",
       "gridPos": { "x": 0, "y": 11, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "${metrics}" },
       "targets": [
@@ -118,7 +118,7 @@
           "refId": "A",
           "instant": true,
           "format": "table",
-          "expr": "label_replace(count by (job) (up{job=\"\"}), \"missing\", \"job\", \"\", \"\") or label_replace(count by (job) (up{instance=\"\"}), \"missing\", \"instance\", \"\", \"\") or label_replace(count by (job) (up{namespace=\"\"}), \"missing\", \"namespace\", \"\", \"\") or label_replace(count by (job) (up{service=\"\"}), \"missing\", \"service\", \"\", \"\") or label_replace(count by (job) (up{endpoint=\"\"}), \"missing\", \"endpoint\", \"\", \"\")"
+          "expr": "label_replace(count by (job) (up{job=\"\"}), \"missing\", \"job\", \"\", \"\") or label_replace(count by (job) (up{instance=\"\"}), \"missing\", \"instance\", \"\", \"\") or label_replace(count by (job) (up{namespace=\"\", instance!=\"10.100.0.254:9100\"}), \"missing\", \"namespace\", \"\", \"\") or label_replace(count by (job) (up{service=\"\", instance!=\"10.100.0.254:9100\"}), \"missing\", \"service\", \"\", \"\") or label_replace(count by (job) (up{endpoint=\"\", instance!=\"10.100.0.254:9100\"}), \"missing\", \"endpoint\", \"\", \"\")"
         }
       ],
       "transformations": [
