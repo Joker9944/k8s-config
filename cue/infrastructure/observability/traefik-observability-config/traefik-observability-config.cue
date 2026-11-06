@@ -1,3 +1,5 @@
+@extern(embed)
+
 package traefikobservabilityconfig
 
 import "github.com/joker9944/k8s-config/schema"
@@ -12,9 +14,36 @@ import "github.com/joker9944/k8s-config/schema"
 // The object lands in the kube-prometheus-stack namespace, the one this
 // bundle's single capability guarantees exists; a ServiceMonitor selects
 // across namespaces, so that costs only a `namespaceSelector`.
+//
+// The dashboard rides along: a ConfigMap needs no CRD and so could have stayed
+// with traefik, but the monitor it reads cannot, and keeping both here puts
+// traefik's whole telemetry surface in one bundle.
 bundle: schema.#ConfigBundle & {
 	needs: ["monitoring"]
-	resources: [_monitor]
+	resources: [_monitor, _dashboards.out]
+}
+
+_ns: "kube-prometheus-stack"
+
+// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
+// the package directory, which is why this file lives here rather than with
+// traefik.
+_traefikDashboard: _ @embed(file="files/traefik.json", type=text)
+
+// Upstream's contrib dashboard, vendored and patched: the `service` label it
+// queries is `backend` here, and its export-format datasource input is an
+// ordinary variable. Its SLO and Apdex panels read the `0.3` and `1.2` bucket
+// boundaries directly rather than interpolating a quantile, so those two
+// buckets cannot be dropped from `metrics.prometheus.buckets`.
+_dashboards: schema.#ConfigMapFiles & {
+	name: "traefik-dashboards"
+	ns:   _ns
+	labels: {
+		grafana_dashboard:            "1"
+		"app.kubernetes.io/name":     "traefik"
+		"app.kubernetes.io/instance": "traefik"
+	}
+	files: "traefik.json": _traefikDashboard
 }
 
 // Traefik serves /metrics on the metrics entrypoint by chart default; its
@@ -25,7 +54,7 @@ _monitor: {
 	kind:       "ServiceMonitor"
 	metadata: {
 		name:      "traefik"
-		namespace: "kube-prometheus-stack"
+		namespace: _ns
 	}
 	spec: {
 		namespaceSelector: matchNames: ["traefik-system"]
