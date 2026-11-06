@@ -87,7 +87,7 @@ import "list"
 			apiTimeoutMs:  500
 			blackListMode: false
 			cacheSize:     25
-			countries: ["CH", "DK", "FR"]
+			countries: ["CH", "DK", "PT"]
 			forceMonthlyUpdate:        true
 			logAllowedRequests:        false
 			logApiRequests:            false
