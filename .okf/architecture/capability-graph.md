@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-04T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -46,7 +46,7 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 29 bundles, 32 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 30 bundles, 33 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
 L0  cert-manager  cnpg  longhorn  pgadmin  redis-operator  reflector
@@ -54,7 +54,7 @@ L0  cert-manager  cnpg  longhorn  pgadmin  redis-operator  reflector
 L1  certs-config  cnpg-config  longhorn-config  tailscale-config
 L2  traefik
 L3  kube-prometheus-stack  servarr
-L4  garage  opencloud  volsync
+L4  garage  opencloud  traefik-observability-config  volsync
 L5  audiobookshelf  gotify  jellyfin  jellyseerr  kanidm  komga  loki
     qbittorrent
 L6  alloy
@@ -96,6 +96,6 @@ kubectl annotate kustomization -n flux-system --all \
 
 - **A `wait` on a bundle whose inventory holds a CR kstatus cannot read is unproven.** kstatus assesses a custom resource generically: top-level `observedGeneration`, then `Reconciling`/`Stalled`. An object with none of those — the trust-manager `Bundle` and the `ProxyGroup` — depends on what that fallback does with nothing to read, and it has not been observed here either way. `tailscale-config` is the first bundle to wait on such a CR, so it is where this gets settled: the expectation is that the fallback reports `Current` immediately, making the gate weak rather than hanging. If a waiting bundle ever sits `Progressing` with every named object Ready, that is the cause, and the fix is a `healthCheckExprs` entry for the GVK rather than dropping the wait.
 - **Nothing detects a cycle.** Whether kustomize-controller reports one or merely stalls every node in it is unverified, and CUE will not catch it either — `_provider` is a flat map, and the graph only exists once rendered. A new `needs` is therefore checked by topologically sorting the rendered `sync/*-sync.yaml`, not by `cue vet`. This document is the guard.
-- **One near-miss is live.** `garage → kube-prometheus-stack` means KPS must never need `object-storage` — putting Thanos on Garage would close it. `longhorn → traefik` was the other, and it went when longhorn's dashboard moved to the tailnet and the bundle set `middlewares: false`. The default StorageClass still must not become a capability: that edge returns the moment an ingress-serving bundle is also a storage consumer.
+- **Two near-misses are live.** `garage → kube-prometheus-stack` means KPS must never need `object-storage` — putting Thanos on Garage would close it. And `kube-prometheus-stack → traefik`, through `ingress`, means traefik must never need `monitoring`: that is why traefik's own ServiceMonitor is off and [the monitor for it](/platform/observability.md) lives in `traefik-observability-config`, a config bundle on the far side of the edge that selects across namespaces. The rule generalizes even though the bundle does not: a bundle at or below L2 cannot own a monitor, and each one that needs scraping gets a config bundle of its own. `longhorn → traefik` was the other, and it went when longhorn's dashboard moved to the tailnet and the bundle set `middlewares: false`. The default StorageClass still must not become a capability: that edge returns the moment an ingress-serving bundle is also a storage consumer.
 - **A capability with two providers is not expressible.** One name, one bundle. Two bundles providing the same CRD would need the consumers to pick, which the enum deliberately does not allow.
 - **Adding a capability to `#Bundle`'s inferred set adds edges everywhere at once.** `middlewares` is on by default, so a bundle acquires the `ingress` edge by saying nothing. All 10 reference the set they install today, but that is a property of the fleet rather than of the schema, and the edge would be real either way because the CR is applied.

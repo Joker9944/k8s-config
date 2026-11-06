@@ -2,6 +2,8 @@
 
 ## 2026-11-06
 
+- Traefik's RED metrics are scraped; the `traefik-observability-config` bundle holds the monitor and renames the exposed `service` label to `backend` — [observability](/platform/observability.md)
+- A bundle at or below L2 cannot own a ServiceMonitor; `kube-prometheus-stack → traefik` is the second live near-miss, and counts are 30/33 over seven levels — [capability graph](/architecture/capability-graph.md)
 - wopr's node-exporter is scraped by the fleet's only `ScrapeConfig`, under `job="node-exporter"`, and Prometheus is pinned to a tunnel-terminating node for it — [observability](/platform/observability.md)
 - An out-of-cluster static target carries none of the five required metric labels but `job` and `instance` — [telemetry label convention](/platform/telemetry-labels.md)
 

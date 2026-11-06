@@ -35,6 +35,7 @@ kubernetescrd
 kustomization
 kustomizations
 kustomizeconfig
+labeldrop
 MagicDNS
 metav
 opencloud

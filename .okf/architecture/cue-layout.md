@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -62,7 +62,7 @@ collector, so the name is free.
 
 A workload is a package. A tier is a package that imports its workloads and is also the OCI artifact boundary, so `cue export ./apps/media -e rendered` is both the unit of rendering and the unit of blast radius.
 
-`#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the CNPG image catalogs, the tailnet ProxyGroup. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
+`#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the CNPG image catalogs, the tailnet ProxyGroup, a monitor the workload it describes cannot emit itself. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
 
 **The kustomize `components/` tree has no successor.** Its contents are definitions in `schema/`:
 

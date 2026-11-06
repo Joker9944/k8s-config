@@ -80,6 +80,13 @@ _traefik: schema.#Release & {
 			metrics: http: aliasHeadersStrategy: "delete"
 		}
 
+		// The chart already serves /metrics on the metrics entrypoint; this adds
+		// the ClusterIP Service a monitor can select. The ServiceMonitor itself
+		// is NOT here — see /architecture/capability-graph.md: `monitoring` would
+		// point traefik at kube-prometheus-stack, which reaches traefik through
+		// `ingress`. It lives in the traefik-observability-config bundle instead.
+		metrics: prometheus: service: enabled: true
+
 		// the two plugins #Middlewares references: geoblock backs the country
 		// whitelist, oidc backs the forward-auth chain
 		experimental: plugins: {
