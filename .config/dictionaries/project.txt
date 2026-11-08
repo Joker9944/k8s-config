@@ -44,6 +44,7 @@ PUID
 reloader
 seccomp
 secretdata
+seerr
 selkies
 serverstransport
 sigstore

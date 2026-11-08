@@ -1,6 +1,7 @@
 package jellyseerr
 
-// cSpell:ignore fallenbagel
+// The product is seerr upstream; every name here is still jellyseerr.
+// /decisions/jellyseerr-is-now-seerr.md says why.
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -55,8 +56,8 @@ _jellyseerr: schema.#AppRelease & {
 			}
 			containers: jellyseerr: schema.#Hardened & {
 				image: {
-					repository: "fallenbagel/jellyseerr"
-					tag:        "2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764"
+					repository: "ghcr.io/seerr-team/seerr"
+					tag:        "v3.0.1@sha256:1b5fc1ea825631d9d165364472663b817a4c58ef6aa1013f58d82c1570d7c866"
 				}
 				env: {
 					PORT:      portHTTP
@@ -94,7 +95,6 @@ _jellyseerr: schema.#AppRelease & {
 				globalMounts: [{path: "/app/config"}]
 			}
 			cache: {type: "emptyDir", globalMounts: [{path: "/.cache"}]}
-			yarn: {type: "emptyDir", globalMounts: [{path: "/.yarn"}]}
 			tmp: type: "emptyDir"
 		}
 	}

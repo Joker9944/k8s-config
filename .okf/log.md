@@ -2,6 +2,7 @@
 
 ## 2026-11-08
 
+- jellyseerr runs upstream's renamed seerr image but keeps every old name; the image's `npm start` forwards SIGTERM, so upstream's `init: true` advice needs no Kubernetes answer — [jellyseerr is now seerr](/decisions/jellyseerr-is-now-seerr.md)
 - The servarr *arr releases set `upgradeRetries: 0` and a 20m timeout: a rollback cannot undo a Postgres schema migration, and helm must not judge a still-migrating pod — [helm remediation policy](/decisions/helm-remediation-policy.md)
 
 ## 2026-11-06
