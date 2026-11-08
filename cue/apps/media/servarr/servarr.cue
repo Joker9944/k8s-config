@@ -214,7 +214,7 @@ _arrs: [
 		instanceName: "Prowlarr"
 		image: {
 			repository: "ghcr.io/home-operations/prowlarr"
-			tag:        "2.7.0.5723@sha256:fcf7498692f97698ea8b8f7078a0f81120a16e7354e4c232b5e3810e3e783dff"
+			tag:        "3.0.0.5737@sha256:0954599432e16ccd86129f1eb8eb0247fd0d1591aab400f73e2010a1cda37be8"
 		}
 		uid: 568, gid: 568, port: 9696
 		cpu: "30m", mem: {request: "400Mi", limit: "700Mi"}
