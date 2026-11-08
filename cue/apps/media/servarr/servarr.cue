@@ -232,7 +232,7 @@ _arrs: [
 		instanceName: "Radarr Standard"
 		image: {
 			repository: "ghcr.io/home-operations/radarr"
-			tag:        "7.0.1.10859@sha256:ffe1f4d7c30b33a1e1256e14ace0eefddf120b37d8defceba208e9c190772f8d"
+			tag:        "7.0.2.10888@sha256:69ea515df6e2a3ea1490cfa127ffaaf9597a9db84fffa2fa150a6fae98fe04cb"
 		}
 		uid: 6005, port: 7878
 		cpu: "20m", mem: {request: "500Mi", limit: "700Mi"}
