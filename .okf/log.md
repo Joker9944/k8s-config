@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-08
+
+- The servarr *arr releases set `upgradeRetries: 0` and a 20m timeout: a rollback cannot undo a Postgres schema migration, and helm must not judge a still-migrating pod — [helm remediation policy](/decisions/helm-remediation-policy.md)
+
 ## 2026-11-06
 
 - Traefik's dashboard is upstream's contrib JSON, vendored beside its monitor; its SLO panels pin the `0.3` and `1.2` buckets — [observability](/platform/observability.md)

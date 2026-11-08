@@ -1,10 +1,10 @@
 ---
 type: Decision
 title: Upgrades roll back, installs do not
-description: Every release retries a failed upgrade three times with Helm's rollback strategy so it ends on the last working revision, while install remediation stays off because there it is an uninstall that would delete Helm-managed Postgres clusters.
+description: Most releases retry a failed upgrade three times with Helm's rollback strategy so they end on the last working revision, while install remediation stays off because there it is an uninstall that would delete Helm-managed Postgres clusters.
 tags: [flux, helm, remediation, reliability, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-08T12:00:00Z }
 stale_after: 2027-04-25
 ---
 
@@ -14,7 +14,7 @@ stale_after: 2027-04-25
 
 `spec.install.remediation` is **never set**, so install retries stay at Helm's default of 0.
 
-`spec.timeout` is 10m and `spec.install.timeout` 60m. [`longhorn`](/platform/storage.md) overrides both directions: `timeout: "30m"` and `upgradeRetries: 0`.
+`spec.timeout` is 10m and `spec.install.timeout` 60m. Two releases override both directions: [`longhorn`](/platform/storage.md) with `timeout: "30m"` and `upgradeRetries: 0`, and the four servarr app releases with `timeout: "20m"` and the same `upgradeRetries: 0`.
 
 # Why
 
@@ -25,6 +25,8 @@ stale_after: 2027-04-25
 **Timeouts.** `disableWait` defaults to false, so helm-controller waits for the chart's resources before judging an action; these are ceilings on readiness, not delays, and cost nothing while healthy. 10m rather than Helm's 5m default because rollback makes a too-short timeout actively harmful: it would revert a slow-but-healthy upgrade. 60m for install because a restore bootstrap populates a PVC inside the install, and because `upgradeRetries` does not apply there — an overrun install just sits failed.
 
 **Longhorn.** Upstream does not support downgrading Longhorn, so a rollback would re-apply the previous chart's manifests over a live storage layer. A failed upgrade there has to stay failed for a human. Its 30m timeout exists so a manager DaemonSet and CSI plugins rolling across four nodes is never _mistaken_ for a failure in the first place, and its bundle carries 35m so the Kustomization does not fail while Helm is still working.
+
+**Servarr.** The four arr releases keep their data in a retained Postgres schema their own major bumps migrate, so a rollback does not restore the old version — it leaves the old binary on the new schema, and recovery is a [restore from the object store](/platform/backup-and-restore.md), not a revert. Their 20m timeout is deliberately looser than the 10m window their startup probe allows a media-info migration, so helm cannot call a still-migrating pod a failure.
 
 # What this replaced
 

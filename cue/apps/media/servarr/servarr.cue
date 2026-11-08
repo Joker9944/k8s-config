@@ -66,6 +66,13 @@ _cnpgSecretRef: {
 		ingressKey: app
 		extraMiddlewares: ["\(name)-oidc"]
 
+		// A major bump migrates a retained Postgres schema, so a rollback would
+		// leave the old binary on the new schema: a failed upgrade has to stay
+		// failed. The timeout is looser than the startup probe's ten minutes so
+		// helm cannot call a still-migrating pod a failure.
+		upgradeRetries: 0
+		timeout:        "20m"
+
 		values: _servarrPod & {
 			defaultPodOptions: labels: _logs.podLabels
 
@@ -104,7 +111,7 @@ _cnpgSecretRef: {
 					probes: {
 						liveness: _probe & {spec: failureThreshold: 6}
 						readiness: _probe
-						startup: _probe & {spec: {failureThreshold: 30, periodSeconds: 5}}
+						startup: _probe & {spec: {failureThreshold: 120, periodSeconds: 5}}
 					}
 					resources: {
 						requests: {"cpu": cpu, memory: mem.request}
