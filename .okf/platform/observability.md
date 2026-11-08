@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-08T00:00:00Z }
 ---
 
 # The tier
@@ -85,6 +85,8 @@ Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this r
 **v3 configures from the environment only, and a list value is one bare CSV line.** The v2 `[a,b]` form still parses — as a single element with the brackets in it. That is silent both ways: gin discards the error from `SetTrustedProxies`, so a bracketed CIDR just leaves `X-Forwarded-For` unread, and CORS origins are unanchored regexes, where `[gotify.vonarx.online]` is a character class that matches almost any origin.
 
 # Coverage gaps
+
+**`ttlSecondsAfterFinished` below 15 minutes makes a CronJob's failures unalertable.** `KubeJobFailed` holds `for: 15m` against `kube_job_failed`, which kube-state-metrics stops exporting the moment the Job object is collected — so a `ttlSecondsAfterFinished: 120` deletes the evidence about thirteen minutes before the alert could fire. recyclarr's daily sync failed every run for two months behind exactly that gap, with `failedJobsHistory: 3` retaining nothing because the TTL outranks it. A short TTL is a deliberate trade for a job whose outcome is checked some other way; it is not a default to carry.
 
 **`NodeMemoryHighUtilization` is a local rule, not the chart's.** Linux does not count the ZFS ARC in `MemAvailable`, and [mother](/platform/cluster-nyx.md) holds ~54 of its 62 GiB there, so the stock expression reads 95% on a host that is 11% used; the replacement adds back ARC above `arc_c_min` and contributes 0 where there is no ARC, so one rule still covers the fleet. `defaultRules` reaches `for` and `severity` per rule but never the expression, so a wrong default can only be disabled and re-declared — `defaultRules.disabled` alongside `additionalPrometheusRulesMap`, whose PrometheusRule carries the `release` label the default `ruleSelector` wants and a hand-written one would not. The node-exporter-mixin dashboards read `MemAvailable` directly, so they still show that node near 95% and disagree with the alert. That divergence is accepted — they are chart-rendered with no per-dashboard toggle, and correcting them means owning a replacement node dashboard.
 

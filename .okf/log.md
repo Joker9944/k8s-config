@@ -2,6 +2,8 @@
 
 ## 2026-11-08
 
+- `alwaysAppendIdentifierToResourceName` makes a Service `<release>-<controller key>`, so recyclarr's sibling URLs needed the suffix — [app-template pattern](/architecture/app-template-pattern.md)
+- A `ttlSecondsAfterFinished` under 15m deletes the Job before `KubeJobFailed` can fire — [observability](/platform/observability.md)
 - jellyseerr runs upstream's renamed seerr image but keeps every old name; the image's `npm start` forwards SIGTERM, so upstream's `init: true` advice needs no Kubernetes answer — [jellyseerr is now seerr](/decisions/jellyseerr-is-now-seerr.md)
 - The servarr *arr releases set `upgradeRetries: 0` and a 20m timeout: a rollback cannot undo a Postgres schema migration, and helm must not judge a still-migrating pod — [helm remediation policy](/decisions/helm-remediation-policy.md)
 

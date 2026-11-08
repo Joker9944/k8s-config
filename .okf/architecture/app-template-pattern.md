@@ -4,7 +4,7 @@ title: App-template pattern
 description: The bjw-s app-template idioms every workload follows, the chart sources, and the OIDC runbooks that sit beside them.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-04T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-08T00:00:00Z }
 ---
 
 # Package shape
@@ -22,7 +22,7 @@ Nesting is flat: `apps/media/servarr/` is one package holding six releases, one 
 
 # HelmRelease idioms
 
-Almost every workload uses the bjw-s `app-template` chart through `#AppRelease`, which supplies the chart name, the pinned version and `global.alwaysAppendIdentifierToResourceName: true`.
+Almost every workload uses the bjw-s `app-template` chart through `#AppRelease`, which supplies the chart name, the pinned version and `global.alwaysAppendIdentifierToResourceName: true` — which means a release's Service is `<release>-<controller key>`, not `<release>`, wherever the two differ. `#Arr` keeps them separate (`name: "radarr-standard", app: "radarr"`), so the in-cluster DNS name is `radarr-standard-radarr`; a sibling's config that addresses the release name resolves to nothing, and `kubectl get svc` is the only thing that settles it.
 
 - **Values reused within a release are `let` bindings** — `uid`/`gid` for the pod security context and the volsync mover, `portHTTP` for probes and services, `host` for the ingress rule and its TLS entry, `configSize` for the PVC and its `ReplicationDestination`. These were YAML anchors.
 - **Hardening is uniform and enforced by the type checker**: `#Hardened` pins `runAsNonRoot`, `seccompProfile: RuntimeDefault`, `readOnlyRootFilesystem: true`, `allowPrivilegeEscalation: false` and `capabilities.drop: [ALL]`, with `emptyDir` volumes wherever the app insists on writing.

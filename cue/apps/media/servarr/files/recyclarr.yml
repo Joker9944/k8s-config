@@ -16,7 +16,7 @@
 
 sonarr:
   sonarr_standard:
-    base_url: http://sonarr-standard:8989
+    base_url: http://sonarr-standard-sonarr:8989
 
     quality_definition:
       type: series
@@ -25,7 +25,7 @@ sonarr:
 
     media_naming: # recyclarr list naming sonarr
       season: default
-      series: jellyfin
+      series: jellyfin-tvdb
       episodes:
         rename: true
         standard: default
@@ -150,7 +150,7 @@ sonarr:
           - name: HD-1080p / Ultra-HD
 
   sonarr_anime:
-    base_url: http://sonarr-anime:8989
+    base_url: http://sonarr-anime-sonarr:8989
 
     quality_definition:
       type: anime
@@ -159,7 +159,7 @@ sonarr:
 
     media_naming: # recyclarr list naming sonarr
       season: default
-      series: jellyfin
+      series: jellyfin-tvdb
       episodes:
         rename: true
         anime: default
@@ -255,7 +255,7 @@ sonarr:
 
 radarr:
   radarr_standard:
-    base_url: http://radarr-standard:7878
+    base_url: http://radarr-standard-radarr:7878
 
     quality_definition:
       type: movie
@@ -263,10 +263,10 @@ radarr:
     delete_old_custom_formats: true
 
     media_naming: # recyclarr list naming radarr
-      folder: jellyfin
+      folder: jellyfin-imdb
       movie:
         rename: true
-        standard: jellyfin
+        standard: jellyfin-imdb
 
     quality_profiles:
       - name: HD-1080p (Standard)
