@@ -16,7 +16,8 @@
 
 sonarr:
   sonarr_standard:
-    base_url: http://sonarr-standard-sonarr:8989
+    base_url: !env_var SONARR_STANDARD_BASE_URL
+    api_key: !env_var SONARR_STANDARD_API_KEY
 
     quality_definition:
       type: series
@@ -150,7 +151,8 @@ sonarr:
           - name: HD-1080p / Ultra-HD
 
   sonarr_anime:
-    base_url: http://sonarr-anime-sonarr:8989
+    base_url: !env_var SONARR_ANIME_BASE_URL
+    api_key: !env_var SONARR_ANIME_API_KEY
 
     quality_definition:
       type: anime
@@ -255,7 +257,8 @@ sonarr:
 
 radarr:
   radarr_standard:
-    base_url: http://radarr-standard-radarr:7878
+    base_url: !env_var RADARR_STANDARD_BASE_URL
+    api_key: !env_var RADARR_STANDARD_API_KEY
 
     quality_definition:
       type: movie

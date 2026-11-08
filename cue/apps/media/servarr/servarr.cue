@@ -4,6 +4,7 @@ package servarr
 
 import (
 	"list"
+	"strings"
 	"github.com/joker9944/k8s-config/schema"
 )
 
@@ -43,6 +44,11 @@ _cnpgSecretRef: {
 	port: int
 	cpu:  string
 	mem: {request: string, limit: string}
+
+	// Whether recyclarr syncs this instance. Its key in files/recyclarr.yml is
+	// name with underscores, and recyclarr's own `<instance>_base_url` /
+	// `<instance>_api_key` convention makes the uppercased form the env var.
+	recyclarrSync: bool | *false
 
 	// prowlarr diverges: no media mounts, no umask, a bare 568 group, and an
 	// unquoted COMPlus value. Modelled rather than hidden.
@@ -228,8 +234,9 @@ _arrs: [
 		media: false, umask: false, rootMounts: false, diagnostics: 0
 	},
 	#Arr & {
-		name:         "radarr-standard", app: "radarr", envPrefix: "RADARR"
-		instanceName: "Radarr Standard"
+		recyclarrSync: true
+		name:          "radarr-standard", app: "radarr", envPrefix: "RADARR"
+		instanceName:  "Radarr Standard"
 		image: {
 			repository: "ghcr.io/home-operations/radarr"
 			tag:        "7.0.2.10888@sha256:69ea515df6e2a3ea1490cfa127ffaaf9597a9db84fffa2fa150a6fae98fe04cb"
@@ -238,8 +245,9 @@ _arrs: [
 		cpu: "20m", mem: {request: "500Mi", limit: "700Mi"}
 	},
 	#Arr & {
-		name:         "sonarr-anime", app: "sonarr", envPrefix: "SONARR"
-		instanceName: "Sonarr Anime"
+		recyclarrSync: true
+		name:          "sonarr-anime", app: "sonarr", envPrefix: "SONARR"
+		instanceName:  "Sonarr Anime"
 		image: {
 			repository: "ghcr.io/home-operations/sonarr"
 			tag:        "5.0.0.2941@sha256:93b0923dd12afd43247739e19dac59d74c52a15ea12e036b7ced264cffb42574"
@@ -248,8 +256,9 @@ _arrs: [
 		cpu: "40m", mem: {request: "500Mi", limit: "700Mi"}
 	},
 	#Arr & {
-		name:         "sonarr-standard", app: "sonarr", envPrefix: "SONARR"
-		instanceName: "Sonarr Standard"
+		recyclarrSync: true
+		name:          "sonarr-standard", app: "sonarr", envPrefix: "SONARR"
+		instanceName:  "Sonarr Standard"
 		image: {
 			repository: "ghcr.io/home-operations/sonarr"
 			tag:        "5.0.0.2941@sha256:93b0923dd12afd43247739e19dac59d74c52a15ea12e036b7ced264cffb42574"
@@ -343,6 +352,19 @@ _recyclarr: schema.#AppRelease & {
 					tag:        "8.8.1@sha256:3e9c41b9ec29bbf65fe846864058730d321a21f7695d8c0d9437b73e34d50ad9"
 				}
 				command: ["recyclarr", "sync"]
+
+				// base_url and api_key are omitted from recyclarr.yml and resolved
+				// through !env_var, so the Service name comes from the same two
+				// fields the chart builds it from and cannot drift.
+				env: {
+					for a in _arrs if a.recyclarrSync {
+						let instance = strings.ToUpper(strings.Replace(a.name, "-", "_", -1))
+						"\(instance)_BASE_URL": "http://\(a.name)-\(a.app):\(a.port)"
+						"\(instance)_API_KEY": valueFrom: secretKeyRef: {
+							name: "\(a.name)-api-key", key: "key"
+						}
+					}
+				}
 			}
 		}
 		persistence: {
@@ -359,11 +381,6 @@ _recyclarr: schema.#AppRelease & {
 					{path: "/config/recyclarr.yml", subPath: "recyclarr.yml"},
 					{path: "/config/settings.yml", subPath: "settings.yml"},
 				]
-			}
-			"secret-overlay": {
-				type: "secret"
-				name: "recyclarr-secret-overlay"
-				globalMounts: [{path: "/config/secrets.yml", subPath: "secrets.yml"}]
 			}
 			tmp: type: "emptyDir"
 		}
@@ -460,7 +477,6 @@ bundle: schema.#Bundle & {
 		"apps/media/servarr/secrets/radarr-standard.secret.yaml",
 		"apps/media/servarr/secrets/sonarr-anime.secret.yaml",
 		"apps/media/servarr/secrets/sonarr-standard.secret.yaml",
-		"apps/media/servarr/secrets/recyclarr.secret.yaml",
 	]
 	before: [
 		{

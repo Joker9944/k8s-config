@@ -47,6 +47,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Formatting and cspell](workflows/formatting-and-cspell.md) - the pre-commit suite and the spellchecker's dictionaries.
 - [Commit conventions](workflows/commit-conventions.md) - the conventional-commit policy and what each scope covers.
 - [Images, CI and dependency updates](workflows/images-and-ci.md) - Nix-built OCI images, signing, and renovate.
+- [Recyclarr](workflows/recyclarr.md) - how it reaches the *arrs, what it cannot manage, and why a broken sync is quiet.
 - [Jellyfin's config](workflows/jellyfin-config.md) - where Jellyfin keeps its settings and how to reach them.
 - [Diagnosing opencloud's memory](workflows/opencloud-memory.md) - one process, no pprof, and the bleve merge that bounds the limit.
 - [Reclaiming opencloud file revisions](workflows/opencloud-revisions.md) - unbounded versions, the purge tool, and what it cannot reach.
