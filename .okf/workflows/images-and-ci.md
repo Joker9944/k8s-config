@@ -4,7 +4,7 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-27T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-09T00:00:00Z }
 ---
 
 # Images
@@ -42,10 +42,14 @@ Non-image derivations:
 
 `.github/renovate.json5`, weekend schedule, dependency dashboard enabled, assigned to `Joker9944`.
 
-| Update kind               | Behavior                           |
-| ------------------------- | ---------------------------------- |
-| minor, patch, pin, digest | `automerge`                        |
-| major                     | dashboard approval, no `automerge` |
+| Update kind               | Behavior                                                 |
+| ------------------------- | -------------------------------------------------------- |
+| minor, patch, pin, digest | `automerge`                                              |
+| major                     | dashboard approval, no `automerge`, labelled `ai-triage` |
+
+`ai-triage` is the queue `claude-dep-triage.yaml` drains: it fires while the label is attached and swaps it for one of `dep-safe`, `dep-breaking` or `dep-review` plus a comment, so the label still being there means the run did not finish. The workflow reads and comments only — merging stays manual — and bills against the subscription through `CLAUDE_CODE_OAUTH_TOKEN` rather than per-token.
+
+Three things are not guessable from the config. Naming an `mcp__github__` tool in `--allowedTools` is what makes the action start the GitHub MCP server at all. The verdict label is applied by a workflow step from the `--json-schema` output rather than by Claude, because that server has no add-label tool — only `update_issue`, whose `labels` array replaces the set. And `allowed_bots` is required, since the actor is `renovate[bot]`, while the `github_token` input is not — that pairing gates `allowed_non_write_users`, and a `[bot]`-suffixed actor passes the write check on its suffix. It is passed anyway, from the app the nix-config workflows use, so both the comment and the label are attributed to it; `Pull requests: write` suffices for both, even though the two endpoints sit under `/issues/`. An app token's label events are not dropped the way the default token's are, so `ai-triage` is removed in a call of its own before the verdict is added — the gate is false by the time that event lands. For the same reason the app's own bot must stay out of `allowed_bots`.
 
 **Trap:** a `tag: "latest@sha256:…"` pin is a digest update, so renovate automerges it — the digest is reproducible but says nothing about what changed upstream. `generic-device-plugin` renamed its resource domain across such a bump and the break only surfaced at the next reschedule. A moving tag under this rule wants a real version or a `packageRules` exclusion.
 

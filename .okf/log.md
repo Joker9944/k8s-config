@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-09
+
+- Renovate majors labelled `ai-triage`, a queue a review-only Claude triage workflow drains — [images, CI and dependency updates](/workflows/images-and-ci.md)
+
 ## 2026-11-08
 
 - Recyclarr: env-var indirection for base_url and api_key, implicit secret resolution, and the unmanageable profile language — [recyclarr](/workflows/recyclarr.md)

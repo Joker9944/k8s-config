@@ -25,7 +25,8 @@
     {
       matchUpdateTypes: ["major"],
       automerge: false,
-      dependencyDashboardApproval: true,
+      dependencyDashboardApproval: false,
+      addLabels: ["ai-triage"],
     },
     {
       matchUpdateTypes: ["minor", "patch", "pin", "digest"],

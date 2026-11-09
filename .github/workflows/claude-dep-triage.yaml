@@ -1,0 +1,68 @@
+name: claude-dep-triage
+
+on:
+  pull_request:
+    types:
+      - opened
+      - labeled
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to triage
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: claude-dep-triage-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+env:
+  PR: ${{ github.event.pull_request.number || inputs.pr }}
+
+jobs:
+  triage:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'ai-triage')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          # The skill reads the owning CUE package and the bundle, and diffs
+          # against the base branch, so it needs the history.
+          fetch-depth: 0
+          ref: refs/pull/${{ env.PR }}/head
+
+      - uses: anthropics/claude-code-action@v1
+        id: triage
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          allowed_bots: "renovate[bot]"
+          prompt: "/dep-triage ${{ env.PR }}"
+          claude_args: |
+            --max-turns 40
+            --allowed-tools "mcp__github__get_pull_request" "mcp__github__get_pull_request_diff" "mcp__github__get_pull_request_files" "mcp__github__add_issue_comment" "Read" "Grep" "Glob" "WebFetch"
+            --json-schema '{"type":"object","properties":{"verdict":{"type":"string","enum":["dep-safe","dep-review","dep-breaking"]},"reason":{"type":"string"}},"required":["verdict","reason"],"additionalProperties":false}'
+
+      - name: Apply verdict
+        if: steps.triage.outputs.structured_output != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          VERDICT: ${{ fromJSON(steps.triage.outputs.structured_output).verdict }}
+          REASON: ${{ fromJSON(steps.triage.outputs.structured_output).reason }}
+        run: |
+          echo "::notice title=$VERDICT::$REASON"
+          gh pr edit "$PR" --remove-label ai-triage --add-label "$VERDICT"
