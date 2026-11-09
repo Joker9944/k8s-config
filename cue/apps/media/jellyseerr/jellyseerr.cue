@@ -57,7 +57,7 @@ _jellyseerr: schema.#AppRelease & {
 			containers: jellyseerr: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/seerr-team/seerr"
-					tag:        "v3.0.1@sha256:1b5fc1ea825631d9d165364472663b817a4c58ef6aa1013f58d82c1570d7c866"
+					tag:        "v3.5.1@sha256:d8fab675b55ad293ded98fd71efcfd46054cbad9746534ae1cc4794a88c0b3be"
 				}
 				env: {
 					PORT:      portHTTP
