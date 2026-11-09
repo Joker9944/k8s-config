@@ -38,7 +38,7 @@ jobs:
           app-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # The skill reads the owning CUE package and the bundle, and diffs
           # against the base branch, so it needs the history.
