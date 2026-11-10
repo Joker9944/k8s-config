@@ -5,6 +5,9 @@
 - The gotify slack webhook plugin is gone, and with it `gomod-cap` and the whole plugin-ABI constraint on the image — [images, CI and dependency updates](/workflows/images-and-ci.md), [development environment](/workflows/dev-environment.md)
 - gotify disables a setting with an empty value, not an absent one; an unset `GOTIFY_PLUGINSDIR` crashloops on a read-only root — [observability](/platform/observability.md)
 - gotify runs upstream's image; a repo-built image's hand-set `tag` cannot track a versioned upstream payload — [observability](/platform/observability.md), [images, CI and dependency updates](/workflows/images-and-ci.md)
+- Jellyfin's SSO comes from the fork that kept 9p4's plugin GUID, not from the newer oidc plugin — [jellyfin's SSO plugin](/decisions/jellyfin-sso-plugin.md)
+- `PluginRepositories` lives in `system.xml`, a dashboard save rewrites the file from memory, and a plugin upgrade stages a second directory until restart — [jellyfin's config](/workflows/jellyfin-config.md)
+- Clients grant the legacy `groups` scope, so consumer role lists carry the SPN suffix; `groups_name` drops it — [identity — kanidm](/platform/identity-kanidm.md)
 
 ## 2026-11-09
 

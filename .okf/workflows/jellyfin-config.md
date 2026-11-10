@@ -4,7 +4,7 @@ title: Jellyfin's config
 description: Where Jellyfin keeps its settings inside the config volume, how to read them, and what to watch for when changing a file directly.
 tags: [jellyfin, config, kubectl]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-02T12:45:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-10T19:10:00Z }
 ---
 
 # Where it lives
@@ -47,7 +47,20 @@ so they are not safe to paste into an issue or a chat.
 Editing a file directly works, and is sometimes the only way to set something the
 dashboard will not expose. It bypasses the dashboard's validation, so a malformed
 or out-of-range value lands unchecked: restart the workload to pick the change up,
-then confirm it took.
+then confirm it took. Jellyfin holds `system.xml` in memory and writes the whole
+file back whenever a dashboard setting is saved, so saving anything before that
+restart reverts the edit.
+
+`system.xml`'s `PluginRepositories` is one such edit — the dashboard adds and
+removes repository entries but will not rewrite a URL in place. A plugin upgrade
+is then staged rather than live: the installer writes
+`/config/plugins/<name>_<version>/` beside the running copy and stamps the old
+`meta.json` `Superseded`, and the new assembly loads on the next restart. Until
+then the dashboard describes the superseded copy, listing its repository as
+Unknown because that version no longer resolves against any configured manifest.
+Startup deletes the superseded directory, so a copy taken before the restart is
+the cheap way back. Which plugin serves SSO, and why, is
+[its own decision](/decisions/jellyfin-sso-plugin.md).
 
 `EnableMetrics` is `false` on purpose, and turning it on is the whole of what puts
 `/metrics` on the HTTP port — [why it stays off](/decisions/jellyfin-metrics-not-scraped.md).

@@ -36,6 +36,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.
 - [Jellyfin's config is not declared](decisions/jellyfin-config-not-declared.md) - the settings stay in the volume; the repo declares the deployment.
 - [Jellyfin is not scraped](decisions/jellyfin-metrics-not-scraped.md) - 361 series of .NET runtime internals, nothing about playback.
+- [Jellyfin's SSO plugin is the maintained fork](decisions/jellyfin-sso-plugin.md) - the fork shares 9p4's plugin GUID, so adopting it is an upgrade rather than a migration.
 - [Jellyseerr is now seerr](decisions/jellyseerr-is-now-seerr.md) - the image follows the rename; the namespace, PVC, restic repo and host do not.
 - [Upgrades roll back, installs do not](decisions/helm-remediation-policy.md) - rollback-and-retry on upgrade; install remediation is an uninstall that would delete Postgres.
 
