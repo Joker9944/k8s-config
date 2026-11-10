@@ -19,7 +19,6 @@ Fulcio
 gluetun
 GOCACHE
 GOFLAGS
-gomod
 GOMODCACHE
 GOPATH
 gotk

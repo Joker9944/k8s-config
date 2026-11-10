@@ -87,8 +87,6 @@
       {
         packages = cueRender.perTier // {
           # programs
-          gomod-cap = pkgs.callPackage ./pkgs/gomod-cap.nix { flake = self; };
-          gotify-slack-webhook = pkgs.callPackage ./pkgs/gotify-slack-webhook.nix { flake = self; };
           sops-pre-commit = pkgs.callPackage ./pkgs/sops-pre-commit.nix { flake = self; };
 
           # cue render
@@ -96,7 +94,6 @@
 
           # images
           base = pkgs.callPackage ./images/base.nix { flake = self; };
-          gotify-custom = pkgs.callPackage ./images/gotify-custom.nix { flake = self; };
           jinja-cli = pkgs.callPackage ./images/jinja-cli.nix { flake = self; };
           postgresql-client = pkgs.callPackage ./images/postgresql-client.nix { flake = self; };
         };

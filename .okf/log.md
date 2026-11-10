@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-11-10
+
+- The gotify slack webhook plugin is gone, and with it `gomod-cap` and the whole plugin-ABI constraint on the image — [images, CI and dependency updates](/workflows/images-and-ci.md), [development environment](/workflows/dev-environment.md)
+- gotify disables a setting with an empty value, not an absent one; an unset `GOTIFY_PLUGINSDIR` crashloops on a read-only root — [observability](/platform/observability.md)
+- gotify runs upstream's image; a repo-built image's hand-set `tag` cannot track a versioned upstream payload — [observability](/platform/observability.md), [images, CI and dependency updates](/workflows/images-and-ci.md)
+
 ## 2026-11-09
 
 - Renovate majors labelled `ai-triage`, a queue a review-only Claude triage workflow drains — [images, CI and dependency updates](/workflows/images-and-ci.md)

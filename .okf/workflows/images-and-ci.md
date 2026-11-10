@@ -4,16 +4,16 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-09T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-10T00:00:00Z }
 ---
 
 # Images
 
 Images under `images/` are `dockerTools.buildLayeredImage` derivations, not Dockerfile builds. All layer on `images/base.nix`, which supplies `fakeNss`, `usrBinEnv`, `caCertificates`, bash, coreutils, curl, procps, gnutar, gzip, findutils and tzdata, running as UID `65534` with `TZ=UTC`. Two of those are non-obvious: gnutar and gzip are present so `kubectl cp` works, curl and procps so health checks do.
 
-The derivation's `tag` attribute is the **version of record**. The workflow reads `name:tag` back out of the built tarball's `manifest.json` rather than being told separately, so bumping an image means bumping its `tag`.
+The derivation's `tag` attribute is the **version of record**. The workflow reads `name:tag` back out of the built tarball's `manifest.json` rather than being told separately, so bumping an image means bumping its `tag`. It is the image's own version and nothing checks it against the contents: an image wrapping a versioned upstream payload drifts from it silently as nixpkgs moves, which is one reason to prefer a vendor's image where one exists.
 
-Published: `gotify-custom`, `jinja-cli`, `postgresql-client`. (`base` is built but not published — it only exists to be layered on.)
+Published: `jinja-cli`, `postgresql-client`. (`base` is built but not published — it only exists to be layered on.)
 
 # Publishing
 
@@ -28,11 +28,7 @@ Steps 3 and 4 run under `shell: nix develop .#ci --command bash {0}`, as do the 
 
 # pkgs/
 
-Non-image derivations:
-
-- **`gotify-slack-webhook`** — a Go _plugin_ (`-buildmode=plugin`, `CGO_ENABLED=1`). Go plugins must be built against the exact dependency versions of their host, so the derivation fetches the upstream `gotify-server` `go.mod`, runs `gomod-cap` to cap the plugin's requirements to it, syncs the Go and toolchain versions, and only then builds. It lands in `$out/lib/gotify/plugins/`, baked into the [`gotify-custom` image](/platform/observability.md).
-- **`gomod-cap`** — the capping utility, built from `gotify/plugin-api`.
-- **`sops-pre-commit`** — see [secrets and SOPS](/workflows/secrets-sops.md).
+The one non-image derivation is **`sops-pre-commit`** — see [secrets and SOPS](/workflows/secrets-sops.md).
 
 # Other workflows
 

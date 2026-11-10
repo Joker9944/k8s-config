@@ -70,8 +70,8 @@ _gotify: schema.#AppRelease & {
 			type: "deployment"
 			containers: gotify: schema.#Hardened & {
 				image: {
-					repository: "ghcr.io/joker9944/gotify-custom"
-					tag:        "3.0.0@sha256:151f1cd9cfdf0bee8cbd8c89bffa6208302f9c409ce8084becbe4ced4737c44d"
+					repository: "ghcr.io/gotify/server"
+					tag:        "3.1.1@sha256:44fc5bbd1c0618878e33073d38c2c13126b48f245c3fe12236b1da48eb203b86"
 				}
 				env: {
 					GOTIFY_SERVER_PORT:                     portHTTP
@@ -84,7 +84,7 @@ _gotify: schema.#AppRelease & {
 					GOTIFY_SERVER_STREAM_PINGPERIODSECONDS: 45
 					GOTIFY_DATABASE_DIALECT:                "postgres"
 					GOTIFY_UPLOADEDIMAGESDIR:               "/data/images"
-					GOTIFY_PLUGINSDIR:                      "/plugins"
+					GOTIFY_PLUGINSDIR:                      null
 
 					GOTIFY_OIDC_ENABLED:      true
 					GOTIFY_OIDC_ISSUER:       "https://idm.vonarx.online/oauth2/openid/gotify"

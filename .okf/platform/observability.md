@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-08T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-10T00:00:00Z }
 ---
 
 # The tier
@@ -80,9 +80,11 @@ The route tree is the chart's: naming `route.routes` replaces the default list w
 
 The bridge chooses its Gotify application from a `?token=` on the webhook URL, so the receiver's URL is a credential and is not written in the release. It sets `url_file` instead, against a SOPS Secret named in `alertmanagerSpec.secrets`, which the operator mounts at `/etc/alertmanager/secrets/<name>/`. prometheus-operator re-marshals the raw config through its own structs and silently drops what it does not model: it does model `url_file`, but strips it below Alertmanager 0.26.0 and discards it outright when `url` is set alongside. Alertmanager reads the file inside each notification rather than at config load, so rotating the Secret needs no restart. The bridge's own `GOTIFY_TOKEN` is only the fallback for a request that carries no `?token=`; it holds a literal placeholder because the bridge exits 1 when it is unset, not because anything reads it.
 
-Gotify itself runs `ghcr.io/joker9944/gotify-custom`, an image **built by this repo** so that the `gotify-slack-webhook` Go plugin is compiled against a matching gotify-server ABI. That constraint is the reason `pkgs/gomod-cap.nix` exists — see [images and CI](/workflows/images-and-ci.md). Gotify keeps state in its own CNPG cluster and uses `ghcr.io/joker9944/postgresql-client`, another repo-built image, as a helper container.
+Gotify itself runs upstream's own `ghcr.io/gotify/server`, which puts its version under renovate's no-comment image manager — see [images and CI](/workflows/images-and-ci.md). Gotify keeps state in its own CNPG cluster and uses `ghcr.io/joker9944/postgresql-client`, another repo-built image, as a helper container.
 
 **v3 configures from the environment only, and a list value is one bare CSV line.** The v2 `[a,b]` form still parses — as a single element with the brackets in it. That is silent both ways: gin discards the error from `SetTrustedProxies`, so a bracketed CIDR just leaves `X-Forwarded-For` unread, and CORS origins are unanchored regexes, where `[gotify.vonarx.online]` is a character class that matches almost any origin.
+
+**A setting is disabled by an empty value, not an absent one.** gotify reads with `os.LookupEnv`, so a present-but-empty variable overrides a default where deleting the variable restores it — and several of those defaults are paths relative to the image's workdir. `GOTIFY_PLUGINSDIR` is the one that bites: gotify `MkdirAll`s a non-empty plugins dir and exits 1 when it cannot, so leaving it unset on a read-only root crashloops the pod against a default of `data/plugins`. Hence `null` in the release, which app-template renders as a present variable carrying a null value.
 
 # Coverage gaps
 
