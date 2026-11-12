@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 
+- pgadmin and the `utility` tier are gone; CNPG is reached with `kubectl cnpg psql` — [flux topology](/architecture/flux-topology.md), [capability graph](/architecture/capability-graph.md)
 - `LokiCanaryDuplicateEntries` reads the canary's metric test; the duplicate counter measures tail reconnect replays — [observability](/platform/observability.md)
 - `app` is set at the source for flux, tailscale proxies, volsync movers and redis-operator; longhorn's manager-created pods and k3s addons are escape hatches — [telemetry label convention](/platform/telemetry-labels.md), [observability](/platform/observability.md)
 - qbittorrent resolves through kube-dns: gluetun's `DNS_KEEP_NAMESERVER` replaces `ndots:1` — [networking and ingress](/platform/networking-and-ingress.md)

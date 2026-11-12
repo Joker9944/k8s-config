@@ -55,32 +55,3 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: media
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: OCIRepository
-metadata:
-  name: utility
-  namespace: flux-system
-spec:
-  interval: 10m
-  ref:
-    tag: latest
-  url: oci://ghcr.io/joker9944/k8s-config/utility
-  verify:
-    provider: cosign
-    matchOIDCIdentity:
-      - issuer: ^https://token\.actions\.githubusercontent\.com$
-        subject: ^https://github\.com/Joker9944/k8s-config/\.github/workflows/cue-publish\.yaml@refs/heads/main$
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: utility
-  namespace: flux-system
-spec:
-  interval: 30m
-  path: ./sync
-  prune: true
-  sourceRef:
-    kind: OCIRepository
-    name: utility

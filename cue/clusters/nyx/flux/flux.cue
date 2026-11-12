@@ -28,7 +28,6 @@ _tiers: {
 	storage: tree:       "infrastructure"
 	cloud: tree:         "apps"
 	media: tree:         "apps"
-	utility: tree:       "apps"
 }
 
 // One artifact per tier, so an evaluation error in one cannot stall the others.

@@ -4,7 +4,7 @@ title: Networking and ingress
 description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and why the VPN sidecar is kept out of pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T19:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
 ---
 
 # The edge
@@ -55,14 +55,14 @@ The underscore is `safeNaming`, on in the chart values. It applies to every name
 
 The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to Traefik rather than behind it. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chain above: no rate limit, no secure headers. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
 
-It carries everything that is not public: pgadmin, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
+It carries everything that is not public: qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
 
 **The advertised name is `spec.tls[0].hosts[0]` cut at the first dot**, and the cut has to leave a valid DNS label. That is the whole of the hostname interface — there is no hostname annotation — and the `tls` block is mandatory despite naming no Secret, because it feeds two things:
 
 - the name, which without it falls back to `<namespace>-<name>-ingress`;
 - **rule matching.** A `spec.rules[].host` that is non-empty and does not equal the _full_ MagicDNS FQDN is discarded, one warning Event per rule. Discard them all and the handler map is empty: the Ingress still reconciles and still reports an ADDRESS, but serves nothing.
 
-So the host has to be the FQDN, not the bare label the upstream example shows. That example omits the rule host entirely, which is the only other way to satisfy the comparison and is unavailable here — app-template requires `host` on a host entry, and longhorn, pgadmin4 and kube-prometheus-stack always write one. `#Release` derives the label from `host` exactly as the operator does and unifies the FQDN back, so a tailnet release left on a `vonarx.online` host conflicts at build time rather than reconciling into silence.
+So the host has to be the FQDN, not the bare label the upstream example shows. That example omits the rule host entirely, which is the only other way to satisfy the comparison and is unavailable here — app-template requires `host` on a host entry, and longhorn and kube-prometheus-stack always write one. `#Release` derives the label from `host` exactly as the operator does and unifies the FQDN back, so a tailnet release left on a `vonarx.online` host conflicts at build time rather than reconciling into silence.
 
 **No certificate is declared or stored.** Tailscale provisions and serves it, and `spec.tls[].secretName` is never read — which is why longhorn's chart writing `secretName` unconditionally whenever `ingress.tls` is set needs no postRenderer: the stale wildcard name is inert. The operator does reject more than one `tls` entry, or more than one host inside it.
 

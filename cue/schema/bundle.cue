@@ -66,7 +66,7 @@ import (
 
 	// The label is cut from the host exactly as the operator cuts it, and
 	// unifying `host` back in under `tailnet` asserts the caller actually wrote
-	// a name in the tailnet domain: `pgadmin.vonarx.online` conflicts here.
+	// a name in the tailnet domain: `longhorn.vonarx.online` conflicts here.
 	_tailnet: #TailnetIngress & {label: strings.Split(host, ".")[0]}
 	if tailnet {_tailnet: "host": host}
 

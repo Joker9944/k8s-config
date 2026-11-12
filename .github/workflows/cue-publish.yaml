@@ -36,7 +36,6 @@ jobs:
           - storage
           - cloud
           - media
-          - utility
 
     steps:
       - name: Repository checkout

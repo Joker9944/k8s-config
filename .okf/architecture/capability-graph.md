@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -46,10 +46,10 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 30 bundles, 33 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 29 bundles, 33 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
-L0  cert-manager  cnpg  longhorn  pgadmin  redis-operator  reflector
+L0  cert-manager  cnpg  longhorn  redis-operator  reflector
     reloader  generic-device-plugin  nvidia-device-plugin  tailscale-operator
 L1  certs-config  cnpg-config  longhorn-config  tailscale-config
 L2  traefik
@@ -65,7 +65,7 @@ The two chains that set the depth:
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → volsync`
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → garage → loki → alloy`
 
-`traefik` at L2 is the fleet's articulation point: 10 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` and `pgadmin` are now roots. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
+`traefik` at L2 is the fleet's articulation point: 10 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` is now a root. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
 
 Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Without it a blocked reconcile retries at the interval, so a six-hop chain costs an hour of waiting rather than six minutes.
 

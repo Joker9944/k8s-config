@@ -52,8 +52,8 @@ _traefik: schema.#Release & {
 		// needs a raw additionalArguments entry, not `safeNaming: false`.
 		providers: kubernetesCRD: safeNaming: true
 
-		// Backends that derive variable names from header names (pgadmin on
-		// WSGI) read `X_Auth_User` as `X-Auth-User`, so a client can spoof
+		// Backends that derive variable names from header names (WSGI, CGI)
+		// read `X_Auth_User` as `X-Auth-User`, so a client can spoof
 		// what Traefik manages.
 		ports: {
 			// the edge's nginx answers :80 itself, so nothing reaches this one

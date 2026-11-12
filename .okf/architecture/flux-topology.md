@@ -5,7 +5,7 @@ description: The three-level Kustomization graph that reconciles nyx, its per-ti
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
 ---
 
 # Three levels
@@ -23,7 +23,6 @@ generated: { by: claude-code/opus-5, at: 2026-10-25T00:00:00Z }
 | `storage`       | `…/storage`                                      |
 | `cloud`         | `…/cloud`                                        |
 | `media`         | `…/media`                                        |
-| `utility`       | `…/utility`                                      |
 
 Both files are generated — `cue cmd --inject out=.. bootstrap ./clusters/nyx/flux` from `cue/` — and committed, because level 1 reconciles them out of git. They are the only place that names the registry.
 
