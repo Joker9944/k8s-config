@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 
+- `app` is set at the source for flux, tailscale proxies, volsync movers and redis-operator; longhorn's manager-created pods and k3s addons are escape hatches — [telemetry label convention](/platform/telemetry-labels.md), [observability](/platform/observability.md)
 - qbittorrent resolves through kube-dns: gluetun's `DNS_KEEP_NAMESERVER` replaces `ndots:1` — [networking and ingress](/platform/networking-and-ingress.md)
 - qbittorrent resolves under ClusterFirst at `ndots:1` with gluetun as a native sidecar; gluetun takes its local resolver from the pod's `resolv.conf` — [networking and ingress](/platform/networking-and-ingress.md)
 - Country filtering is wopr's; Traefik loads only the oidc plugin and every public ingress gets `chain-basic`, with no `chain` field — [networking and ingress](/platform/networking-and-ingress.md), [adding an app](/workflows/adding-an-app.md)

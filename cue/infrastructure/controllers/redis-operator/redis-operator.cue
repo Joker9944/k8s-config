@@ -26,5 +26,8 @@ _redisOperator: schema.#Release & {
 
 	// the operator ships a cert-manager Issuer of its own; the fleet's certs
 	// come from the nyx-intermediate-ca ClusterIssuer instead
-	values: issuer: create: false
+	values: {
+		issuer: create: false
+		redisOperator: podLabels: "app.kubernetes.io/name": "redis-operator"
+	}
 }

@@ -121,6 +121,7 @@ package schema
 	secretName: "\(app)-restic-\(vol)"
 
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
+	_moverLabels: {"app.kubernetes.io/name": "volsync"}
 
 	out: {
 		"dest-\(vol)": {
@@ -139,6 +140,7 @@ package schema
 						capacity:                size
 						copyMethod:              "Snapshot"
 						moverSecurityContext:    _mover
+						moverPodLabels:          _moverLabels
 						storageClassName:        "longhorn"
 						volumeSnapshotClassName: "longhorn"
 					}
@@ -161,6 +163,7 @@ package schema
 						storageClassName:      "longhorn-local-lax"
 						cacheStorageClassName: "longhorn"
 						moverSecurityContext:  _mover
+						moverPodLabels:        _moverLabels
 					}
 				}
 			}

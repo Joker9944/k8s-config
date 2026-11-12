@@ -30,9 +30,18 @@ Five indexed stream labels:
 to `app`, so Loki writes `service_name` from it and `unknown_service` means
 exactly "missing `app`" — in Drilldown, in the label API and in a selector alike.
 
-That is also why `app` must never be given a fallback that invents a plausible
-value: it would leave `{app=""}` permanently empty, with nothing left to measure.
-A source that cannot supply `app` has to arrive unset.
+`app` comes from `app.kubernetes.io/name` and is fixed where the pod is
+defined — chart values, a kustomize patch, an operator's pod-label field. A
+generic fallback would invent a plausible value and leave `{app=""}`
+permanently empty, with nothing left to measure, so a source that cannot supply
+`app` arrives unset. The escape hatches, in the base config, are for pods
+nothing here can label, each scoped to one namespace and firing only when `app`
+is still empty:
+
+- `longhorn-system` → `longhorn`, the value its chart pods already carry;
+  longhorn-manager creates its own pods with no label hook.
+- `kube-system` → the pod's `k8s-app`; k3s rewrites its addon manifests on
+  start, so short of disabling an addon its pods cannot be relabelled.
 
 **One log source is exempt.** The cluster-events source is not a pod stream and has
 no container to name. It is not a workload, and not a defect to chase.

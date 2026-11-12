@@ -27,7 +27,7 @@ _proxyClass: {
 	kind:       "ProxyClass"
 	metadata: name: "spread"
 	spec: statefulSet: pod: {
-		labels: podLabel
+		labels: podLabel & {"app.kubernetes.io/name": "tailscale"}
 		// DoNotSchedule across the three schedulable nodes, which degrades to 2+1
 		// during a drain where a required podAntiAffinity would leave a pod
 		// Pending. nodeTaintsPolicy keeps the reserved node out of the skew.

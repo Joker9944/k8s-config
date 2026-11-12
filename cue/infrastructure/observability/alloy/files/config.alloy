@@ -43,6 +43,25 @@ discovery.relabel "k8s_pod_logs" {
 		target_label  = "app"
 	}
 
+	// Escape hatch: longhorn-manager creates its own pods with no label hook, so
+	// an unnamed pod in its namespace takes the name its chart pods carry.
+	rule {
+		source_labels = ["app", "__meta_kubernetes_namespace"]
+		regex         = ";longhorn-system"
+		action        = "replace"
+		target_label  = "app"
+		replacement   = "longhorn"
+	}
+
+	// Escape hatch: k3s ships its addons from manifests it rewrites on start, so
+	// their pods keep the legacy `k8s-app` key.
+	rule {
+		source_labels = ["app", "__meta_kubernetes_namespace", "__meta_kubernetes_pod_label_k8s_app"]
+		regex         = ";kube-system;(.+)"
+		action        = "replace"
+		target_label  = "app"
+	}
+
 	rule {
 		source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
 		action        = "replace"

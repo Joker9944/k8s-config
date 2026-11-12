@@ -3,3 +3,32 @@ kind: Kustomization
 resources:
   - gotk-components.yaml
   - gotk-sync.yaml
+patches:
+  - target:
+      kind: Deployment
+      name: helm-controller
+    patch: |
+      - op: add
+        path: /spec/template/metadata/labels/app.kubernetes.io~1name
+        value: helm-controller
+  - target:
+      kind: Deployment
+      name: kustomize-controller
+    patch: |
+      - op: add
+        path: /spec/template/metadata/labels/app.kubernetes.io~1name
+        value: kustomize-controller
+  - target:
+      kind: Deployment
+      name: notification-controller
+    patch: |
+      - op: add
+        path: /spec/template/metadata/labels/app.kubernetes.io~1name
+        value: notification-controller
+  - target:
+      kind: Deployment
+      name: source-controller
+    patch: |
+      - op: add
+        path: /spec/template/metadata/labels/app.kubernetes.io~1name
+        value: source-controller
