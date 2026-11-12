@@ -129,19 +129,21 @@ _loki: schema.#Release & {
 			}
 
 			// Neither the chart nor the upstream mixin alerts on the canary at all —
-			// it ships the metrics and leaves the thresholds open. duplicate_entries
-			// is what a repeat of the four-way push would have tripped; missing_entries
-			// is the loss side of the same path.
+			// it ships the metrics and leaves the thresholds open. Duplicates are read
+			// from the metric test, which counts the stream in storage, because
+			// duplicate_entries_total counts what the websocket tail delivers twice:
+			// every hourly tail reconnect replays the last ~100s. The `expected` floor
+			// keeps a young pod's few-line edge error from moving the ratio.
 			additionalPrometheusRules: "loki-canary": groups: [{
 				name: "loki-canary"
 				rules: [{
 					alert: "LokiCanaryDuplicateEntries"
-					expr:  "sum(increase(loki_canary_duplicate_entries_total[10m])) > 0"
+					expr:  "loki_canary_metric_test_actual / loki_canary_metric_test_expected > 1.01 and loki_canary_metric_test_expected > 1000"
 					"for": "15m"
 					labels: severity: "warning"
 					annotations: {
 						summary:     "Alloy is shipping log lines more than once."
-						description: "loki-canary received lines more than once; Alloy is shipping log lines more than once."
+						description: "loki-canary {{ $labels.pod }} finds {{ $value | humanizePercentage }} of the lines it wrote stored in Loki; Alloy is shipping log lines more than once."
 					}
 				}, {
 					alert: "LokiCanaryMissingEntries"

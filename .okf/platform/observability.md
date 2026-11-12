@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T20:50:00Z }
 ---
 
 # The tier
@@ -100,7 +100,7 @@ Traefik is the third app-level monitor, and it is the one that does not live wit
 
 **Loki's `monitoring.rules` is not the dashboards' dependency, it is an alert's.** `LokiRequestLatency` reads the recording rule `cluster_namespace_job_route:loki_request_duration_seconds:99quantile`, so `alerts` enabled without `rules` leaves that one alert inert — the same silence as an unselected monitor. The ServiceMonitor's 15s default interval is load-bearing for the same rules, which take a 1m rate. `multiCluster` stays off: the rules keep their `cluster_` names but aggregate by no such label, which is what [the convention](/platform/telemetry-labels.md) wants on the metrics side.
 
-**Nothing upstream alerts on the canary.** Neither the chart nor the `loki-mixin` it is generated from references `loki_canary_*` at all — the canary ships metrics and leaves every threshold open, and its operations doc proposes none. `monitoring.additionalPrometheusRules` carries the pair worth having: `loki_canary_missing_entries_total` for loss, and `loki_canary_duplicate_entries_total` — one increment per line received more than once — which is the direct tell for the clustering-ring failure above, the one that previously showed up nowhere.
+**Nothing upstream alerts on the canary.** Neither the chart nor the `loki-mixin` it is generated from references `loki_canary_*` at all — the canary ships metrics and leaves every threshold open, and its operations doc proposes none. `monitoring.additionalPrometheusRules` carries the pair worth having: `loki_canary_missing_entries_total` for loss, and for duplicates the metric test — `loki_canary_metric_test_actual` over `_expected`, the canary's periodic count of its own stream in storage — which is the direct tell for the clustering-ring failure above, the one that previously showed up nowhere. **`loki_canary_duplicate_entries_total` is not that tell**: it counts what the websocket tail delivers twice, and Loki closes every tail at its one-hour max duration, so each reconnect replays the last ~100s and counts ~60 duplicates per pod, with a trickle of 1–2 between reconnects and every line still stored once. `websocket_missing_entries_total` climbs the same way.
 
 **A .NET or Go workload exposing a `/metrics` endpoint is not on its own a reason to scrape it**: the common libraries (`prometheus-net`, the runtime's own meters) instrument the host process rather than the application, so the result can be hundreds of series of GC and threadpool internals with nothing in them about what the app does. Jellyfin was measured and rejected on exactly that basis — [its own decision](/decisions/jellyfin-metrics-not-scraped.md) carries the breakdown.
 
