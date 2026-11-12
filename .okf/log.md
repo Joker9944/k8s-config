@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-13
+
+- jellyseerr has a pipeline: ANSI stripped, winston level promoted — [observability](/platform/observability.md)
+
 ## 2026-11-12
 
 - pgadmin and the `utility` tier are gone; CNPG is reached with `kubectl cnpg psql` — [flux topology](/architecture/flux-topology.md), [capability graph](/architecture/capability-graph.md)

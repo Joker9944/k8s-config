@@ -1,0 +1,54 @@
+// The jellyseerr log pipeline. Loaded into alloy's config graph by the sidecar
+// that watches ConfigMaps labelled alloy_config; the base config lives with
+// alloy and supplies loki.process.common and the target set read below.
+
+discovery.relabel "jellyseerr" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
+	// what removes them from alloy's generic branch.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
+		regex         = "jellyseerr"
+		action        = "keep"
+	}
+}
+
+loki.source.kubernetes "jellyseerr" {
+	targets    = discovery.relabel.jellyseerr.output
+	forward_to = [loki.process.jellyseerr.receiver]
+
+	clustering {
+		enabled = true
+	}
+}
+
+loki.process "jellyseerr" {
+	forward_to = [loki.process.common.receiver]
+
+	// seerr's console transport colorizes unconditionally (server/logger.ts), so
+	// the level arrives as `[\e[32minfo\e[39m]` and nothing reads it.
+	stage.replace {
+		expression = "(\\x1b\\[\\d+m)"
+		replace    = ""
+	}
+
+	// `<timestamp> [<level>][<label>]: <message> <metadata JSON>`, of which only
+	// the level is read: the timestamp is supplied by the container runtime.
+	stage.regex {
+		expression = "^\\S+ \\[(?P<level>\\w+)\\]"
+	}
+
+	// winston's npm vocabulary. The final else is not decoration: stage.template
+	// creates its source field when absent, so it runs on npm's own start-up lines.
+	stage.template {
+		source   = "level"
+		template = "{{ if eq .Value \"error\" \"warn\" \"info\" \"debug\" }}{{ .Value }}{{ else if eq .Value \"http\" }}info{{ else if eq .Value \"verbose\" }}debug{{ else if eq .Value \"silly\" }}trace{{ else }}unknown{{ end }}"
+	}
+
+	stage.structured_metadata {
+		values = {
+			level = "level",
+		}
+	}
+}

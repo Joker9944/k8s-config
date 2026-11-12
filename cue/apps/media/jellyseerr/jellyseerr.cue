@@ -1,3 +1,5 @@
+@extern(embed)
+
 package jellyseerr
 
 // The product is seerr upstream; every name here is still jellyseerr.
@@ -7,7 +9,16 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "jellyseerr"
+	before: [_logs.out]
 	releases: [_jellyseerr]
+}
+
+_jellyseerrLogs: _ @embed(file="files/jellyseerr.alloy", type=text)
+
+_logs: schema.#AlloyPipeline & {
+	app:    "jellyseerr"
+	ns:     bundle.namespace
+	config: _jellyseerrLogs
 }
 
 _jellyseerr: schema.#AppRelease & {
@@ -35,6 +46,7 @@ _jellyseerr: schema.#AppRelease & {
 		global: labels: "app.kubernetes.io/part-of": partOf
 
 		defaultPodOptions: {
+			labels: _logs.podLabels
 			labels: "app.kubernetes.io/part-of": partOf
 			topologySpreadConstraints: [{
 				maxSkew:           1
