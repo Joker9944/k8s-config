@@ -108,6 +108,8 @@ _alloy: schema.#Release & {
 		// path alloy reads. The WATCH sidecar owns reloads instead.
 		configReloader: enabled: false
 
+		serviceMonitor: enabled: true
+
 		controller: {
 			tolerations: [schema.#Reserved.any]
 			volumes: extra: [{name: "alloy-d", emptyDir: {}}]

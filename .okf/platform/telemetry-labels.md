@@ -4,7 +4,7 @@ title: Telemetry label convention
 description: The label set every log stream and metric series should carry, why `cluster` is an anchor rather than an identity, why `service_name` needs no rule of its own, and why the two signals do not spell the service the same way.
 tags: [prometheus, loki, alloy, labels, logs, metrics]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
 ---
 
 The label set to aim at. What the pipeline emits today is
@@ -34,20 +34,25 @@ That is also why `app` must never be given a fallback that invents a plausible
 value: it would leave `{app=""}` permanently empty, with nothing left to measure.
 A source that cannot supply `app` has to arrive unset.
 
-**Two log sources are exempt.** `loki-canary` pushes to Loki directly rather than
-through Alloy and carries only `pod` and `stream`, so it satisfies none of this
-and is invisible to a `cluster`-anchored query besides. The cluster-events source
-is not a pod stream and has no container to name. Neither is a workload, and
-neither is a defect to chase.
+**One log source is exempt.** The cluster-events source is not a pod stream and has
+no container to name. It is not a workload, and not a defect to chase.
+
+**`loki-canary` conforms and carries a sixth label.** It writes to stdout and
+arrives through Alloy like anything else, then reads its own lines back with
+`{job="loki/canary", pod=…}` — a selector it cannot be talked out of, the label's value being
+hardcoded to the pod name. So it is the one stream where `pod` stays indexed; four
+pods, four streams. The exception is the pipeline's, not this convention's, and
+[observability](/platform/observability.md) holds the mechanism.
 
 # `cluster` is an anchor, not an identity
 
 Its cardinality is 1 and it will stay 1 — nothing here will ever monitor a second
 cluster. It is kept anyway because **a Loki selector needs at least one non-empty
 matcher**, so expressing "every stream" requires one label that every stream can
-carry, and no other candidate qualifies: `job` and `container` are absent on
-anything that pushes to Loki directly rather than through Alloy, `namespace` is
-absent on sources that are not a pod.
+carry. `container` is absent on the cluster-events source and `namespace` on
+anything that is not a pod, which leaves `job` as the only other candidate — and
+it is a regex across every `<namespace>/<container>` pair where `cluster` is one
+exact match of one value.
 
 That makes it the one place a constant-valued label is correct. The cost
 upstream warns about is stream count, and a label with one value splits nothing —
@@ -110,7 +115,7 @@ plus the workload is the correspondence that holds across both.
 
 # What stays out of the index
 
-`pod`, `node`, `component` and `version` belong in structured metadata, and
+`pod` (bar the canary above), `node`, `component` and `version` belong in structured metadata, and
 `instance` has no place on a log stream at all — it is a concatenation of values
 already present. Structured metadata keeps them queryable after the selector
 without creating a stream per value, which is what an identifier that changes on

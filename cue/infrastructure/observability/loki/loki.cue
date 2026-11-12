@@ -101,6 +101,75 @@ _loki: schema.#Release & {
 			}
 		}
 
+		// One ServiceMonitor covers the lot: its selector is the chart's own
+		// selectorLabels plus `prometheus.io/service-monitor NotIn [false]`, so
+		// read, write, backend, the memcached caches and the canary are all in
+		// while the headless and gateway Services carry the opt-out label.
+		monitoring: {
+			serviceMonitor: enabled: true
+
+			// `rules` is not dashboards-only: LokiRequestLatency reads the recording
+			// rule cluster_namespace_job_route:loki_request_duration_seconds:99quantile,
+			// so alerts without rules leaves that one alert inert rather than broken.
+			rules: enabled:  true
+			alerts: enabled: true
+
+			// multiCluster stays off — the recording rules keep their cluster_ names
+			// but aggregate by no `cluster` label, which is what the metrics side of
+			// the label convention asks for.
+			dashboards: {
+				enabled: true
+
+				// components this cluster does not run: there is no bloom planner,
+				// builder or gateway, and the s3 storage is the legacy client rather
+				// than the thanos objstore one.
+				"loki-bloom-build": enabled:           false
+				"loki-bloom-gateway": enabled:         false
+				"loki-thanos-object-storage": enabled: false
+			}
+
+			// Neither the chart nor the upstream mixin alerts on the canary at all —
+			// it ships the metrics and leaves the thresholds open. duplicate_entries
+			// is what a repeat of the four-way push would have tripped; missing_entries
+			// is the loss side of the same path.
+			additionalPrometheusRules: "loki-canary": groups: [{
+				name: "loki-canary"
+				rules: [{
+					alert: "LokiCanaryDuplicateEntries"
+					expr:  "sum(increase(loki_canary_duplicate_entries_total[10m])) > 0"
+					"for": "15m"
+					labels: severity: "warning"
+					annotations: {
+						summary:     "Alloy is shipping log lines more than once."
+						description: "loki-canary received lines more than once; Alloy is shipping log lines more than once."
+					}
+				}, {
+					alert: "LokiCanaryMissingEntries"
+					expr:  "sum(increase(loki_canary_missing_entries_total[10m])) > 0"
+					"for": "15m"
+					labels: severity: "warning"
+					annotations: {
+						summary:     "Log lines written to stdout are not reaching Loki."
+						description: "loki-canary wrote lines to stdout that never came back from Loki; the Alloy → Loki path is losing lines."
+					}
+				}]
+			}]
+		}
+
+		// Writing to stdout rather than pushing straight at the gateway is what
+		// puts alloy inside the loop the canary measures, so the collection path
+		// is covered and not just write and query. It reads its lines back with
+		// `{job="loki/canary", pod=…}`, which is why alloy's common pipeline
+		// exempts this one stream from demoting `pod`. The stream half defaults to
+		// `stream="stdout"`, a label alloy never sets.
+		lokiCanary: {
+			push: false
+			extraArgs: ["-streamname=job", "-streamvalue=loki/canary"]
+			// alloy covers every node; a canary that skipped mother would leave
+			// that node's collection path untested.
+			tolerations: [schema.#Reserved.any]
+		}
+
 		chunksCache: resources: {
 			requests: {memory: "983Mi", cpu: "500m"}
 			limits: memory: "9830Mi"

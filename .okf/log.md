@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-11-12
+
+- The canary's selector also names a stream label, and its `stream="stdout"` default matched nothing — [observability](/platform/observability.md)
+- The Gotify bridge rejects alerts without a `description` annotation — [observability](/platform/observability.md)
+- Alloy drops the canary's stderr, which otherwise feeds back into the stream it reads — [observability](/platform/observability.md)
+
 ## 2026-11-10
 
 - The gotify slack webhook plugin is gone, and with it `gomod-cap` and the whole plugin-ABI constraint on the image — [images, CI and dependency updates](/workflows/images-and-ci.md), [development environment](/workflows/dev-environment.md)
@@ -8,9 +14,13 @@
 - Jellyfin's SSO comes from the fork that kept 9p4's plugin GUID, not from the newer oidc plugin — [jellyfin's SSO plugin](/decisions/jellyfin-sso-plugin.md)
 - `PluginRepositories` lives in `system.xml`, a dashboard save rewrites the file from memory, and a plugin upgrade stages a second directory until restart — [jellyfin's config](/workflows/jellyfin-config.md)
 - Clients grant the legacy `groups` scope, so consumer role lists carry the SPN suffix; `groups_name` drops it — [identity — kanidm](/platform/identity-kanidm.md)
+- Per-library `options.xml`: `ImageFetchers`/`MetadataFetchers` are the enabled sets, the `*Order` lists only rank them — [jellyfin's config](/workflows/jellyfin-config.md)
 
 ## 2026-11-09
 
+- Loki and Alloy are scraped; loki's `monitoring` carries the mixin, and its `rules` are a dependency of `LokiRequestLatency` rather than of the dashboards — [observability](/platform/observability.md)
+- loki-canary writes to stdout so Alloy is inside the loop it measures, which makes its stream the one place `pod` stays indexed — [observability](/platform/observability.md), [telemetry label convention](/platform/telemetry-labels.md)
+- Nothing upstream alerts on the canary; `loki_canary_duplicate_entries_total` is the tell for the clustering-ring failure — [observability](/platform/observability.md)
 - Renovate majors labelled `ai-triage`, a queue a review-only Claude triage workflow drains — [images, CI and dependency updates](/workflows/images-and-ci.md)
 
 ## 2026-11-08

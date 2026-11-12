@@ -19,6 +19,13 @@ All of it is in the `config` volume, mounted at `/config`.
 | `/config/metadata/`, `/config/root/` | fetched artwork, library roots                                |
 | `/config/log/`                       | Jellyfin's own rolling log files                              |
 
+Per-library settings are not in `/config/config/` — each library has its own
+`/config/root/default/<library>/options.xml`. In it, `<ImageFetchers>` and
+`<MetadataFetchers>` are the _enabled_ sets while the matching `*Order` lists only
+rank them, so a provider can sit in the order list and never run. `Screen Grabber`
+is the ffmpeg frame grab that gives a video a poster when no fetcher supplies one,
+and it has to appear in `ImageFetchers` to fire.
+
 The log directory is Serilog's file sink. What reaches Loki is the console sink
 off container stdout, by way of `files/jellyfin.alloy` — not these files.
 

@@ -77,10 +77,31 @@ loki.process "common" {
 		}
 	}
 
-	stage.structured_metadata {
-		values = {
-			pod  = "pod",
-			node = "node",
+	// The Kubernetes log API merges stdout and stderr, so the canary's
+	// diagnostics would land in the stream it reads back. Every one fails its
+	// probe parse and is reported on stderr again — a loop that grows without
+	// bound. Only probe lines (`<unix nanos> ppp…`) may enter its stream.
+	stage.match {
+		selector            = "{job=\"loki/canary\"} !~ \"^[0-9]+ p+[[:space:]]*$\""
+		action              = "drop"
+		drop_counter_reason = "canary_stderr"
+	}
+
+	// loki-canary reads its own lines back with
+	// `{job="loki/canary", pod="<its pod name>"}` — the `job` half is its
+	// -streamname/-streamvalue, the `pod` value is hardcoded — so the one stream
+	// whose `pod` has to stay an index label is this one. A demoted `pod` is not
+	// a slow query here but a permanently red canary: the selector would match no
+	// stream at all. This selector names `job` too, set in
+	// discovery.relabel.k8s_pod_logs and so already present.
+	stage.match {
+		selector = "{job!=\"loki/canary\"}"
+
+		stage.structured_metadata {
+			values = {
+				pod  = "pod",
+				node = "node",
+			}
 		}
 	}
 

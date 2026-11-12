@@ -42,7 +42,7 @@
       "id": 2,
       "type": "table",
       "title": "Streams missing a required label",
-      "description": "One row per non-conforming stream; the same set Drilldown shows as `unknown_service`. Queried on `app` directly so it holds regardless of Loki's `discover_service_name` limit. The cluster-events source is exempt and filtered out; loki-canary carries no `cluster` and is invisible here by construction.",
+      "description": "One row per non-conforming stream; the same set Drilldown shows as `unknown_service`. Queried on `app` directly so it holds regardless of Loki's `discover_service_name` limit. The cluster-events source is exempt and filtered out.",
       "gridPos": { "x": 0, "y": 1, "w": 16, "h": 9 },
       "datasource": { "type": "loki", "uid": "${logs}" },
       "targets": [
@@ -72,7 +72,7 @@
       "id": 3,
       "type": "table",
       "title": "Out-of-convention labels in the index",
-      "description": "Lines carrying a label the convention puts in structured metadata, or excludes outright. This is a scale indicator rather than an outlier list — every pod stream currently carries all of these.",
+      "description": "Lines carrying a label the convention puts in structured metadata, or excludes outright. A scale indicator rather than an outlier list. Only `pod` reports, and only for loki-canary: it reads its own lines back with `{pod=…}`, so that one stream keeps the label deliberately.",
       "gridPos": { "x": 16, "y": 1, "w": 8, "h": 9 },
       "datasource": { "type": "loki", "uid": "${logs}" },
       "targets": [
