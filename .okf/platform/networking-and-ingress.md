@@ -1,10 +1,10 @@
 ---
 type: Infrastructure
 title: Networking and ingress
-description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
+description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and why the VPN sidecar is kept out of pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T19:30:00Z }
 ---
 
 # The edge
@@ -78,10 +78,15 @@ The tailnet settings an Ingress depends on are not in this repo — MagicDNS, HT
 
 The cluster serves no LAN DNS of its own; that moved off-cluster with the address pool.
 
-Pods inherit the node's search domains, so every pod's `resolv.conf` carries the tailnet domain (`#TailnetDomain`, `stoat-herring.ts.net`) after the three `.cluster.local` entries, at `ndots:5`. That is harmless until a VPN sidecar owns the resolver.
+Pods inherit the node's search domains, so every pod's `resolv.conf` carries the tailnet domain (`#TailnetDomain`, `stoat-herring.ts.net`) after the three `.cluster.local` entries, at `ndots:5`. kube-dns answers the walk correctly; gluetun's resolver does not.
 
-gluetun points `resolv.conf` at its own server on `127.0.0.1` — one file, bind-mounted into every container of the pod and rewritten on each `DNS_UPDATE_PERIOD` — and answers **`NOERROR` with zero answers, not `NXDOMAIN`**, for any name it cannot resolve. Only `.cluster.local` gets a true `NXDOMAIN`. musl reads `NOERROR` as "the name exists, with no address of this type" and abandons the search walk there, so a relative lookup dies on the tailnet suffix and the absolute name is never queried. In qBittorrent every tracker then reports `Host not found (authoritative)` — Boost.Asio's rendering of `EAI_NODATA`, which reads like an upstream NXDOMAIN and is not one.
+**[qbittorrent](/architecture/app-template-pattern.md) keeps gluetun out of DNS entirely.** `DNS_KEEP_NAMESERVER=on` leaves `resolv.conf` untouched and starts no DNS server, so the pod resolves through kube-dns, in plaintext and outside the tunnel. Lookups leak — tracker hostnames included — and peer and tracker traffic still leave over `wg0`. That exposes nothing new: prowlarr and the other *arrs run without a VPN and already resolve the same indexer and tracker hosts through kube-dns. `FIREWALL_OUTBOUND_SUBNETS` already admits the ServiceCIDR. The setting exists only through v3.41.x; later releases replace it with `DNS_UPSTREAM_PLAIN_ADDRESSES`, which keeps gluetun's server in the path and with it both failures below.
 
-**Two tools lie about this.** `curl` in these images links c-ares (`curl -V` → `AsynchDNS`), which tolerates the bogus `NOERROR` and keeps walking; `nslookup` queries the name as given and never applies the search list at all. Both succeed while the app fails. Only `getaddrinfo` reproduces it, so test with that.
+Left in charge, gluetun's resolver breaks the pod in two ways:
 
-[qbittorrent](/architecture/app-template-pattern.md) is the fix's only site: `dnsPolicy: None` plus an explicit `searches` omitting the suffix. `dnsConfig.searches` under `ClusterFirst` only ever _appends_, so removing an inherited domain needs `None`, and `None` in turn requires an explicit `nameservers` — which hardcodes the cluster domain and the namespace into the package. Keeping `ndots:5` is deliberate: the walk now exhausts three `NXDOMAIN`s and reaches the absolute name, and short cluster names still resolve. Any other musl workload put behind gluetun needs the same treatment. <!-- cSpell:ignore ndots resolv musl NXDOMAIN NOERROR getaddrinfo NODATA Asio -->
+- **It forwards local names to itself.** At start it records every private or loopback `nameserver` in `resolv.conf` as the upstream for local names — single-label, or ending in `.local`, `.lan`, `.internal` and a few others — answering a synthetic `NXDOMAIN` when that fails; no setting overrides the list. It then rewrites the file — one file, bind-mounted into every container of the pod — to `127.0.0.1`, dropping the original `nameserver` lines, so a gluetun container restarted inside a running pod reads its own address back and forwards to itself: every search step costs a failed dial and a `dialing local DNS` warning until the pod is recreated.
+- **Names under the tailnet suffix come back `NOERROR` with zero answers, not `NXDOMAIN`.** gluetun's own middlewares synthesize only REFUSED, NXDOMAIN and SERVFAIL, so the answer originates upstream. musl reads `NOERROR` as "the name exists, with no address of this type" and abandons the search walk, so a relative lookup that reaches the tailnet suffix never tries the absolute name. In qBittorrent every tracker then reports `Host not found (authoritative)` — Boost.Asio's rendering of `EAI_NODATA`, which reads like an upstream NXDOMAIN and is not one.
+
+**Two tools lie about the second.** `curl` in these images links c-ares (`curl -V` → `AsynchDNS`), which tolerates the bogus `NOERROR` and keeps walking; `nslookup` queries the name as given and never applies the search list at all. Both succeed while the app fails. Only `getaddrinfo` reproduces it, so test with that.
+
+gluetun runs as a native sidecar, an init container with `restartPolicy: Always`: its startup probe passes only once the tunnel is up, so the app starts with `wg0` present. Any other workload put behind gluetun takes the same shape. <!-- cSpell:ignore ndots resolv musl NXDOMAIN NOERROR getaddrinfo NODATA Asio SERVFAIL -->

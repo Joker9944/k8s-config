@@ -1,6 +1,6 @@
 package qbittorrent
 
-// cSpell:ignore devic ndots resolv musl NXDOMAIN NOERROR
+// cSpell:ignore devic
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -57,24 +57,6 @@ _qbittorrent: schema.#AppRelease & {
 		global: labels: "app.kubernetes.io/part-of": partOf
 
 		defaultPodOptions: {
-			// gluetun's resolver answers NOERROR with zero answers, instead of
-			// NXDOMAIN, for names it cannot resolve. musl reads that as "exists,
-			// no address" and abandons the search walk, so every relative lookup
-			// dies on the inherited stoat-herring.ts.net suffix before the real
-			// name is tried. This pod therefore generates its own resolv.conf
-			// omitting that suffix; .cluster.local does answer NXDOMAIN, so the
-			// walk runs to exhaustion and reaches the absolute name.
-			dnsPolicy: "None"
-			dnsConfig: {
-				// gluetun rewrites this to 127.0.0.1 once its resolver is up
-				nameservers: ["127.0.0.1"]
-				searches: [
-					"\(namespace).svc.cluster.local",
-					"svc.cluster.local",
-					"cluster.local",
-				]
-				options: [{name: "ndots", value: "5"}]
-			}
 			labels: "app.kubernetes.io/part-of": partOf
 			topologySpreadConstraints: [{
 				maxSkew:           1
@@ -94,6 +76,37 @@ _qbittorrent: schema.#AppRelease & {
 				fsGroupChangePolicy: "OnRootMismatch"
 				supplementalGroups: [568]
 				seccompProfile: type: "RuntimeDefault"
+			}
+
+			initContainers: {
+				gluetun: schema.#HardenedWritableRoot & {
+					// a native sidecar: qbittorrent starts only once the tunnel is up
+					restartPolicy: "Always"
+					image: {
+						repository: "ghcr.io/qdm12/gluetun"
+						tag:        "v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027"
+					}
+					securityContext: {
+						runAsUser:    0
+						runAsNonRoot: false
+						capabilities: add: ["NET_ADMIN", "NET_RAW", "CHOWN", "SETUID", "SETGID", "FOWNER", "DAC_OVERRIDE"]
+					}
+					env: {
+						FIREWALL_INPUT_PORTS:      portHTTP
+						VPN_INTERFACE:             vpnInterface
+						FIREWALL_OUTBOUND_SUBNETS: "\(schema.#PodCIDR),\(schema.#ServiceCIDR)"
+						BLOCK_MALICIOUS:           "off"
+						// the pod resolves through kube-dns, outside the tunnel
+						DNS_KEEP_NAMESERVER: "on"
+					}
+					envFrom: [{secretRef: name: vpnSecret}]
+					probes: {
+						liveness: gluetunProbe & {spec: failureThreshold: 6}
+						readiness: gluetunProbe
+						startup: gluetunProbe & {spec: {failureThreshold: 30, periodSeconds: 5}}
+					}
+					resources: limits: "devic.es/tun": 1
+				}
 			}
 
 			containers: {
@@ -129,31 +142,6 @@ _qbittorrent: schema.#AppRelease & {
 						requests: {cpu: "50m", memory: "1Gi"}
 						limits: memory: "2Gi"
 					}
-				}
-
-				gluetun: schema.#HardenedWritableRoot & {
-					image: {
-						repository: "ghcr.io/qdm12/gluetun"
-						tag:        "v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027"
-					}
-					securityContext: {
-						runAsUser:    0
-						runAsNonRoot: false
-						capabilities: add: ["NET_ADMIN", "NET_RAW", "CHOWN", "SETUID", "SETGID", "FOWNER", "DAC_OVERRIDE"]
-					}
-					env: {
-						FIREWALL_INPUT_PORTS:      portHTTP
-						VPN_INTERFACE:             vpnInterface
-						FIREWALL_OUTBOUND_SUBNETS: "\(schema.#PodCIDR),\(schema.#ServiceCIDR)"
-						BLOCK_MALICIOUS:           "off"
-					}
-					envFrom: [{secretRef: name: vpnSecret}]
-					probes: {
-						liveness: gluetunProbe & {spec: failureThreshold: 6}
-						readiness: gluetunProbe
-						startup: gluetunProbe & {spec: {failureThreshold: 30, periodSeconds: 5}}
-					}
-					resources: limits: "devic.es/tun": 1
 				}
 			}
 		}
