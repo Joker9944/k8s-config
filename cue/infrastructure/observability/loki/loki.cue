@@ -159,12 +159,10 @@ _loki: schema.#Release & {
 		// Writing to stdout rather than pushing straight at the gateway is what
 		// puts alloy inside the loop the canary measures, so the collection path
 		// is covered and not just write and query. It reads its lines back with
-		// `{job="loki/canary", pod=…}`, which is why alloy's common pipeline
-		// exempts this one stream from demoting `pod`. The stream half defaults to
-		// `stream="stdout"`, a label alloy never sets.
+		// `{stream="stdout", pod=…}`, which is why alloy reads this one workload
+		// from its CRI files and keeps `pod` indexed for it.
 		lokiCanary: {
 			push: false
-			extraArgs: ["-streamname=job", "-streamvalue=loki/canary"]
 			// alloy covers every node; a canary that skipped mother would leave
 			// that node's collection path untested.
 			tolerations: [schema.#Reserved.any]

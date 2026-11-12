@@ -5,6 +5,8 @@
 - The canary's selector also names a stream label, and its `stream="stdout"` default matched nothing — [observability](/platform/observability.md)
 - The Gotify bridge rejects alerts without a `description` annotation — [observability](/platform/observability.md)
 - Alloy drops the canary's stderr, which otherwise feeds back into the stream it reads — [observability](/platform/observability.md)
+- The canary alone is read from its CRI files, for the `stream` label its default selector needs — [observability](/platform/observability.md), [telemetry label convention](/platform/telemetry-labels.md)
+- Alloy's storage path is a hostPath, so file positions survive a restart — [observability](/platform/observability.md)
 
 ## 2026-11-10
 

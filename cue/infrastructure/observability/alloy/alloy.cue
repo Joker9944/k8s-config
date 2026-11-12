@@ -64,7 +64,8 @@ _sidecar: {
 	volumeMounts: [{name: "alloy-d", mountPath: _configDir}]
 }
 
-_configDir: "/etc/alloy.d"
+_configDir:  "/etc/alloy.d"
+_storageDir: "/var/lib/alloy"
 
 _alloy: schema.#Release & {
 	name:      "alloy"
@@ -101,7 +102,20 @@ _alloy: schema.#Release & {
 			// it, which is what let four replicas ship the same lines.
 			clustering: enabled: true
 
-			mounts: extra: [{name: "alloy-d", mountPath: _configDir}]
+			// loki.source.file keeps its read offsets here. On the chart's /tmp
+			// default they die with the container, and a restart either re-reads
+			// every file or skips what was written while it was down. A DaemonSet
+			// pod never leaves its node, so a hostPath is where they belong.
+			storagePath: _storageDir
+
+			mounts: {
+				// loki.source.file reads the canary's CRI files from /var/log/pods.
+				varlog: true
+				extra: [
+					{name: "alloy-d", mountPath: _configDir},
+					{name: "storage", mountPath: _storageDir},
+				]
+			}
 		}
 
 		// The chart's own reloader watches /etc/alloy, which is no longer the
@@ -112,7 +126,10 @@ _alloy: schema.#Release & {
 
 		controller: {
 			tolerations: [schema.#Reserved.any]
-			volumes: extra: [{name: "alloy-d", emptyDir: {}}]
+			volumes: extra: [
+				{name: "alloy-d", emptyDir: {}},
+				{name: "storage", hostPath: {path: _storageDir, type: "DirectoryOrCreate"}},
+			]
 			initContainers: [_sidecar & {_method: "LIST"}]
 			extraContainers: [_sidecar & {_method: "WATCH"}]
 		}

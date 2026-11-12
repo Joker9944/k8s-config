@@ -66,6 +66,48 @@ discovery.relabel "k8s_pod_logs_default" {
 		regex         = ""
 		action        = "keep"
 	}
+
+	rule {
+		source_labels = ["job"]
+		regex         = "loki/canary"
+		action        = "drop"
+	}
+}
+
+// loki-canary reads its own lines back with `{stream="stdout", pod=…}`, and
+// only the CRI files carry `stream` — the Kubernetes log API merges stdout and
+// stderr. Without the split, every diagnostic it read back would fail its probe
+// parse and be reported on stderr again. A pod on another node matches no file.
+discovery.relabel "canary" {
+	targets = discovery.relabel.k8s_pod_logs.output
+
+	rule {
+		source_labels = ["job"]
+		regex         = "loki/canary"
+		action        = "keep"
+	}
+
+	rule {
+		source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+		target_label  = "__path__"
+		separator     = "/"
+		replacement   = "/var/log/pods/*$1/*.log"
+	}
+}
+
+local.file_match "canary" {
+	path_targets = discovery.relabel.canary.output
+}
+
+loki.source.file "canary" {
+	targets    = local.file_match.canary.targets
+	forward_to = [loki.process.canary.receiver]
+}
+
+loki.process "canary" {
+	forward_to = [loki.process.common.receiver]
+
+	stage.cri { }
 }
 
 loki.process "common" {
@@ -77,23 +119,11 @@ loki.process "common" {
 		}
 	}
 
-	// The Kubernetes log API merges stdout and stderr, so the canary's
-	// diagnostics would land in the stream it reads back. Every one fails its
-	// probe parse and is reported on stderr again — a loop that grows without
-	// bound. Only probe lines (`<unix nanos> ppp…`) may enter its stream.
-	stage.match {
-		selector            = "{job=\"loki/canary\"} !~ \"^[0-9]+ p+[[:space:]]*$\""
-		action              = "drop"
-		drop_counter_reason = "canary_stderr"
-	}
-
-	// loki-canary reads its own lines back with
-	// `{job="loki/canary", pod="<its pod name>"}` — the `job` half is its
-	// -streamname/-streamvalue, the `pod` value is hardcoded — so the one stream
-	// whose `pod` has to stay an index label is this one. A demoted `pod` is not
-	// a slow query here but a permanently red canary: the selector would match no
-	// stream at all. This selector names `job` too, set in
-	// discovery.relabel.k8s_pod_logs and so already present.
+	// loki-canary's selector names `pod` with a hardcoded value, so its stream
+	// keeps `pod` as an index label. A demoted `pod` is not a slow query here but
+	// a permanently red canary: the selector would match no stream at all. This
+	// selector names `job`, set in discovery.relabel.k8s_pod_logs and so already
+	// present.
 	stage.match {
 		selector = "{job!=\"loki/canary\"}"
 
@@ -105,12 +135,11 @@ loki.process "common" {
 		}
 	}
 
-	// `instance` is the loki.source.* components' own, not a relabel rule, so
-	// there is nothing upstream to delete. It arrives as `<namespace>/<pod>:
-	// <container>` on a pod branch and as the component id on the events branch;
-	// both are concatenations of values already present.
+	// `instance` and `filename` are the loki.source.* components' own, not
+	// relabel rules, so there is nothing upstream to delete. Both are
+	// concatenations of values already present.
 	stage.label_drop {
-		values = ["instance"]
+		values = ["filename", "instance"]
 	}
 }
 

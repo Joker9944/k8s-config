@@ -37,11 +37,11 @@ A source that cannot supply `app` has to arrive unset.
 **One log source is exempt.** The cluster-events source is not a pod stream and has
 no container to name. It is not a workload, and not a defect to chase.
 
-**`loki-canary` conforms and carries a sixth label.** It writes to stdout and
-arrives through Alloy like anything else, then reads its own lines back with
-`{job="loki/canary", pod=…}` — a selector it cannot be talked out of, the label's value being
-hardcoded to the pod name. So it is the one stream where `pod` stays indexed; four
-pods, four streams. The exception is the pipeline's, not this convention's, and
+**`loki-canary` conforms and carries two more labels.** It writes to stdout and
+arrives through Alloy, then reads its own lines back with `{stream="stdout", pod=…}`
+— the `pod` value hardcoded to the pod name, and `stream` what keeps its own stderr
+out of the read. So it is the one job where `pod` and `stream` are indexed; four
+pods, eight streams. The exception is the pipeline's, not this convention's, and
 [observability](/platform/observability.md) holds the mechanism.
 
 # `cluster` is an anchor, not an identity
