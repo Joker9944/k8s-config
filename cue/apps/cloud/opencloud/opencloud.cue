@@ -249,6 +249,10 @@ _opencloud: schema.#Release & {
 
 	// The chart has no extra-volume knob, so the CA for the LDAPS hop is
 	// patched in after rendering.
+	//
+	// The chart hardcodes collabora's probes on /hosting/discovery (~47KB). The
+	// kubelet reads only 10KiB of a probe body and hangs up, which collabora logs
+	// as an ECONNRESET/EPIPE pair; `/` is its health endpoint and returns "OK".
 	postRenderers: [{kustomize: patches: [{patch: yaml.Marshal({
 		apiVersion: "apps/v1"
 		kind:       "Deployment"
@@ -261,6 +265,16 @@ _opencloud: schema.#Release & {
 				}]
 				volumes: [{name: "ldap-ca", secret: secretName: "nyx-ca-cert-bundle"}]
 			}}
+	})
+	}, {patch: yaml.Marshal({
+		apiVersion: "apps/v1"
+		kind:       "Deployment"
+		metadata: name: "opencloud-collabora"
+		spec: template: spec: containers: [{
+			name: "collabora"
+			livenessProbe: httpGet: path:  "/"
+			readinessProbe: httpGet: path: "/"
+		}]
 	})
 	}]}]
 }
