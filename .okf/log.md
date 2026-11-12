@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 
+- Country filtering is wopr's; Traefik loads only the oidc plugin and every public ingress gets `chain-basic`, with no `chain` field — [networking and ingress](/platform/networking-and-ingress.md), [adding an app](/workflows/adding-an-app.md)
 - The canary's selector also names a stream label, and its `stream="stdout"` default matched nothing — [observability](/platform/observability.md)
 - The Gotify bridge rejects alerts without a `description` annotation — [observability](/platform/observability.md)
 - Alloy drops the canary's stderr, which otherwise feeds back into the stream it reads — [observability](/platform/observability.md)

@@ -15,15 +15,14 @@ import (
 // (kube-prometheus-stack) builds a second instance rather than writing the
 // string.
 #IngressAnnotations: {
-	ns:    string
-	chain: #Chain | *"chain-country-whitelist"
+	ns: string
 	extra: [...string] | *[]
 
 	out: {
 		"traefik.ingress.kubernetes.io/router.tls":         "true"
 		"traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
 		"traefik.ingress.kubernetes.io/router.middlewares": strings.Join([
-			for m in list.Concat([[chain], extra]) {"\(ns)_\(m)@kubernetescrd"},
+			for m in list.Concat([["chain-basic"], extra]) {"\(ns)_\(m)@kubernetescrd"},
 		], ",")
 	}
 }
@@ -49,15 +48,10 @@ import (
 	host:       string | *"" // "" means no ingress
 	ingressKey: string | *name
 
-	// Serve the ingress from the tailnet instead of Traefik. The middleware
-	// fields below collapse to sentinels, so naming a chain on a tailnet
-	// ingress is a conflict rather than a field nothing reads.
+	// Serve the ingress from the tailnet instead of Traefik. extraMiddlewares
+	// collapses to a sentinel, so naming a middleware on a tailnet ingress is
+	// a conflict rather than a field nothing reads.
 	tailnet: bool | *false
-
-	chain:       _chainField
-	_chainField: _
-	if !tailnet {_chainField: #Chain | *"chain-country-whitelist"}
-	if tailnet {_chainField: ""}
 
 	extraMiddlewares:  _middlewaresField
 	_middlewaresField: _
@@ -114,9 +108,8 @@ import (
 	ingressAnnotations:  _ingressAnnotations
 	_ingressAnnotations: _
 	if !tailnet {_ingressAnnotations: (#IngressAnnotations & {
-		ns:      namespace
-		"chain": chain
-		extra:   extraMiddlewares
+		ns:    namespace
+		extra: extraMiddlewares
 	}).out
 	}
 	if tailnet {_ingressAnnotations: _tailnet.annotations}

@@ -18,7 +18,7 @@ kube-prometheus-stack → gotify
 kube-prometheus-stack → traefik-observability-config
 ```
 
-- **kube-prometheus-stack** — Prometheus, Alertmanager and Grafana. Grafana authenticates against [kanidm](/platform/identity-kanidm.md); the Prometheus and Alertmanager UIs are served from the tailnet while Grafana takes the country whitelist, which is why this bundle still installs a middleware set.
+- **kube-prometheus-stack** — Prometheus, Alertmanager and Grafana. Grafana authenticates against [kanidm](/platform/identity-kanidm.md); the Prometheus and Alertmanager UIs are served from the tailnet while Grafana is public behind `chain-basic`, which is why this bundle still installs a middleware set.
 - **loki** — `SimpleScalable`, chunks and indexes in Garage over the in-cluster endpoint, `s3ForcePathStyle: true`. Grafana and Alloy both address it through `loki-gateway`, because the split targets put the ruler on `loki-backend`: a `loki-read` URL serves every query path and so looks correct, but 404s the alerting page's `/prometheus/api/v1/rules`. The chart comes from `grafana-community.github.io` — the OSS lineage, forked at 6.55.0; the `loki` chart still on `grafana.github.io` is Grafana-Enterprise-Logs-only from 7.x, so never point the HelmRepo or renovate back there. `monitoring` carries the whole mixin — one ServiceMonitor, the recording rules, the alerts and the dashboards.
 - **alloy** — the log shipper, scraped for the pipeline's own metrics.
 - **traefik-observability-config** — traefik's ServiceMonitor, which cannot live with traefik; see the note below.

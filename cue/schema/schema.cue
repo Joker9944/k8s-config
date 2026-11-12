@@ -1,7 +1,5 @@
 package schema
 
-import "list"
-
 // ---------------------------------------------------------------- constraints
 // House style, enforced by the type checker rather than by review.
 
@@ -52,8 +50,6 @@ import "list"
 	...
 }
 
-#Chain: "chain-basic" | "chain-country-whitelist"
-
 // ------------------------------------------------------------------ middleware
 // Replaces components/common-middlewares. The namespace is a parameter, so the
 // PLACEHOLDER/replacements machinery disappears.
@@ -77,31 +73,14 @@ import "list"
 			stsSeconds:     63072000
 		}},
 		{_m, metadata: {name: "chain-basic", namespace: ns}, spec: chain: middlewares: _basics},
-		{_m, metadata: {name: "chain-country-whitelist", namespace: ns}, spec: chain: middlewares: list.Concat([[{name: "country-whitelist"}], _basics])},
 		{_m, metadata: {name: "compress", namespace: ns}, spec: compress: {}},
-		{_m, metadata: {name: "country-whitelist", namespace: ns}, spec: plugin: geoblock: {
-			allowLocalRequests:    true
-			allowUnknownCountries: false
-			allowedIPAddresses: ["100.0.0.0/8", "fd7a:115c:a1e0::/48"]
-			api:           "https://get.geojs.io/v1/ip/country/{ip}"
-			apiTimeoutMs:  500
-			blackListMode: false
-			cacheSize:     25
-			countries: ["CH", "DK", "PT"]
-			forceMonthlyUpdate:        true
-			logAllowedRequests:        false
-			logApiRequests:            false
-			logLocalRequests:          false
-			silentStartUp:             true
-			unknownCountryApiResponse: "nil"
-		}},
 	]
 }
 
 // ---------------------------------------------------------------------- tailnet
 // The tailscale operator is a second ingress path, parallel to Traefik rather
-// than behind it, so none of the chains above apply to a tailnet ingress: no
-// rate limit, no secure headers, no allow-list. The tailnet is the perimeter.
+// than behind it, so chain-basic does not apply to a tailnet ingress: no rate
+// limit, no secure headers. The tailnet is the perimeter.
 
 #TailnetDomain:     "stoat-herring.ts.net"
 #TailnetProxyGroup: "ingress-proxies"
@@ -325,8 +304,8 @@ _mediaDataPath: "/chronos/media-data"
 // The cluster is CGNAT'd, so public traffic arrives over a hub-spoke WireGuard
 // tunnel from the edge VPS. nginx there terminates nothing and prefixes each
 // connection with a PROXY protocol header; the hub's transit address is what
-// Traefik has to trust for the real client IP to survive — and for the country
-// whitelist to mean anything. `#EdgeNodePort` is mirrored by the edge's nginx
+// Traefik has to trust for the real client IP to survive. Country filtering
+// happens on the edge, not here. `#EdgeNodePort` is mirrored by the edge's nginx
 // upstream and the spokes' firewall rule in nix-config.
 
 #IngressSpoke: "vonarx.online/ingress-spoke"

@@ -1,6 +1,6 @@
 package traefik
 
-// cSpell:ignore geoblock kubernetescrd lukaszraczylo traefikoidc
+// cSpell:ignore kubernetescrd lukaszraczylo traefikoidc
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -70,9 +70,8 @@ _traefik: schema.#Release & {
 				nodePort:    schema.#EdgeNodePort
 
 				// Only the hub may speak PROXY protocol. Get this wrong and every
-				// request carries the hub's address instead of the client's —
-				// which geoblock reads as a local request and allows, so the
-				// country whitelist fails open.
+				// request carries the hub's address instead of the client's, so
+				// basic-ratelimit shares one bucket across the whole internet.
 				proxyProtocol: trustedIPs: [schema.#WireGuardHubIP]
 				forwardedHeaders: trustedIPs: [schema.#WireGuardHubIP]
 			}
@@ -87,14 +86,8 @@ _traefik: schema.#Release & {
 		// `ingress`. It lives in the traefik-observability-config bundle instead.
 		metrics: prometheus: service: enabled: true
 
-		// the two plugins #Middlewares references: geoblock backs the country
-		// whitelist, oidc backs the forward-auth chain
+		// oidc backs the forward-auth middleware
 		experimental: plugins: {
-			geoblock: {
-				moduleName: "github.com/PascalMinder/geoblock"
-				// renovate: datasource=github-tags depName=geoblock-traefik-plugin packageName=PascalMinder/geoblock versioning=semver-coerced
-				version: "v0.3.8"
-			}
 			oidc: {
 				moduleName: "github.com/lukaszraczylo/traefikoidc"
 				// renovate: datasource=github-tags depName=oidc-traefik-plugin packageName=lukaszraczylo/traefikoidc versioning=semver-coerced

@@ -1,15 +1,15 @@
 ---
 type: Infrastructure
 title: Networking and ingress
-description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the two middleware chains that gate every public service, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
+description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and how a VPN sidecar rewrites pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-06T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
 ---
 
 # The edge
 
-**The cluster is behind CGNAT and cannot listen.** Public traffic arrives at a VPS, `wopr` (`62.83.98.27`), which runs nginx, terminates no TLS, and shovels raw TCP into a hub-spoke WireGuard network. The spokes dial the hub, never the reverse. There is no `LoadBalancer` service in the fleet and no address pool — the cluster side of the tunnel is **one NodePort, 30443**, on the chart's own Traefik Service.
+**The cluster is behind CGNAT and cannot listen.** Public traffic arrives at a VPS, `wopr` (`62.83.98.27`), which runs nginx, terminates no TLS, filters by country, and shovels raw TCP into a hub-spoke WireGuard network. The spokes dial the hub, never the reverse. There is no `LoadBalancer` service in the fleet and no address pool — the cluster side of the tunnel is **one NodePort, 30443**, on the chart's own Traefik Service.
 
 Transit addressing, the WireGuard keys and the firewall rules live in [`nix-config`](https://github.com/Joker9944/nix-config), not here. This repo names only what Traefik has to agree with the edge about, in `schema.cue`: `#IngressSpoke`, `#WireGuardHubAddr` (`10.100.0.254`, carried as a /32 in `#WireGuardHubIP`) and `#EdgeNodePort`. The tunnel also carries one scrape in the other direction — wopr's own node-exporter, on the hub address, which is why [Prometheus is pinned to a spoke](/platform/observability.md).
 
@@ -17,7 +17,7 @@ Three things have to line up, and each fails differently:
 
 - **`nodeSelector` on `#IngressSpoke`** places the Traefik DaemonSet on exactly the nodes that terminate a tunnel. `mother` is an agent, runs no Traefik pod, terminates no tunnel and is not a spoke — which is also why Traefik carries no [`#Reserved`](/platform/cluster-nyx.md) toleration any more.
 - **`externalTrafficPolicy: Local`** keeps the hub's source address off kube-proxy's SNAT, and stops a packet arriving on a spoke from being forwarded to a node with no tunnel. Dropping it does not break connectivity; it silently replaces every client IP with a node's.
-- **`proxyProtocol.trustedIPs` and `forwardedHeaders.trustedIPs`, both `#WireGuardHubIP`.** The hub speaks PROXY protocol; nothing else may. **This fails open.** Get the trusted range wrong and every request presents the hub's `10.100.0.254` — which `country-whitelist` reads as a local request and allows, so the whitelist passes the world while looking healthy. The access log is the test: a `ClientHost` of `10.100.0.254` means it did not take.
+- **`proxyProtocol.trustedIPs` and `forwardedHeaders.trustedIPs`, both `#WireGuardHubIP`.** The hub speaks PROXY protocol; nothing else may. Get the trusted range wrong and every request presents the hub's `10.100.0.254`, so `basic-ratelimit` puts the whole internet in one bucket while looking healthy. The access log is the test: a `ClientHost` of `10.100.0.254` means it did not take.
 
 The `websecure` entrypoint keeps its name — every `router.entrypoints` annotation `#IngressAnnotations` writes names it — and moves to `exposedPort: 8443`. `web` is still an entrypoint but is not exposed on the Service: the edge's nginx answers `:80` itself.
 
@@ -27,27 +27,19 @@ Ingress is HTTPS-only through the `websecure` entrypoint. Every `Ingress` sets `
 
 The chart's `values.schema.json` closes the top level, so a values key a chart major has renamed away fails the HelmRelease outright rather than being ignored. That is what makes a major bump here a values migration rather than a version bump.
 
-Two experimental plugins are loaded, both tracked by renovate against github-tags:
+One experimental plugin is loaded, tracked by renovate against github-tags: `oidc` (`github.com/lukaszraczylo/traefikoidc`) <!-- cSpell:ignore lukaszraczylo --> puts [kanidm](/platform/identity-kanidm.md) in front of apps that have no OIDC support of their own. Session state lives in a dedicated `traefik-oidc-redis` replication cluster from the ot-helm Redis operator, which is why `traefik` needs the `redis` capability.
 
-- `geoblock` (`github.com/PascalMinder/geoblock`) — backs the country whitelist.
-- `oidc` (`github.com/lukaszraczylo/traefikoidc`) <!-- cSpell:ignore lukaszraczylo --> — puts [kanidm](/platform/identity-kanidm.md) in front of apps that have no OIDC support of their own. Session state lives in a dedicated `traefik-oidc-redis` replication cluster from the ot-helm Redis operator, which is why `traefik` needs the `redis` capability.
-
-A `Middleware` names a plugin by its **registration key** — the `experimental.plugins.<name>` key, not the module path. `spec.plugin.traefikoidc` against a plugin registered as `oidc` builds nothing: Traefik logs `unknown plugin type` once as the router is built, leaves that router unmounted, and every request to it gets a plain 404 with `RouterName: "-"` in the access log. It never logs again, so a quiet log is not evidence the chain works — `geoblock` is the control, keyed consistently and therefore fine.
+A `Middleware` names a plugin by its **registration key** — the `experimental.plugins.<name>` key, not the module path. `spec.plugin.traefikoidc` against a plugin registered as `oidc` builds nothing: Traefik logs `unknown plugin type` once as the router is built, leaves that router unmounted, and every request to it gets a plain 404 with `RouterName: "-"` in the access log. It never logs again, so a quiet log is not evidence the chain works.
 
 The converse also holds. Every Traefik pod logs a burst of `middleware ... does not exist` and `servers transport not found` within a few seconds of its own start: the Ingress provider builds routers before the kubernetesCRD provider has finished its first sync. It resolves itself and there is nothing to configure. Read those errors against the pod's `status.startTime` before believing them. One warning is likewise not actionable: Traefik logs the encoded-characters advisory unconditionally at start-up, before it reads any configuration, so no values change silences it.
 
-# Middleware chains
+# Middleware chain
 
-`#Middlewares` installs the same set into every namespace, taking the namespace as a parameter; a bundle with no ingress switches it off. Two chains are meant to be referenced from an ingress:
+`#Middlewares` installs the same set into every namespace, taking the namespace as a parameter; a bundle with no ingress switches it off. Every Traefik ingress references one chain, `chain-basic`: `basic-ratelimit` (600 avg / 400 burst) + `basic-secure-headers` (HSTS 2y, nosniff, XSS filter, `X-Forwarded-Proto: https`) + `compress`.
 
-| Chain                     | Composition                                                                                                                              |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `chain-basic`             | `basic-ratelimit` (600 avg / 400 burst) + `basic-secure-headers` (HSTS 2y, nosniff, XSS filter, `X-Forwarded-Proto: https`) + `compress` |
-| `chain-country-whitelist` | `country-whitelist` + the three basic middlewares                                                                                        |
+**The cluster networks are k3s's, not kubeadm's**: pods are `10.42.0.0/16` and services `10.43.0.0/16`, against the `10.244.0.0/16` and `10.96.0.0/12` a kubeadm cluster would use. The move off Talos changed both, and the old values survived in every workload that trusts the reverse proxy or firewalls its own egress; [`#PodCIDR`](/architecture/cue-layout.md) names them once.
 
-`country-whitelist` allows CH, DK and FR plus the tailnet, rejecting unknown countries. **The cluster networks are k3s's, not kubeadm's**: pods are `10.42.0.0/16` and services `10.43.0.0/16`, against the `10.244.0.0/16` and `10.96.0.0/12` a kubeadm cluster would use. The move off Talos changed both, and the old values survived in every workload that trusts the reverse proxy or firewalls its own egress; [`#PodCIDR`](/architecture/cue-layout.md) names them once.
-
-There is no third chain and no bare middleware: `#Release` has no field for one, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed. Everything Traefik serves is public, because an ingress that should not be is served from the tailnet instead.
+There is no other chain and no bare middleware: `#Release` has no field for either, so an ingress that skips the rate limit, the secure headers and compression cannot be expressed. Everything Traefik serves is public, because an ingress that should not be is served from the tailnet instead.
 
 The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept under their original names for compatibility with other TrueCharts charts still in use.
 
@@ -57,11 +49,11 @@ The `basic-*` middlewares are ported from the TrueCharts Traefik chart and kept 
 
 Middleware references are namespace-qualified (`<namespace>_<chain>@kubernetescrd`). `#IngressAnnotations` derives the prefix from the namespace it is handed, so an ingress cannot name a middleware that does not exist in its own namespace. That used to be the most common source of breakage here.
 
-The underscore is `safeNaming`, on in the chart values. It applies to every name the **kubernetesCRD** provider generates — middlewares and the [kanidm](/platform/identity-kanidm.md) ServersTransport — joining namespace and name with `_` and skipping the normalization the legacy scheme applied; only that first separator changes, so `chain-country-whitelist` keeps its own dashes. Routers and services from the Ingress provider (`@kubernetes`) are untouched. The chart emits the flag only when it is true, so returning to the legacy `-` scheme means a raw `additionalArguments` entry, not `safeNaming: false` — that renders nothing and Traefik warns that the option is unset. Two sites write a reference outside `#IngressAnnotations`: the kanidm Service annotation, and a `mustReject` fixture in `cue/probe`.
+The underscore is `safeNaming`, on in the chart values. It applies to every name the **kubernetesCRD** provider generates — middlewares and the [kanidm](/platform/identity-kanidm.md) ServersTransport — joining namespace and name with `_` and skipping the normalization the legacy scheme applied; only that first separator changes, so `chain-basic` keeps its own dash. Routers and services from the Ingress provider (`@kubernetes`) are untouched. The chart emits the flag only when it is true, so returning to the legacy `-` scheme means a raw `additionalArguments` entry, not `safeNaming: false` — that renders nothing and Traefik warns that the option is unset. Two sites write a reference outside `#IngressAnnotations`: the kanidm Service annotation, and a `mustReject` fixture in `cue/probe`.
 
 # Tailnet ingress
 
-The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to Traefik rather than behind it. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chains above: no rate limit, no secure headers, no whitelist. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
+The [tailscale operator](https://tailscale.com/kb/1236/kubernetes-operator) is a second ingress path, parallel to Traefik rather than behind it. An `Ingress` with `ingressClassName: tailscale` and a non-empty `tailscale.com/proxy-group` annotation is served by tailnet proxy pods — `shouldExpose` reads nothing else — which means it is **not** behind the middleware chain above: no rate limit, no secure headers. The tailnet is the perimeter instead, and nothing on it is reachable from the LAN without being on the tailnet.
 
 It carries everything that is not public: pgadmin, qbittorrent, the longhorn dashboard, and kube-prometheus-stack's alertmanager and prometheus. `#Release.tailnet` switches a release over; `#TailnetIngress` holds the class, the proxy-group annotation and the host, which a foreign chart splices at its own path exactly as it splices `ingressAnnotations`. Under `tailnet` the middleware fields collapse to sentinels, so naming a chain there is a build error rather than a field nothing reads — see [the CUE layout](/architecture/cue-layout.md).
 

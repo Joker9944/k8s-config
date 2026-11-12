@@ -80,23 +80,19 @@ mustReject: {
 	}}).accepted
 
 	"middleware from another namespace": (#Verdict & {probe: _base & {
-		values: ingress: probe: annotations: "traefik.ingress.kubernetes.io/router.middlewares": "komga_chain-country-whitelist@kubernetescrd"
-	}}).accepted
-
-	"middleware chain that does not exist": (#Verdict & {probe: _base & {
-		chain: "chain-does-not-exist"
+		values: ingress: probe: annotations: "traefik.ingress.kubernetes.io/router.middlewares": "komga_chain-basic@kubernetescrd"
 	}}).accepted
 
 	// Undeclared fields: rejected because #Release is closed, not because the
 	// schema knows what they mean.
-	"a bare middleware in place of a chain": (#Verdict & {probe: _base & {
+	"a bare middleware in place of the chain": (#Verdict & {probe: _base & {
 		bareMiddleware: "network-internal-whitelist"
 	}}).accepted
 
-	// A tailnet ingress is not behind Traefik, so the middleware fields are
-	// sentinels there rather than defaults.
-	"a chain on a tailnet ingress": (#Verdict & {probe: _tailnetBase & {
-		chain: "chain-basic"
+	// A tailnet ingress is not behind Traefik, so extraMiddlewares is a
+	// sentinel there rather than a default.
+	"a middleware on a tailnet ingress": (#Verdict & {probe: _tailnetBase & {
+		extraMiddlewares: ["oidc"]
 	}}).accepted
 
 	// The label the operator cuts from the host has to be in the tailnet domain,

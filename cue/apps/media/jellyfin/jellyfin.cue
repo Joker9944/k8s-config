@@ -28,8 +28,7 @@ _jellyfin: schema.#AppRelease & {
 	let uid = 6003
 	let gid = 6000
 	let portHTTP = 8096
-	host:  "jellyfin.vonarx.online"
-	chain: "chain-country-whitelist"
+	host: "jellyfin.vonarx.online"
 
 	let configSize = "10Gi"
 
