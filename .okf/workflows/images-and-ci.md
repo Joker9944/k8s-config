@@ -4,7 +4,7 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-09T12:00:00Z }
+generated: { by: claude-code/fable-5, at: 2026-09-12T01:00:00Z }
 ---
 
 # Images
@@ -13,7 +13,7 @@ Images under `images/` are `dockerTools.buildLayeredImage` derivations, not Dock
 
 The derivation's `tag` attribute is the **version of record**. The workflow reads `name:tag` back out of the built tarball's `manifest.json` rather than being told separately, so bumping an image means bumping its `tag`.
 
-Published: `gotify-custom`, `jinja-cli`, `postgresql-client`. (`base` is built but not published — it only exists to be layered on.)
+Published: `backup-runner`, `gotify-custom`, `jinja-cli`, `postgresql-client`. (`base` is built but not published — it only exists to be layered on.)
 
 # Publishing
 

@@ -121,17 +121,23 @@ import "list"
 	// The Secret `repository` resolves against; #Bundle collects it.
 	secretName: "\(app)-restic-\(vol)"
 
+	// Set only when the manifests ship standalone (a foreign-chart #Release
+	// placing them in `before`); app-template names its rawResources itself.
+	ns: string | *""
+
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
 
 	out: {
 		"dest-\(vol)": {
-			// BOOTSTRAP: every destination is enabled so a fresh cluster restores
-			// rather than starting empty. Revert to `false` once all nine volumes
-			// have restored — see /platform/backup-and-restore.md.
+			// Destinations ship disabled so a reconcile never restores by itself;
+			// enabled by hand per restore — see /platform/backup-and-restore.md.
 			enabled: false
 			manifest: {
 				apiVersion: "volsync.backube/v1alpha1"
 				kind:       "ReplicationDestination"
+				if ns != "" {
+					metadata: {name: "\(app)-dest-\(vol)", namespace: ns}
+				}
 				spec: {
 					trigger: manual: "restore-once"
 					restic: {
@@ -151,6 +157,9 @@ import "list"
 			manifest: {
 				apiVersion: "volsync.backube/v1alpha1"
 				kind:       "ReplicationSource"
+				if ns != "" {
+					metadata: {name: "\(app)-source-\(vol)", namespace: ns}
+				}
 				spec: {
 					sourcePVC: "\(app)-\(vol)"
 					trigger: schedule: "@daily"

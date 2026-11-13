@@ -4,6 +4,7 @@ package opencloud
 
 import (
 	"encoding/yaml"
+	"list"
 	"strings"
 
 	"github.com/joker9944/k8s-config/schema"
@@ -17,9 +18,10 @@ bundle: schema.#Bundle & {
 	extraSecretFiles: [
 		"apps/cloud/opencloud/secrets/opencloud.secret.yaml",
 		"apps/cloud/opencloud/secrets/opencloud-ldap.secret.yaml",
+		"apps/cloud/opencloud/secrets/rclone.secret.yaml",
 	]
 	repositories: [_repo]
-	before: [_ingress, _collaboraIngress]
+	before: list.Concat([[_ingress, _collaboraIngress], _backupObjects])
 	releases: [_opencloud]
 }
 
@@ -107,6 +109,8 @@ _opencloud: schema.#Release & {
 	sourceName: _repo.name
 
 	"host": host
+
+	backups: [_backup]
 
 	values: {
 		global: {
@@ -213,10 +217,10 @@ _opencloud: schema.#Release & {
 			}
 
 			// decomposeds3 keeps the blobs in garage; this volume holds the
-			// decomposedfs metadata and the search index.
-			// TODO volsync — a PVC cannot gain a dataSourceRef after creation, so
-			// adding backups means recreating this volume.
-			persistence: data: {size: "10Gi", storageClass: "longhorn"}
+			// decomposedfs metadata and the search index. The claim itself is
+			// declared in backup.cue, where its dataSourceRef and volsync
+			// objects live.
+			persistence: data: existingClaim: "opencloud-data"
 
 			resources: {
 				requests: {cpu: "128m", memory: "512Mi"}

@@ -1,5 +1,13 @@
 # Update Log
 
+## 2026-09-12
+
+- opencloud gains an orchestrated backup: one nightly CronJob quiesces the app and captures PVC and bucket together — [backup and restore](/platform/backup-and-restore.md)
+- `#VolsyncRestic` gains `ns`, letting a foreign-chart release ship its manifests standalone — [backup and restore](/platform/backup-and-restore.md)
+- The nine-volume bootstrap note is retired; destinations ship disabled again — [backup and restore](/platform/backup-and-restore.md)
+- `backup-runner` (python + kubectl + rclone) joins the published images — [images and CI](/workflows/images-and-ci.md)
+- opencloud's chart source corrected: OCI `#HelmRepo`, no longer a `#GitRepo` commit pin — [app-template pattern](/architecture/app-template-pattern.md)
+
 ## 2026-09-11
 
 - loki's chart repointed to the grafana-community OSS lineage; grafana.github.io's loki is GEL-only from 7.x — [observability](/platform/observability.md)
