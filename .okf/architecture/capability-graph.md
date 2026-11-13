@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-32 bundles, 44 edges.
+32 bundles, 45 edges.
 
 ```mermaid
 flowchart BT
@@ -125,6 +125,7 @@ flowchart BT
   longhorn_config -->|block-storage| longhorn
   opencloud -->|ingress| traefik
   opencloud -->|monitoring| kube_prometheus_stack
+  opencloud -->|volsync| volsync
   qbittorrent -->|volsync| volsync
   servarr -->|ingress| traefik
   servarr -->|kanidm| kanidm_operator

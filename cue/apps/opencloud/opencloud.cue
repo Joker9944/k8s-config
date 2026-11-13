@@ -4,6 +4,7 @@ package opencloud
 
 import (
 	"encoding/yaml"
+	"list"
 	"strings"
 
 	"github.com/joker9944/k8s-config/schema"
@@ -18,9 +19,10 @@ bundle: schema.#Bundle & {
 	extraSecretFiles: [
 		"apps/opencloud/secrets/opencloud.secret.yaml",
 		"apps/opencloud/secrets/opencloud-ldap.secret.yaml",
+		"apps/opencloud/secrets/rclone.secret.yaml",
 	]
 	repositories: [_repo]
-	before: [_ingress, _collaboraIngress]
+	before: list.Concat([[_ingress, _collaboraIngress], _backupObjects])
 	releases: [_opencloud]
 }
 
@@ -108,6 +110,8 @@ _opencloud: schema.#Release & {
 	sourceName: _repo.name
 
 	"host": host
+
+	backups: [_backup]
 
 	values: {
 		global: {
@@ -231,8 +235,6 @@ _opencloud: schema.#Release & {
 			// area, which takes a whole upload before the blob moves to garage, so it
 			// has to fit the largest single upload — a short volume fails the session
 			// with "insufficient storage" and leaks the staged file.
-			// TODO volsync — a PVC cannot gain a dataSourceRef after creation, so
-			// adding backups means recreating this volume.
 			persistence: data: {size: "20Gi", storageClass: "longhorn"}
 
 			// bleve's analysis workers allocate in multi-GB bursts while indexing,
@@ -275,6 +277,16 @@ _opencloud: schema.#Release & {
 			livenessProbe: httpGet: path:  "/"
 			readinessProbe: httpGet: path: "/"
 		}]
+	})
+	}, {patch: yaml.Marshal({
+		// volsync clones only when backup.py sets copy-trigger; the chart has no
+		// annotations knob for its claim.
+		apiVersion: "v1"
+		kind:       "PersistentVolumeClaim"
+		metadata: {
+			name: _dataClaim
+			annotations: "volsync.backube/use-copy-trigger": ""
+		}
 	})
 	}]}]
 }

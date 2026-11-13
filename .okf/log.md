@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-11-24
+
+- opencloud gains an orchestrated backup: one nightly CronJob quiesces the app and captures PVC and bucket together — [backup and restore](/platform/backup-and-restore.md)
+- `backup-runner` (python + kubectl + rclone) joins the published images — [images, CI and dependency updates](/workflows/images-and-ci.md)
+- opencloud's backup orchestration stays a script; Kanister deferred — [backup orchestration is a script](/decisions/backup-orchestration-is-a-script.md)
+
 ## 2026-11-23
 
 - Level-3 Kustomizations are back on `MirrorPrune`; only the `nyx-manifests` level 2 orphans — [flux topology](/architecture/flux-topology.md)

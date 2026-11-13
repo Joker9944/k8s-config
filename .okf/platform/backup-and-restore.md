@@ -1,17 +1,17 @@
 ---
 type: Playbook
 title: Backup and restore
-description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
-tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
+description: The backup systems — volsync/restic for PVCs, CNPG/barman-cloud for Postgres, opencloud's orchestrated CronJob — and the manual steps each restore requires.
+tags: [volsync, restic, cnpg, barman, rclone, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-24T12:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
 
 # volsync + restic (PVC data)
 
-A backed-up app declares a `#VolsyncRestic`, which emits two objects into the release's `rawResources` under the names `source-<volume>` / `dest-<volume>`:
+A backed-up app declares a `#VolsyncRestic`, which emits two objects into the release's `rawResources` under the names `source-<volume>` / `dest-<volume>`. A release without `rawResources` — opencloud, kanidm-cluster — unifies `metadata` onto the manifests and places them in the bundle's `before` itself; opencloud's source is the exception, below.
 
 |               | `source-<vol>`                             | `dest-<vol>`             |
 | ------------- | ------------------------------------------ | ------------------------ |
@@ -30,9 +30,20 @@ The PVC references the destination through `dataSourceRef`, and the mover runs u
 
 That generous install timeout is not merely cautious. `upgradeRetries` does not apply to an install, and install remediation is left off deliberately — there it is an _uninstall_, and gotify's Postgres `Cluster` is Helm-managed with no `resource-policy`, so one would garbage-collect its instance PVCs through the Cluster's `ownerReference`. That database has no off-cluster copy. An install that overruns its timeout therefore just sits failed until the spec changes or someone forces a reconcile, which is the safe direction to fail in.
 
-`dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every app-template volume therefore declares it up front, whether or not a restore is ever wanted. The converse bites a new app: the claim binds only through its destination, so one created while `dest-<vol>` is absent sits `Pending` indefinitely on `VolSyncPopulatorReplicationDestinationMissing`, with nothing to populate it from. The exceptions are [kanidm-cluster](/platform/identity-kanidm.md), whose claim template belongs to an operator: it ships the source alone, naming the operator's claim through `pvc`; and valheim, a new app whose `config` claim ships without the reference so it can bind at all — a restore there recreates the claim with it.
+`dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted. The converse bites a new app: the claim binds only through its destination, so one created while `dest-<vol>` is absent sits `Pending` indefinitely on `VolSyncPopulatorReplicationDestinationMissing`, with nothing to populate it from. The exceptions are [kanidm-cluster](/platform/identity-kanidm.md), whose claim template belongs to an operator: it ships the source alone, naming the operator's claim through `pvc`; valheim, a new app whose `config` claim ships without the reference so it can bind at all; and opencloud, whose chart-owned data claim predates its backup. A restore there recreates the claim with the reference.
 
 Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`. The file holding it is an input of [`#VolsyncRestic`](/architecture/cue-layout.md) — `<workload>/secrets/restic.secret.yaml` — so a backup and the credential it cannot run without are declared together. CUE never reads ciphertext, so nothing checks the other half — that the named file really holds the Secret. A missing credential surfaces only on the first scheduled run.
+
+# Orchestrated backup (opencloud)
+
+`decomposeds3` splits every file between the data PVC and Garage (see [storage](/platform/storage.md)), and upstream recommends the server be off during backup. One nightly CronJob — `opencloud-backup`, `cue/apps/opencloud/backup.cue` plus `files/backup.py` — therefore captures both halves inside a single quiesce window ([why a script](/decisions/backup-orchestration-is-a-script.md)): suspend the HelmRelease so no upgrade resets the replicas, scale the Deployment to 0 and wait for its pods to be gone, apply the `ReplicationSource` with a timestamp as `spec.trigger.manual`, release volsync's clone through the PVC's copy trigger and wait for it, `rclone sync` the bucket to the off-cluster repository, and scale back up and resume in a `finally`. Pruning and the wait for `status.lastManualSync` run after the app is back. Python skips `finally` on SIGTERM by default, so the script turns it into an exit — a drained, evicted or deleted pod still scales back up. A failed scale-up fails the Job, and so does a SIGKILL (OOM, an overrun grace period), which skips it; either way the app may be left at 0, and the stock `KubeJobFailed`/`KubeJobNotCompleted` rules are what report it — nothing else alerts on a Deployment scaled to 0.
+
+- The `ReplicationSource` is rendered by CUE but applied by the script (server-side, field manager `opencloud-backup`), from the CronJob's `SOURCE_MANIFEST` with the schedule stripped. Flux would reset a `spec.trigger.manual` it owned on every reconcile, which volsync reads as a new trigger; and a source syncs once on creation whatever its trigger, so creating it inside the quiesce window keeps that sync consistent. A git change to it lands on the next run, and Flux does not prune it.
+- A new manual value does not interrupt a running sync — it is credited to that sync on completion — so the script fails before scaling down while `lastManualSync` lags `spec.trigger.manual`.
+- The PVC carries `volsync.backube/use-copy-trigger`, so volsync takes its clone only once `volsync.backube/copy-trigger` changes, and echoes the value into `latest-copy-trigger` when the clone is `Bound`. That is the point the volume half is fixed; a sync started any other way waits for the next CronJob run.
+- The claim, `opencloud-opencloud-data`, stays the chart's; a post-renderer patch adds the copy-trigger annotation, which the chart has no knob for.
+- The bucket mirror lives under `<bucket>/opencloud/blobs`: `current/` is the sync target, and anything sync would delete or overwrite moves into `deleted/<ts>/`, pruned after 28 days **by directory name**. Not `--min-age` — server-side copies keep original modtimes, so an old-but-freshly-deleted blob would be purged from the graveyard immediately.
+- Restore is two restores from the same nightly run. PVC: set `_restore: true` in `backup.cue` so the `ReplicationDestination` exists, add the `dataSourceRef` to the claim's post-renderer patch, and delete the claim with the app scaled to 0 — the Helm upgrade that patch triggers recreates it from the destination, inside the upgrade's 10m timeout. Bucket: reverse the sync — `rclone sync dst:…/current src:opencloud` — pulling anything needed out of `deleted/<ts>/` first.
 
 # CNPG + barman-cloud (Postgres)
 

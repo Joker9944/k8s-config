@@ -130,9 +130,8 @@ import "strings"
 
 	out: {
 		"dest-\(vol)": {
-			// BOOTSTRAP: every destination is enabled so a fresh cluster restores
-			// rather than starting empty. Revert to `false` once all nine volumes
-			// have restored — see /platform/backup-and-restore.md.
+			// Destinations ship disabled so a reconcile never restores by itself;
+			// enabled by hand per restore — see /platform/backup-and-restore.md.
 			enabled: false
 			manifest: {
 				apiVersion: "volsync.backube/v1alpha1"
