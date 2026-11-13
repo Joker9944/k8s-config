@@ -75,7 +75,7 @@ _kanidm: schema.#AppRelease & {
 			containers: kanidm: schema.#Hardened & {
 				image: {
 					repository: "kanidm/server"
-					tag:        "1.12.0@sha256:71b6ff5a9c9c32b632894d8acef5a2afc77941b35a0aa95dcee959fe688d5ce9"
+					tag:        "1.12.1@sha256:77198131f28116203e105d2e42214203757d113a694f35de545669e75db5c96f"
 				}
 				env: {
 					KANIDM_BINDADDRESS:         "[::]:8443"
