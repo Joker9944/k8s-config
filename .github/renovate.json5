@@ -33,6 +33,11 @@
       automerge: true,
     },
     {
+      description: "Frozen at 1.12.0 until kaniop supports it (pando85/kaniop#1141); both instances must stay on one version while they replicate",
+      matchPackageNames: ["kanidm/server"],
+      enabled: true,
+    },
+    {
       description: "Probe fixtures are mutation tests, not dependencies",
       matchFileNames: ["cue/probe/**"],
       enabled: false,

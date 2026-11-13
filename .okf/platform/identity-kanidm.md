@@ -5,7 +5,7 @@ description: The cluster's OIDC/LDAP provider, and why every consumer ships a ka
 tags: [kanidm, oidc, sso, identity]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-10T19:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-13T00:00:00Z }
 ---
 
 # Deployment
@@ -15,6 +15,10 @@ kanidm is the sole member of the `security` tier. It runs as a StatefulSet from 
 It is the only workload that terminates TLS itself: `KANIDM_TLS_CHAIN`/`KANIDM_TLS_KEY` point at a wildcard certificate minted into its own namespace by [`#NamespaceCert`](/architecture/cue-layout.md), and a Traefik `ServersTransport` (declared through `rawResources`, trusting `nyx-ca-cert-bundle`) makes Traefik accept that certificate on the backend hop. The namespace reaches the transport, the annotations and the `serverName` as an ordinary field reference. It names the bundle through `rootCAs`, one entry per Secret or ConfigMap, each holding its certificate under `tls.ca` or `ca.crt`.
 
 `KANIDM_TRUST_X_FORWARD_FOR: true` is what makes rate limiting and audit logs see real client addresses behind Traefik. Health probes exec `kanidmd scripting healthcheck` rather than hitting HTTP.
+
+The [kaniop](https://github.com/pando85/kaniop) operator runs beside it as the `kanidm-operator` bundle in `kanidm-system`, providing the `kanidm` [capability](/architecture/capability-graph.md). Its chart's `crds/` directory is applied by Helm (`crds: true`), so the chart's own CRD-apply hook Job is off. `kanidm-cluster` declares the operator-managed `Kanidm` named `kanidm` there: one `write_replica`, the same domain and image as the app-template instance, no ingress, and a private-CA certificate covering the Service and pod names the operator dials.
+
+kaniop v0.22.1 builds against the kanidm 1.11 client SDK and marks 1.12 servers incompatible ([#1141](https://github.com/pando85/kaniop/issues/1141)), so `disableUpgradeChecks` is set, which also switches off its backup transport. Renovate holds `kanidm/server` at 1.12.0 until that lands, which keeps both instances on one version while they replicate. Its restore path cannot read a 1.12 backup either: the data mover finds the domain entry by `uuid.UU` and `domain_name.N8`, where 1.12 writes `US` and `N8S`, and fails with `KANIDM_DOMAIN_NOT_FOUND`. Without `securityContext` the operator runs kanidm as root, so the CR sets the same uid as the app-template instance. The kanidm image has no shell or `tar`, so `kubectl cp` into its pod needs an ephemeral container, and `kanidmd database backup` is offline-only and still wants the TLS paths set.
 
 # Client registration is manual
 

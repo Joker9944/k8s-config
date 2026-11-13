@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-13T00:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -27,6 +27,7 @@ A consumer declares what it needs, never who provides it. `#Capability` is a clo
 | `object-storage`      | [`garage`](/platform/storage.md)                      | the S3 endpoint                                                |
 | `log-sink`            | [`loki`](/platform/observability.md)                  | the push endpoint                                              |
 | `tailscale`           | `tailscale-operator`                                  | `ProxyGroup`, `ProxyClass`                                     |
+| `kanidm`              | [`kanidm-operator`](/platform/identity-kanidm.md)     | `Kanidm`, and the group, person and OAuth2 client CRs          |
 
 **A capability is something whose absence fails the apply, which in practice means a CRD.** Runtime coupling is not a capability: a PVC naming a StorageClass that does not exist yet stays `Pending` and binds later, so storage classes are deliberately absent from the enum. Declaring them would also close a cycle — `traefik`'s OIDC Redis volumes are on the default `longhorn` class, and longhorn's own bundle needs `ingress`.
 
@@ -46,12 +47,14 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 29 bundles, 33 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 31 bundles, 35 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
-L0  cert-manager  cnpg  longhorn  redis-operator  reflector
-    reloader  generic-device-plugin  nvidia-device-plugin  tailscale-operator
-L1  certs-config  cnpg-config  longhorn-config  tailscale-config
+L0  cert-manager  cnpg  kanidm-operator  longhorn  redis-operator
+    reflector  reloader  generic-device-plugin  nvidia-device-plugin
+    tailscale-operator
+L1  certs-config  cnpg-config  kanidm-cluster  longhorn-config
+    tailscale-config
 L2  traefik
 L3  kube-prometheus-stack  servarr
 L4  garage  opencloud  traefik-observability-config  volsync
@@ -73,7 +76,7 @@ Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Wit
 
 # What an edge means
 
-**Twelve of the thirteen providers set `wait: true`, so an edge to one of them means its chart is installed and its pods are up.** `disableWait` defaults to false, so helm-controller has already waited for the chart's resources before the HelmRelease goes Ready, and a bundle's inventory is just the Namespace, its sources, its HelmReleases and its Middleware set — assessing that inventory is therefore the gate a consumer wants, for one boolean. It also closes the webhook race that a plain edge never could: six admission webhooks are live, and applying a `Certificate` or `Cluster` against one with no endpoints fails.
+**Every provider sets `wait: true`, so an edge to one of them means its chart is installed and its pods are up.** `disableWait` defaults to false, so helm-controller has already waited for the chart's resources before the HelmRelease goes Ready, and a bundle's inventory is just the Namespace, its sources, its HelmReleases and its Middleware set — assessing that inventory is therefore the gate a consumer wants, for one boolean. It also closes the webhook race that a plain edge never could: six admission webhooks are live, and applying a `Certificate` or `Cluster` against one with no endpoints fails.
 
 `certs-config` waits on its whole inventory rather than on named objects — root CA cert and Issuer, intermediate cert and ClusterIssuer, the ACME ClusterIssuer and the wildcard all carry a real `Ready`.
 

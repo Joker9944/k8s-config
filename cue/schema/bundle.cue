@@ -260,7 +260,7 @@ _appTemplateVersion: "5.3.0"
 // which is also where the cycle hazards live — nothing here detects one.
 #Capability: "ingress" | "certificate" | "ingress-certificate" |
 	"redis" | "block-storage" | "postgres" | "volsync" | "monitoring" |
-	"object-storage" | "log-sink" | "tailscale"
+	"object-storage" | "log-sink" | "tailscale" | "kanidm"
 
 _provider: [#Capability]: string
 _provider: {
@@ -275,6 +275,7 @@ _provider: {
 	"object-storage":      "garage"
 	"log-sink":            "loki"
 	tailscale:             "tailscale-operator" // ProxyGroup and ProxyClass CRDs
+	kanidm:                "kanidm-operator"    // kaniop.rs CRDs: Kanidm, groups, persons, OAuth2 clients
 }
 
 // The edges a bundle contributes: what it declares, plus what its own fields

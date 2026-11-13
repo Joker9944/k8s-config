@@ -2,6 +2,8 @@
 
 ## 2026-11-13
 
+- `kanidm` capability and the kaniop-managed `kanidm-cluster`; kaniop rejects kanidm 1.12 and cannot restore its backups — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
+- kaniop operator installed as `kanidm-operator` in `kanidm-system`, managing nothing yet — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
 - jellyseerr has a pipeline: ANSI stripped, winston level promoted — [observability](/platform/observability.md)
 
 ## 2026-11-12
