@@ -4,6 +4,7 @@ package opencloud
 
 import (
 	"encoding/yaml"
+	"list"
 	"strings"
 
 	"github.com/joker9944/k8s-config/schema"
@@ -18,9 +19,10 @@ bundle: schema.#Bundle & {
 	extraSecretFiles: [
 		"apps/cloud/opencloud/secrets/opencloud.secret.yaml",
 		"apps/cloud/opencloud/secrets/opencloud-ldap.secret.yaml",
+		"apps/cloud/opencloud/secrets/rclone.secret.yaml",
 	]
 	repositories: [_repo]
-	before: [_ingress, _collaboraIngress]
+	before: list.Concat([[_ingress, _collaboraIngress], _backupObjects])
 	releases: [_opencloud]
 }
 
@@ -108,6 +110,8 @@ _opencloud: schema.#Release & {
 	sourceName: _repo.name
 
 	"host": host
+
+	backups: [_backup]
 
 	values: {
 		global: {
@@ -230,10 +234,10 @@ _opencloud: schema.#Release & {
 			// decomposedfs metadata and the search index. It is also the tus staging
 			// area, which takes a whole upload before the blob moves to garage, so it
 			// has to fit the largest single upload — a short volume fails the session
-			// with "insufficient storage" and leaks the staged file.
-			// TODO volsync — a PVC cannot gain a dataSourceRef after creation, so
-			// adding backups means recreating this volume.
-			persistence: data: {size: "20Gi", storageClass: "longhorn"}
+			// with "insufficient storage" and leaks the staged file. The claim itself
+			// is declared in backup.cue, where its dataSourceRef and volsync objects
+			// live.
+			persistence: data: existingClaim: "opencloud-data"
 
 			// bleve's analysis workers allocate in multi-GB bursts while indexing,
 			// and the search backlog only drains if the process survives the burst —

@@ -94,6 +94,7 @@
           cue-render-bootstrap = cueRender.bootstrap;
 
           # images
+          backup-runner = pkgs.callPackage ./images/backup-runner.nix { flake = self; };
           base = pkgs.callPackage ./images/base.nix { flake = self; };
           jinja-cli = pkgs.callPackage ./images/jinja-cli.nix { flake = self; };
           postgresql-client = pkgs.callPackage ./images/postgresql-client.nix { flake = self; };

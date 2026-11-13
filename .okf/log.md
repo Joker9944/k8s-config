@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-11-17
+
+- opencloud gains an orchestrated backup: one nightly CronJob quiesces the app and captures PVC and bucket together — [backup and restore](/platform/backup-and-restore.md)
+- `backup-runner` (python + kubectl + rclone) joins the published images — [images and CI](/workflows/images-and-ci.md)
+
 ## 2026-11-16
 
 - attic and the `apps/dev` tier are removed; the Nix cache is harmonia on mother, in nix-config — [nix cache decision](/decisions/nix-cache-not-in-cluster.md), [storage](/platform/storage.md), [flux topology](/architecture/flux-topology.md), [CUE layout](/architecture/cue-layout.md), [backup and restore](/platform/backup-and-restore.md)
