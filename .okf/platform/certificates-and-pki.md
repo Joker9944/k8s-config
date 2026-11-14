@@ -5,7 +5,7 @@ description: The two issuance paths — public ACME wildcard and a private root/
 tags: [cert-manager, tls, pki, trust-manager]
 resource: cue/infrastructure/controllers/certs-config
 status: stable
-generated: { by: claude-code/fable-5, at: 2026-10-25T00:00:00Z }
+generated: { by: claude-code/fable-5, at: 2026-11-14T16:00:00Z }
 ---
 
 # Public path
@@ -26,7 +26,7 @@ Issuer trust-manager  →  Certificate nyx-root-ca (isCA, "Nyx Root R1", 810d)
                       →  ClusterIssuer nyx-intermediate-ca
 ```
 
-`nyx-intermediate-ca` is what [`#NamespaceCert`](/architecture/cue-layout.md) uses to mint a `*.<namespace>.svc.cluster.local` wildcard for workloads that need real TLS on the pod-to-pod hop (kanidm is the only current consumer).
+`nyx-intermediate-ca` is what [`#NamespaceCert`](/architecture/cue-layout.md) uses to mint a `*.<namespace>.svc.cluster.local` wildcard for workloads that need real TLS on the pod-to-pod hop (no workload uses it at present; kanidm-cluster requests its own certificate from the same issuer).
 
 The `trust-manager` `Issuer` at the root of that chain **is not defined in this repository** — it is the self-signed issuer the trust-manager chart creates in its own namespace, reused here as the cluster's signing root.
 
@@ -43,7 +43,7 @@ Two mechanisms, chosen by what is being copied:
 
 The two Bundles are `nyx-ca-cert-bundle` (intermediate + root, for namespaces labelled `vonarx.online/distribute-nyx-ca-cert-bundle: "true"`) and `public-nyx-ca-cert-bundle` (the same plus `useDefaultCAs`, label `vonarx.online/distribute-public-nyx-ca-cert-bundle: "true"`). Both are listed in the chart's `secretTargets.authorizedSecrets`, without which trust-manager refuses to write them.
 
-Delivery to a namespace is not delivery to a process: a `subPath` mount copies the Secret once at pod start and never again, and kanidmd re-reads its TLS files only on SIGHUP. kanidm therefore carries a `secret.reloader.stakater.com/reload` annotation naming its cert secret, and the `stakater` bundle's reloader rolls the statefulset when it changes — a renewal costs a restart-length SSO blip roughly every 60 days.
+Delivery to a namespace is not delivery to a process: a `subPath` mount copies the Secret once at pod start and never again, and kanidmd re-reads its TLS files only on SIGHUP. kaniop therefore stamps a hash of the TLS Secret onto kanidm's pod template (`kanidm.kaniop.rs/tls-secret-hash`), so a renewal rolls the StatefulSet — a restart-length SSO blip roughly every 60 days. The `stakater` bundle's reloader does the same for a `secret.reloader.stakater.com/reload` annotation, which no workload carries at present.
 
 # Ordering
 

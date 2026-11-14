@@ -62,6 +62,16 @@ discovery.relabel "k8s_pod_logs" {
 		target_label  = "app"
 	}
 
+	// Escape hatch: kaniop builds kanidm's pods from a CR with no pod-label field,
+	// so its own managed-by label stands in for the pipeline claim.
+	rule {
+		source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_managed_by"]
+		regex         = "kaniop-kanidm"
+		action        = "replace"
+		target_label  = "__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"
+		replacement   = "kanidm"
+	}
+
 	rule {
 		source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
 		action        = "replace"

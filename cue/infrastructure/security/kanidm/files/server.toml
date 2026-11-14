@@ -1,8 +1,0 @@
-[replication]
-origin = "repl://kanidm.kanidm.svc.cluster.local:8444"
-bindaddress = "[::]:8444"
-
-[replication."repl://kanidm-default-0.kanidm.kanidm-system.svc.cluster.local:8444"]
-type = "mutual-pull"
-partner_cert = "@PARTNER_CERT@"
-automatic_refresh = true

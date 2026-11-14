@@ -7,8 +7,8 @@
 discovery.relabel "kanidm" {
 	targets = discovery.relabel.k8s_pod_logs.output
 
-	// The claim label the #AlloyPipeline puts on these pods. Carrying it is also
-	// what removes them from alloy's generic branch.
+	// The claim label, which the base config derives from kaniop's managed-by
+	// label. Carrying it is also what removes these pods from the generic branch.
 	rule {
 		source_labels = ["__meta_kubernetes_pod_label_logs_vonarx_online_pipeline"]
 		regex         = "kanidm"

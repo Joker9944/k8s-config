@@ -1,3 +1,5 @@
+@extern(embed)
+
 package kanidmcluster
 
 // cSpell:ignore kanidmcluster kaniop
@@ -7,19 +9,15 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#ConfigBundle & {
 	needs: ["kanidm", "certificate", "ingress", "volsync"]
 	wait: true
-	secretFiles: [
-		"infrastructure/security/kanidm-cluster/secrets/replication.secret.yaml",
-		_backup.secretFile,
-	]
-	resources: [_cert, _transport, _kanidm, _backupSource]
+	secretFiles: [_backup.secretFile]
+	resources: [_cert, _transport, _kanidm, _backupSource, _logs.out]
 }
 
 let ns = "kanidm-system"
 let cluster = "kanidm"
 let uid = 568
 
-// Spelled as a repository/tag pair so renovate's image manager bumps it in the
-// same PR as the legacy release; replication needs both on one version.
+// Spelled as a repository/tag pair for renovate's image manager.
 _image: {
 	repository: "kanidm/server"
 	tag:        "1.12.1@sha256:77198131f28116203e105d2e42214203757d113a694f35de545669e75db5c96f"
@@ -71,24 +69,10 @@ _kanidm: {
 		replicaGroups: [{
 			name:     "default"
 			replicas: 1
-			role:     "write_replica"
-			// The app-template instance in `kanidm` is the secondary and refreshes
-			// from here; only one side may be primary.
-			primaryNode: true
 			resources: {
-				requests: {cpu: "50m", memory: "1Gi"}
-				limits: memory: "2Gi"
+				requests: {cpu: "100m", memory: "128Mi"}
+				limits: {cpu: "500m", memory: "512Mi"}
 			}
-		}]
-		// The app-template instance, kept in step until it is decommissioned. Its
-		// certificate is pinned in the secret and changes only on a manual renew.
-		externalReplicationNodes: [{
-			name:             "legacy"
-			hostname:         "kanidm.kanidm.svc.cluster.local"
-			port:             8444
-			type:             "mutual-pull"
-			automaticRefresh: false
-			certificate: {name: "kanidm-legacy-replication-cert", key: "certificate"}
 		}]
 		service: annotations: "traefik.ingress.kubernetes.io/service.serverstransport":
 			"\(ns)_\(_transport.metadata.name)@kubernetescrd"
@@ -123,4 +107,14 @@ _backup: schema.#VolsyncRestic & {
 
 _backupSource: _backup.out["source-data"].manifest & {
 	metadata: {name: "\(cluster)-source-data", namespace: ns}
+}
+
+_kanidmLogs: _ @embed(file="files/kanidm.alloy", type=text)
+
+// Claimed through kaniop's managed-by label in alloy's base config, so
+// podLabels goes unused.
+_logs: schema.#AlloyPipeline & {
+	app:    cluster
+	"ns":   ns
+	config: _kanidmLogs
 }

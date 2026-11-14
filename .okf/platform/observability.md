@@ -5,7 +5,7 @@ description: The metrics, logs and notification path — kube-prometheus-stack, 
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 resource: cue/infrastructure/observability
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-13T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-14T16:00:00Z }
 ---
 
 # The tier
@@ -42,7 +42,7 @@ Two sources feed one `loki.write.default`: those pod logs, and cluster events th
 
 **A workload's log handling lives in its own package.** `alloy run` is pointed at a directory rather than a file, and alloy loads every `*.alloy` in it (no recursion) as **one graph**, so a file dropped in beside the base config is live config that can reference the base's components by name. `#AlloyPipeline` renders one into a ConfigMap in the workload's own namespace; a `kiwigrid/k8s-sidecar` pair in the alloy pod — `METHOD=LIST` as an init container so the base is on disk before alloy starts, `METHOD=WATCH` alongside it to reload on change — collects every ConfigMap labelled `alloy_config` from every namespace into `/etc/alloy.d`. Alloy's ClusterRole already grants cluster-wide `configmaps` get/list/watch and a sidecar shares the pod ServiceAccount, so this needs no RBAC of its own. servarr is the worked example.
 
-The base keeps the parts that are genuinely shared: `discovery.relabel.k8s_pod_logs` holds the standard label rules, which a workload file narrows rather than repeats, and `loki.process.common` is the single place `cluster` is stamped. Which pods a workload claims is a **label, not a name in the base config** — `logs.vonarx.online/pipeline` — so the generic branch keeps only pods where it is empty and alloy never learns what workloads exist. `#AlloyPipeline` emits that label and the ConfigMap key from one `app` field, which is also what stops two workloads writing the same filename into the shared directory.
+The base keeps the parts that are genuinely shared: `discovery.relabel.k8s_pod_logs` holds the standard label rules, which a workload file narrows rather than repeats, and `loki.process.common` is the single place `cluster` is stamped. Which pods a workload claims is a **label, not a name in the base config** — `logs.vonarx.online/pipeline` — so the generic branch keeps only pods where it is empty and alloy never learns what workloads exist. The one exception is kanidm: kaniop's CR has no pod-label field, so the base config derives the claim from kaniop's `app.kubernetes.io/managed-by`, beside the longhorn and k3s escape hatches. `#AlloyPipeline` emits that label and the ConfigMap key from one `app` field, which is also what stops two workloads writing the same filename into the shared directory.
 
 **One bad file stops the whole fleet's logs.** The graph is all-or-nothing: a dangling reference in any file fails the load. A reload survives it — alloy keeps the last good config — but a pod restart crashloops, so the failure surfaces later than the edit that caused it. `checks.alloyValidate` assembles the same union the sidecar delivers and rejects it before it can reach a node; that check is what makes this layout safe, not a convenience. Component labels are a second namespace it guards — `#AlloyPipeline` makes filenames unique but two workloads can still declare the same `loki.process "logs"`.
 

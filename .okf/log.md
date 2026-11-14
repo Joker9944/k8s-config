@@ -2,6 +2,7 @@
 
 ## 2026-11-14
 
+- The app-template kanidm and its replication are gone; kaniop's primary semantics and the empty-primary wipe; kanidm's log pipeline claimed through kaniop's managed-by label — [identity — kanidm](/platform/identity-kanidm.md), [observability](/platform/observability.md), [certificates and PKI](/platform/certificates-and-pki.md), [capability graph](/architecture/capability-graph.md)
 - kanidm-cluster backs up its primary volume through volsync, source only; kaniop's backup is experimental and `disableUpgradeChecks` does not gate it — [identity — kanidm](/platform/identity-kanidm.md), [backup and restore](/platform/backup-and-restore.md), [capability graph](/architecture/capability-graph.md)
 - opencloud reads LDAPS from the kaniop cluster (`kanidm.kanidm-system:3636`); the app-template instance serves no clients — [identity — kanidm](/platform/identity-kanidm.md)
 - kustomize-controller strips `kubectl`-set fields from objects it applies — [flux topology](/architecture/flux-topology.md)

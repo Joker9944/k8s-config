@@ -2,7 +2,6 @@ package tier
 
 import (
 	"github.com/joker9944/k8s-config/schema"
-	"github.com/joker9944/k8s-config/infrastructure/security/kanidm"
 	kanidmcluster "github.com/joker9944/k8s-config/infrastructure/security/kanidm-cluster:kanidmcluster"
 	kanidmoperator "github.com/joker9944/k8s-config/infrastructure/security/kanidm-operator:kanidmoperator"
 )
@@ -14,7 +13,6 @@ tier: schema.#Tier & {
 	name: "security"
 
 	bundles: {
-		"kanidm":          kanidm.bundle
 		"kanidm-operator": kanidmoperator.bundle
 		"kanidm-cluster":  kanidmcluster.bundle
 	}
