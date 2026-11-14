@@ -10,7 +10,7 @@ bundle: schema.#ConfigBundle & {
 	needs: ["kanidm", "certificate", "ingress", "volsync"]
 	wait: true
 	secretFiles: [_backup.secretFile]
-	resources: [_cert, _transport, _kanidm, _backupSource, _logs.out]
+	resources: [_cert, _transport, _kanidm, _pdb, _backupSource, _logs.out]
 }
 
 let ns = "kanidm-system"
@@ -68,14 +68,24 @@ _kanidm: {
 		ldapPortName:         "ldaps"
 		replicaGroups: [{
 			name:     "default"
-			replicas: 1
+			replicas: 3
+			affinity: podAntiAffinity: requiredDuringSchedulingIgnoredDuringExecution: [{
+				labelSelector: matchLabels: _podLabels
+				topologyKey: "kubernetes.io/hostname"
+			}]
 			resources: {
 				requests: {cpu: "100m", memory: "128Mi"}
 				limits: {cpu: "500m", memory: "512Mi"}
 			}
 		}]
-		service: annotations: "traefik.ingress.kubernetes.io/service.serverstransport":
-			"\(ns)_\(_transport.metadata.name)@kubernetescrd"
+		// Sticky because kanidm keeps auth sessions and cookie keys per pod.
+		service: annotations: {
+			"traefik.ingress.kubernetes.io/service.serverstransport":       "\(ns)_\(_transport.metadata.name)@kubernetescrd"
+			"traefik.ingress.kubernetes.io/service.sticky.cookie":          "true"
+			"traefik.ingress.kubernetes.io/service.sticky.cookie.secure":   "true"
+			"traefik.ingress.kubernetes.io/service.sticky.cookie.httponly": "true"
+			"traefik.ingress.kubernetes.io/service.sticky.cookie.samesite": "lax"
+		}
 		ingress: {
 			annotations: (schema.#IngressAnnotations & {"ns": ns}).out
 			tlsSecretName: "wildcard-vonarx-online-cert"
@@ -91,6 +101,18 @@ _kanidm: {
 			runAsNonRoot: true
 			seccompProfile: type: "RuntimeDefault"
 		}
+	}
+}
+
+_podLabels: "kanidm.kaniop.rs/cluster": cluster
+
+_pdb: {
+	apiVersion: "policy/v1"
+	kind:       "PodDisruptionBudget"
+	metadata: {name: cluster, namespace: ns}
+	spec: {
+		maxUnavailable: 1
+		selector: matchLabels: _podLabels
 	}
 }
 

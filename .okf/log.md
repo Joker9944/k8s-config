@@ -2,6 +2,9 @@
 
 ## 2026-11-14
 
+- kanidm pods spread one per node with a PodDisruptionBudget; volumes stay replicated because an empty pod needs a manual refresh — [identity — kanidm](/platform/identity-kanidm.md)
+- Traefik pins kanidm clients to one pod by cookie; auth sessions and cookie keys are per pod — [identity — kanidm](/platform/identity-kanidm.md)
+- kanidm-cluster runs three replicas with `primaryNode` unset; a diverged pod is recovered by setting it temporarily — [identity — kanidm](/platform/identity-kanidm.md)
 - The app-template kanidm and its replication are gone; kaniop's primary semantics and the empty-primary wipe; kanidm's log pipeline claimed through kaniop's managed-by label — [identity — kanidm](/platform/identity-kanidm.md), [observability](/platform/observability.md), [certificates and PKI](/platform/certificates-and-pki.md), [capability graph](/architecture/capability-graph.md)
 - kanidm-cluster backs up its primary volume through volsync, source only; kaniop's backup is experimental and `disableUpgradeChecks` does not gate it — [identity — kanidm](/platform/identity-kanidm.md), [backup and restore](/platform/backup-and-restore.md), [capability graph](/architecture/capability-graph.md)
 - opencloud reads LDAPS from the kaniop cluster (`kanidm.kanidm-system:3636`); the app-template instance serves no clients — [identity — kanidm](/platform/identity-kanidm.md)
