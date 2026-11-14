@@ -18,7 +18,7 @@ _tailscaleOperator: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "tailscale-operator"
 	// renovate: datasource=helm packageName=tailscale-operator registryUrl=https://pkgs.tailscale.com/helmcharts
-	version:    "1.104.4"
+	version:    "1.104.7"
 	sourceName: "tailscale"
 	interval:   "5m"
 	values: {
