@@ -2,6 +2,7 @@
 
 ## 2026-11-14
 
+- kanidm-cluster backs up its primary volume through volsync, source only; kaniop's backup is experimental and `disableUpgradeChecks` does not gate it — [identity — kanidm](/platform/identity-kanidm.md), [backup and restore](/platform/backup-and-restore.md), [capability graph](/architecture/capability-graph.md)
 - opencloud reads LDAPS from the kaniop cluster (`kanidm.kanidm-system:3636`); the app-template instance serves no clients — [identity — kanidm](/platform/identity-kanidm.md)
 - kustomize-controller strips `kubectl`-set fields from objects it applies — [flux topology](/architecture/flux-topology.md)
 - `idm.vonarx.online` served by the kaniop cluster; mutual-pull replication with the app-template instance, which keeps LDAPS — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)

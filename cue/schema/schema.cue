@@ -120,6 +120,9 @@ package schema
 	// The Secret `repository` resolves against; #Bundle collects it.
 	secretName: "\(app)-restic-\(vol)"
 
+	// app-template's claim name; an operator-owned StatefulSet names its own.
+	pvc: string | *"\(app)-\(vol)"
+
 	_mover: {runAsUser: uid, runAsGroup: gid, fsGroup: gid}
 	_moverLabels: {"app.kubernetes.io/name": "volsync"}
 
@@ -153,7 +156,7 @@ package schema
 				apiVersion: "volsync.backube/v1alpha1"
 				kind:       "ReplicationSource"
 				spec: {
-					sourcePVC: "\(app)-\(vol)"
+					sourcePVC: pvc
 					trigger: schedule: "@daily"
 					restic: {
 						repository:        secretName

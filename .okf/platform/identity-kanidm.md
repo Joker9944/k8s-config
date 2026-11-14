@@ -5,14 +5,14 @@ description: The cluster's OIDC/LDAP provider, and why every consumer ships a ka
 tags: [kanidm, oidc, sso, identity]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-14T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-14T14:00:00Z }
 ---
 
 # Deployment
 
 Two instances of one database replicate with each other in the `security` tier.
 
-**`kanidm-cluster`** serves `idm.vonarx.online`. It is a `Kanidm` named `kanidm` in `kanidm-system`, deployed by the [kaniop](https://github.com/pando85/kaniop) operator (the `kanidm-operator` bundle, which provides the `kanidm` [capability](/architecture/capability-graph.md)): one `write_replica`, primary for replication. LDAPS listens on the same Service, `kanidm:3636`, opened by `ldapPortName`. The operator renders its Ingress from `spec.ingress`, with annotations from `#IngressAnnotations`. kanidm terminates TLS itself, on a private-CA certificate covering the Service and pod names, so a `ServersTransport` trusting `nyx-ca-cert-bundle` is attached through `spec.service.annotations`. The CR sets the app-template uid because the operator otherwise runs kanidm as root.
+**`kanidm-cluster`** serves `idm.vonarx.online`. It is a `Kanidm` named `kanidm` in `kanidm-system`, deployed by the [kaniop](https://github.com/pando85/kaniop) operator (the `kanidm-operator` bundle, which provides the `kanidm` [capability](/architecture/capability-graph.md)): one `write_replica`, primary for replication. LDAPS listens on the same Service, `kanidm:3636`, opened by `ldapPortName`. The operator renders its Ingress from `spec.ingress`, with annotations from `#IngressAnnotations`. kanidm terminates TLS itself, on a private-CA certificate covering the Service and pod names, so a `ServersTransport` trusting `nyx-ca-cert-bundle` is attached through `spec.service.annotations`. The CR sets the app-template uid because the operator otherwise runs kanidm as root. Only the primary's volume is backed up, by a standalone [`#VolsyncRestic`](/platform/backup-and-restore.md) source; restore is not wired, because kaniop never recreates its StatefulSet and Kubernetes rejects a changed claim template. kaniop's own backup is not used: its CRDs are `v1alpha1`, online upload is experimental for want of a completion marker from kanidm, and its restore cannot read 1.12 dumps.
 
 **`kanidm`** is the app-template StatefulSet in `kanidm`. It serves no clients and has no ingress; it still exposes LDAPS on `kanidm-ldaps:636`. Its certificate comes from [`#NamespaceCert`](/architecture/cue-layout.md). `KANIDM_TRUST_X_FORWARD_FOR: true` makes rate limiting and audit logs see real client addresses. Health probes exec `kanidmd scripting healthcheck`.
 
@@ -25,7 +25,7 @@ Mutual-pull on port 8444. The new cluster is the primary, and the app-template i
 - **Origins.** kaniop advertises `repl://<pod>.<name>.<ns>.svc.cluster.local:8444` and renders `externalReplicationNodes` into `/run/kanidm/server.toml` with an init container. Its admission policy allows one primary only: either a replica group with `primaryNode` or an external node with `automaticRefresh`.
 - **1.12.0 certificates are unusable.** kanidm 1.12.0 mints replication certificates whose issuer carries `O=Kanidm Replication` while the subject does not, so the rustls pin rejects them (`UnknownIssuer`/`UnknownCA`; [kanidm#4709](https://github.com/kanidm/kanidm/issues/4709)). 1.12.1 fixes new ones, and a certificate minted earlier needs a renew.
 
-kaniop v0.22.1 builds against the kanidm 1.11 client SDK and marks 1.12 servers incompatible ([#1141](https://github.com/pando85/kaniop/issues/1141)), so `disableUpgradeChecks` is set, which also switches off its backup transport. Its restore path cannot read a 1.12 backup either: the data mover finds the domain entry by `uuid.UU`/`domain_name.N8`, where 1.12 writes `US`/`N8S`. Neither the kanidm image nor `kanidmd database backup` is convenient to work with: the image has no shell or `tar`, so files go in and out through an ephemeral container, and the backup is offline-only and still wants the TLS paths set.
+kaniop v0.22.1 builds against the kanidm 1.11 client SDK and marks 1.12 servers incompatible ([#1141](https://github.com/pando85/kaniop/issues/1141)), so `disableUpgradeChecks` is set. It gates only the upgrade path; backup rendering does not depend on it. Its restore path cannot read a 1.12 backup either: the data mover finds the domain entry by `uuid.UU`/`domain_name.N8`, where 1.12 writes `US`/`N8S`. Neither the kanidm image nor `kanidmd database backup` is convenient to work with: the image has no shell or `tar`, so files go in and out through an ephemeral container, and the backup is offline-only and still wants the TLS paths set.
 
 # Client registration is manual
 

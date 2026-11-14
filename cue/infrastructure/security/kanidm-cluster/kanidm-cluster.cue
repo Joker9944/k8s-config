@@ -5,10 +5,13 @@ package kanidmcluster
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#ConfigBundle & {
-	needs: ["kanidm", "certificate", "ingress"]
+	needs: ["kanidm", "certificate", "ingress", "volsync"]
 	wait: true
-	secretFiles: ["infrastructure/security/kanidm-cluster/secrets/replication.secret.yaml"]
-	resources: [_cert, _transport, _kanidm]
+	secretFiles: [
+		"infrastructure/security/kanidm-cluster/secrets/replication.secret.yaml",
+		_backup.secretFile,
+	]
+	resources: [_cert, _transport, _kanidm, _backupSource]
 }
 
 let ns = "kanidm-system"
@@ -105,4 +108,19 @@ _kanidm: {
 			seccompProfile: type: "RuntimeDefault"
 		}
 	}
+}
+
+// The primary's volume only: the other replicas refresh from it. Restore is not
+// wired: the claim template cannot gain a dataSourceRef without recreating the
+// StatefulSet. Revisit kaniop's own backup (KanidmBackupSchedule) once it
+// leaves v1alpha1 and its restore reads kanidm 1.12 dumps.
+_backup: schema.#VolsyncRestic & {
+	app:        cluster, vol: "data", size: "500Mi"
+	"uid":      uid, "gid":   uid
+	pvc:        "\(cluster)-data-\(cluster)-default-0"
+	secretFile: "infrastructure/security/kanidm-cluster/secrets/restic.secret.yaml"
+}
+
+_backupSource: _backup.out["source-data"].manifest & {
+	metadata: {name: "\(cluster)-source-data", namespace: ns}
 }

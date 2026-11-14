@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-14T14:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -30,7 +30,7 @@ The PVC references the destination through `dataSourceRef`, and the mover runs u
 
 That generous install timeout is not merely cautious. `upgradeRetries` does not apply to an install, and install remediation is left off deliberately — there it is an _uninstall_, and gotify's Postgres `Cluster` is Helm-managed with no `resource-policy`, so one would garbage-collect its instance PVCs through the Cluster's `ownerReference`. That database has no off-cluster copy. An install that overruns its timeout therefore just sits failed until the spec changes or someone forces a reconcile, which is the safe direction to fail in.
 
-`dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every backed-up volume therefore declares it up front, whether or not a restore is ever wanted.
+`dataSourceRef` is immutable once the PVC exists, so a volume that ships without one can never gain it by reconcile — the PVC has to be recreated. Every app-template volume therefore declares it up front, whether or not a restore is ever wanted. The exception is [kanidm-cluster](/platform/identity-kanidm.md), whose claim template belongs to an operator: it ships the source alone, naming the operator's claim through `pvc`.
 
 Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) live in a per-app, per-volume Secret named `<app>-restic-<vol>`. The file holding it is an input of [`#VolsyncRestic`](/architecture/cue-layout.md) — `<workload>/secrets/restic.secret.yaml` — so a backup and the credential it cannot run without are declared together. CUE never reads ciphertext, so nothing checks the other half — that the named file really holds the Secret. A missing credential surfaces only on the first scheduled run.
 
