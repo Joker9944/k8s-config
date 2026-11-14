@@ -6,6 +6,7 @@ The services nyx runs so that everything else can run.
 - [Networking and ingress](networking-and-ingress.md) - the WireGuard edge the cluster is reached through, Traefik and its middleware chain, and the tailnet ingress path beside them.
 - [Certificates and PKI](certificates-and-pki.md) - the public ACME wildcard, the private CA chain, and how both are distributed.
 - [Identity — kanidm](identity-kanidm.md) - the OIDC provider, and why client registration is manual.
+- [kanidm IDM layout](kanidm-idm-layout.md) - the tier → app group model, the OAuth2 clients and service accounts that live only in kanidm.
 - [Storage](storage.md) - the three Longhorn classes, NFS media, and Garage object storage.
 - [Backup and restore](backup-and-restore.md) - volsync/restic for PVCs, CNPG/barman-cloud for Postgres.
 - [Observability](observability.md) - Prometheus, Loki, Alloy, and the Gotify alerting path.

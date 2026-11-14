@@ -2,6 +2,8 @@
 
 ## 2026-11-14
 
+- Grafana maps `grafana_users` to Editor; `grafana_editors` is gone — [kanidm IDM layout](/platform/kanidm-idm-layout.md)
+- kanidm groups, clients and service accounts as they exist in the database; servarr shares `servarr_admins`; grafana and komga files gain their live-only settings — [kanidm IDM layout](/platform/kanidm-idm-layout.md), [identity — kanidm](/platform/identity-kanidm.md)
 - kanidm pods spread one per node with a PodDisruptionBudget; volumes stay replicated because an empty pod needs a manual refresh — [identity — kanidm](/platform/identity-kanidm.md)
 - Traefik pins kanidm clients to one pod by cookie; auth sessions and cookie keys are per pod — [identity — kanidm](/platform/identity-kanidm.md)
 - kanidm-cluster runs three replicas with `primaryNode` unset; a diverged pod is recovered by setting it temporarily — [identity — kanidm](/platform/identity-kanidm.md)

@@ -20,6 +20,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Networking and ingress](platform/networking-and-ingress.md) - the WireGuard edge the cluster is reached through, Traefik and its middleware chain, and the tailnet ingress path beside them.
 - [Certificates and PKI](platform/certificates-and-pki.md) - the public ACME wildcard, the private CA chain, and how both are distributed.
 - [Identity — kanidm](platform/identity-kanidm.md) - the OIDC provider, and why client registration is manual.
+- [kanidm IDM layout](platform/kanidm-idm-layout.md) - the tier → app group model, the OAuth2 clients and service accounts that live only in kanidm.
 - [Storage](platform/storage.md) - the three Longhorn classes, NFS media, and Garage object storage.
 - [Backup and restore](platform/backup-and-restore.md) - volsync/restic for PVCs, CNPG/barman-cloud for Postgres.
 - [Observability](platform/observability.md) - Prometheus, Loki, Alloy, and the Gotify alerting path.

@@ -13,5 +13,9 @@ kanidm system oauth2 prefer-short-username komga
 
 kanidm system oauth2 add-redirect-url komga https://komga.vonarx.online/login/oauth2/code/kanidm
 
+# Spring Security sends no PKCE for a confidential client and expects RS256 ID tokens.
+kanidm system oauth2 warning-insecure-client-disable-pkce komga
+kanidm system oauth2 warning-enable-legacy-crypto komga
+
 kanidm system oauth2 update-scope-map komga komga_users openid profile email
 kanidm system oauth2 update-scope-map komga komga_admins openid profile email
