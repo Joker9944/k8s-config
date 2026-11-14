@@ -72,7 +72,7 @@ _alloy: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "alloy"
 	// renovate: datasource=helm packageName=alloy registryUrl=https://grafana.github.io/helm-charts
-	version:    "1.15.0"
+	version:    "1.16.0"
 	sourceName: _grafana.name
 
 	// The CRDs come with the loki release, which is why this one installs none.
