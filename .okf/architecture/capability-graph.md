@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-13T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-14T01:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -47,17 +47,15 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 31 bundles, 35 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Acyclic: 31 bundles, 36 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
 
 ```
-L0  cert-manager  cnpg  kanidm-operator  longhorn  redis-operator
-    reflector  reloader  generic-device-plugin  nvidia-device-plugin
-    tailscale-operator
-L1  certs-config  cnpg-config  kanidm-cluster  longhorn-config
-    tailscale-config
+L0  cert-manager  cnpg  longhorn  redis-operator  reflector
+    reloader  generic-device-plugin  nvidia-device-plugin  tailscale-operator
+L1  certs-config  cnpg-config  longhorn-config  tailscale-config
 L2  traefik
-L3  kube-prometheus-stack  servarr
-L4  garage  opencloud  traefik-observability-config  volsync
+L3  kanidm-operator  kube-prometheus-stack  servarr
+L4  kanidm-cluster  garage  opencloud  traefik-observability-config  volsync
 L5  audiobookshelf  gotify  jellyfin  jellyseerr  kanidm  komga  loki
     qbittorrent
 L6  alloy
@@ -68,7 +66,7 @@ The two chains that set the depth:
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → volsync`
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → garage → loki → alloy`
 
-`traefik` at L2 is the fleet's articulation point: 10 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` is now a root. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
+`traefik` at L2 is the fleet's articulation point: 11 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` is now a root. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
 
 Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Without it a blocked reconcile retries at the interval, so a six-hop chain costs an hour of waiting rather than six minutes.
 
@@ -80,7 +78,7 @@ Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Wit
 
 `certs-config` waits on its whole inventory rather than on named objects — root CA cert and Issuer, intermediate cert and ClusterIssuer, the ACME ClusterIssuer and the wildcard all carry a real `Ready`.
 
-**The fleet uses no `healthChecks`.** Flux ignores them when `wait` is set, and `wait` covers strictly more, so a second mechanism would only invite a bundle to declare both. `healthCheckExprs` — CEL per GVK, evaluated under `wait` — is the escape hatch for a CR whose conditions kstatus cannot read, and is deliberately unused. Two objects qualify: the trust-manager `Bundle`, whose status carries only `Synced`, and the `ProxyGroup`, whose status carries `conditions`, `devices` and `url` — neither has a top-level `observedGeneration` or a `Reconciling`/`Stalled` condition. Its CA reaches kanidm and opencloud as a reflector-copied Secret, so a missing one leaves a pod in `ContainerCreating` rather than failing an apply — [runtime coupling](/platform/certificates-and-pki.md), the same category as a StorageClass.
+**The fleet uses no `healthChecks`.** Flux ignores them when `wait` is set, and `wait` covers strictly more, so a second mechanism would only invite a bundle to declare both. `healthCheckExprs` — CEL per GVK, evaluated under `wait` — is the escape hatch for a CR whose conditions kstatus cannot read, and is deliberately unused. Two objects qualify: the trust-manager `Bundle`, whose status carries only `Synced`, and the `ProxyGroup`, whose status carries `conditions`, `devices` and `url` — neither has a top-level `observedGeneration` or a `Reconciling`/`Stalled` condition. Its CA reaches kanidm-system and opencloud as a reflector-copied Secret, so a missing one leaves a pod in `ContainerCreating` rather than failing an apply — [runtime coupling](/platform/certificates-and-pki.md), the same category as a StorageClass.
 
 `wait: true` is never set on an app. A gate on a leaf helps nobody, and cnpg's `Cluster` carries a real `Ready` — so waiting on servarr would mean waiting on a barman restore.
 

@@ -5,9 +5,10 @@ package kanidmoperator
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
-	namespace:   "kanidm-system"
-	wait:        true
-	middlewares: false
+	namespace: "kanidm-system"
+	wait:      true
+	// For kanidm-cluster's ServersTransport.
+	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
 	repositories: [_repo]
 	releases: [_kaniop]
 }

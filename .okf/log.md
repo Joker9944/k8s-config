@@ -1,5 +1,12 @@
 # Update Log
 
+## 2026-11-14
+
+- opencloud reads LDAPS from the kaniop cluster (`kanidm.kanidm-system:3636`); the app-template instance serves no clients — [identity — kanidm](/platform/identity-kanidm.md)
+- kustomize-controller strips `kubectl`-set fields from objects it applies — [flux topology](/architecture/flux-topology.md)
+- `idm.vonarx.online` served by the kaniop cluster; mutual-pull replication with the app-template instance, which keeps LDAPS — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
+- kanidm 1.12.0 replication certificates are unusable (kanidm#4709); how kaniop wires an external node — [identity — kanidm](/platform/identity-kanidm.md)
+
 ## 2026-11-13
 
 - `kanidm` capability and the kaniop-managed `kanidm-cluster`; kaniop rejects kanidm 1.12 and cannot restore its backups — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)

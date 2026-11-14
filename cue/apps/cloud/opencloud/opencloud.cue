@@ -179,7 +179,7 @@ _opencloud: schema.#Release & {
 			ldapServerWriteEnabled:     false
 			graphLdapRefintEnabled:     false
 			ldap: {
-				uri:       "ldaps://kanidm-ldaps.kanidm.svc.cluster.local:636"
+				uri:       "ldaps://kanidm.kanidm-system.svc.cluster.local:3636"
 				insecure:  false
 				bindDN:    "dn=token"
 				secretRef: "opencloud-ldap-bind"

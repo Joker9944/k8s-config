@@ -5,9 +5,10 @@ package kanidmcluster
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#ConfigBundle & {
-	needs: ["kanidm", "certificate"]
+	needs: ["kanidm", "certificate", "ingress"]
 	wait: true
-	resources: [_cert, _kanidm]
+	secretFiles: ["infrastructure/security/kanidm-cluster/secrets/replication.secret.yaml"]
+	resources: [_cert, _transport, _kanidm]
 }
 
 let ns = "kanidm-system"
@@ -41,6 +42,17 @@ _cert: {
 	}
 }
 
+// kanidm terminates TLS itself, so Traefik verifies it against the private CA.
+_transport: {
+	apiVersion: "traefik.io/v1alpha1"
+	kind:       "ServersTransport"
+	metadata: {name: "\(cluster)-transport", namespace: ns}
+	spec: {
+		serverName: "\(cluster).\(ns).svc"
+		rootCAs: [{secret: "nyx-ca-cert-bundle"}]
+	}
+}
+
 _kanidm: {
 	apiVersion: "kaniop.rs/v1beta1"
 	kind:       "Kanidm"
@@ -52,16 +64,35 @@ _kanidm: {
 		// (pando85/kaniop#1141). This also disables kaniop's backup transport.
 		disableUpgradeChecks: true
 		tlsSecretName:        _cert.spec.secretName
+		ldapPortName:         "ldaps"
 		replicaGroups: [{
-			name:        "default"
-			replicas:    1
-			role:        "write_replica"
+			name:     "default"
+			replicas: 1
+			role:     "write_replica"
+			// The app-template instance in `kanidm` is the secondary and refreshes
+			// from here; only one side may be primary.
 			primaryNode: true
 			resources: {
 				requests: {cpu: "50m", memory: "1Gi"}
 				limits: memory: "2Gi"
 			}
 		}]
+		// The app-template instance, kept in step until it is decommissioned. Its
+		// certificate is pinned in the secret and changes only on a manual renew.
+		externalReplicationNodes: [{
+			name:             "legacy"
+			hostname:         "kanidm.kanidm.svc.cluster.local"
+			port:             8444
+			type:             "mutual-pull"
+			automaticRefresh: false
+			certificate: {name: "kanidm-legacy-replication-cert", key: "certificate"}
+		}]
+		service: annotations: "traefik.ingress.kubernetes.io/service.serverstransport":
+			"\(ns)_\(_transport.metadata.name)@kubernetescrd"
+		ingress: {
+			annotations: (schema.#IngressAnnotations & {"ns": ns}).out
+			tlsSecretName: "wildcard-vonarx-online-cert"
+		}
 		storage: volumeClaimTemplate: spec: {
 			accessModes: ["ReadWriteOnce"]
 			resources: requests: storage: "500Mi"

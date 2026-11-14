@@ -2,21 +2,43 @@
 
 package kanidm
 
-// cSpell:ignore BINDADDRESS kanidmd LDAPBINDADDRESS ldaps serverstransport
+// cSpell:ignore BINDADDRESS kanidmd LDAPBINDADDRESS ldaps
 
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "kanidm"
 
-	// kanidm terminates TLS itself, so Traefik talks to it over HTTPS with a
-	// certificate off the private CA.
+	// No ingress: idm.vonarx.online is served by kanidm-cluster. LDAPS still
+	// terminates here, on a certificate off the private CA.
+	middlewares:   false
 	namespaceCert: true
 
-	namespaceLabels: "vonarx.online/distribute-nyx-ca-cert-bundle": "true"
-
-	before: [_logs.out]
+	before: [_logs.out, _replication.out, _partnerCert]
 	releases: [_kanidm]
+}
+
+_serverToml: _ @embed(file="files/server.toml", type=text)
+
+// Replication with the kaniop cluster in kanidm-system, which is the primary.
+// kanidm takes a partner certificate only inline, so the file is a template the
+// init container fills from _partnerCert.
+_replication: schema.#ConfigMapFiles & {
+	name: "kanidm-replication"
+	ns:   bundle.namespace
+	files: "server.toml": _serverToml
+}
+
+// Filled by reflector from the operator-owned kanidm-default-0-cert, whose
+// reflection-allowed annotations are set by hand: kaniop has no field for them.
+_partnerCert: {
+	apiVersion: "v1"
+	kind:       "Secret"
+	metadata: {
+		name:      "kanidm-replication-partner-cert"
+		namespace: bundle.namespace
+		annotations: "reflector.v1.k8s.emberstack.com/reflects": "kanidm-system/kanidm-default-0-cert"
+	}
 }
 
 _kanidmLogs: _ @embed(file="files/kanidm.alloy", type=text)
@@ -37,7 +59,8 @@ _kanidm: schema.#AppRelease & {
 	let pathTLSCrt = "/data/tls.crt"
 	let pathTLSKey = "/data/tls.key"
 	let dataSize = "500Mi"
-	host: "idm.vonarx.online"
+	let pathConfig = "/config/server.toml"
+	let host = "idm.vonarx.online"
 
 	let probe = {
 		custom:  true
@@ -52,8 +75,7 @@ _kanidm: schema.#AppRelease & {
 	}
 	backups: [_backup]
 
-	// The private-CA certificate #Bundle emits, which the pod mounts and Traefik
-	// verifies against.
+	// The private-CA certificate #Bundle emits, which the pod mounts for LDAPS.
 	_cert: (schema.#NamespaceCert & {ns: namespace}).out
 
 	values: {
@@ -64,13 +86,22 @@ _kanidm: schema.#AppRelease & {
 			// The subPath mounts below never see a renewed Secret in place, and
 			// kanidmd re-reads its TLS files only on a SIGHUP nothing sends;
 			// reloader rolls the statefulset when the certificate renews.
-			annotations: "secret.reloader.stakater.com/reload": _cert.spec.secretName
+			annotations: "secret.reloader.stakater.com/reload": "\(_cert.spec.secretName),\(_partnerCert.metadata.name)"
 			pod: securityContext: {
 				runAsUser:    uid
 				runAsGroup:   gid
 				runAsNonRoot: true
 				fsGroup:      gid
 				seccompProfile: type: "RuntimeDefault"
+			}
+			initContainers: replication: schema.#Hardened & {
+				image: {
+					repository: "busybox"
+					tag:        "1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec"
+				}
+				env: PARTNER_CERT: valueFrom: secretKeyRef: {name: _partnerCert.metadata.name, key: "tls.der.b64url"}
+				command: ["/bin/sh", "-c"]
+				args: ["sed \"s|@PARTNER_CERT@|$PARTNER_CERT|\" /template/server.toml > \(pathConfig)"]
 			}
 			containers: kanidm: schema.#Hardened & {
 				image: {
@@ -87,6 +118,7 @@ _kanidm: schema.#AppRelease & {
 					KANIDM_LOG_LEVEL:           "info"
 					KANIDM_DOMAIN:              host
 					KANIDM_ORIGIN:              "https://\(host):443"
+					KANIDM_CONFIG:              pathConfig
 				}
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}
@@ -104,24 +136,15 @@ _kanidm: schema.#AppRelease & {
 			kanidm: {
 				controller: "kanidm"
 				primary:    true
-				// Traefik has to speak HTTPS to this service and verify the private
-				// CA, which is what the ServersTransport below configures.
-				annotations: "traefik.ingress.kubernetes.io/service.serverstransport":
-					"\(namespace)_\(name)-transport@kubernetescrd"
-				ports: https: {primary: true, port: 443, targetPort: 8443}
+				ports: {
+					https: {primary: true, port: 443, targetPort: 8443}
+					repl: {port: 8444, targetPort: 8444, protocol: "TCP"}
+				}
 			}
 			ldaps: {
 				controller: "kanidm"
 				ports: ldaps: {port: 636, targetPort: 3636, protocol: "TCP"}
 			}
-		}
-
-		ingress: kanidm: {
-			hosts: [{
-				"host": host
-				paths: [{path: "/", service: {identifier: "kanidm", port: "https"}}]
-			}]
-			tls: [{hosts: [host], secretName: "wildcard-vonarx-online-cert"}]
 		}
 
 		persistence: {
@@ -136,6 +159,18 @@ _kanidm: schema.#AppRelease & {
 					"name":   "\(name)-dest-data"
 				}
 			}
+			"replication-template": {
+				type:   "configMap"
+				"name": _replication.name
+				advancedMounts: kanidm: replication: [{path: "/template", readOnly: true}]
+			}
+			"replication-config": {
+				type: "emptyDir"
+				advancedMounts: kanidm: {
+					replication: [{path: "/config"}]
+					kanidm: [{path: "/config", readOnly: true}]
+				}
+			}
 			"data-overlay-tls": {
 				type:   "secret"
 				"name": _cert.spec.secretName
@@ -143,15 +178,6 @@ _kanidm: schema.#AppRelease & {
 					{path: pathTLSCrt, subPath: "tls.crt"},
 					{path: pathTLSKey, subPath: "tls.key"},
 				]
-			}
-		}
-
-		rawResources: transport: manifest: {
-			apiVersion: "traefik.io/v1alpha1"
-			kind:       "ServersTransport"
-			spec: {
-				serverName: "\(name).\(namespace)"
-				rootCAs: [{secret: "nyx-ca-cert-bundle"}]
 			}
 		}
 	}
