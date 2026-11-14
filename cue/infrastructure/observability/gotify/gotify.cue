@@ -116,7 +116,7 @@ _gotify: schema.#AppRelease & {
 			initContainers: postgresql: schema.#Hardened & {
 				image: {
 					repository: "ghcr.io/joker9944/postgresql-client"
-					tag:        "4.0.0@sha256:b24a7024fd314687028f02ff2a0ed4a006b9bec91ceaade10cc3c30bbe65e649"
+					tag:        "4.0.0@sha256:07b9c1504867adfcd1bc560327085b11fbb0206b535ee7e246a9547bf25de9d4"
 				}
 				env: {
 					PGHOST: "gotify-cnpg-rw"
