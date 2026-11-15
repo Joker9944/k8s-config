@@ -1,3 +1,5 @@
+@extern(embed)
+
 package traefik
 
 // cSpell:ignore kubernetescrd lukaszraczylo traefikoidc
@@ -7,7 +9,7 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "traefik-system"
 	wait:      true
-	needs: ["ingress-certificate", "redis"]
+	needs: ["ingress-certificate", "redis", "monitoring"]
 	extraSecretFiles: ["infrastructure/controllers/traefik/secrets/traefik.secret.yaml"]
 
 	// The ingress controller's own namespace serves nothing, so it installs no
@@ -18,7 +20,28 @@ bundle: schema.#Bundle & {
 		_traefikRepo,
 		schema.#HelmRepo & {name: "ot-helm", url: "https://ot-container-kit.github.io/helm-charts", interval: "30m"},
 	]
+	before: [_dashboards.out]
 	releases: [_traefik, _oidcRedis]
+}
+
+// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
+// the package directory, which is why this file lives here.
+_traefikDashboard: _ @embed(file="files/traefik.json", type=text)
+
+// Upstream's contrib dashboard, vendored and patched: the `service` label it
+// queries is `backend` here, and its export-format datasource input is an
+// ordinary variable. Its SLO and Apdex panels read the `0.3` and `1.2` bucket
+// boundaries directly rather than interpolating a quantile, so those two
+// buckets cannot be dropped from `metrics.prometheus.buckets`.
+_dashboards: schema.#ConfigMapFiles & {
+	name: "traefik-dashboards"
+	ns:   bundle.namespace
+	labels: {
+		grafana_dashboard:            "1"
+		"app.kubernetes.io/name":     "traefik"
+		"app.kubernetes.io/instance": "traefik"
+	}
+	files: "traefik.json": _traefikDashboard
 }
 
 _traefikRepo: schema.#HelmRepo & {
@@ -79,12 +102,22 @@ _traefik: schema.#Release & {
 			metrics: http: aliasHeadersStrategy: "delete"
 		}
 
-		// The chart already serves /metrics on the metrics entrypoint; this adds
-		// the ClusterIP Service a monitor can select. The ServiceMonitor itself
-		// is NOT here — see /architecture/capability-graph.md: `monitoring` would
-		// point traefik at kube-prometheus-stack, which reaches traefik through
-		// `ingress`. It lives in the traefik-observability-config bundle instead.
-		metrics: prometheus: service: enabled: true
+		metrics: prometheus: {
+			service: enabled: true
+			serviceMonitor: {
+				enabled: true
+
+				// Traefik labels its backends `service`, which is also the target
+				// label carrying the Service object's name, so the scrape renames the
+				// exposed one to `exported_service`. honorLabels would resolve the
+				// collision the other way and cost the target label the convention
+				// wants, so the exposed one is given a name of its own instead.
+				metricRelabelings: [
+					{sourceLabels: ["exported_service"], targetLabel: "backend"},
+					{action: "labeldrop", regex: "exported_service"},
+				]
+			}
+		}
 
 		// oidc backs the forward-auth middleware
 		experimental: plugins: {

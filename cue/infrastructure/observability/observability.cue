@@ -1,6 +1,6 @@
 package tier
 
-// cSpell:ignore kubeprometheusstack traefikobservabilityconfig
+// cSpell:ignore kubeprometheusstack
 
 import (
 	"github.com/joker9944/k8s-config/schema"
@@ -9,7 +9,6 @@ import (
 	"github.com/joker9944/k8s-config/infrastructure/observability/grafana"
 	kubeprometheusstack "github.com/joker9944/k8s-config/infrastructure/observability/kube-prometheus-stack:kubeprometheusstack"
 	"github.com/joker9944/k8s-config/infrastructure/observability/loki"
-	traefikobservabilityconfig "github.com/joker9944/k8s-config/infrastructure/observability/traefik-observability-config:traefikobservabilityconfig"
 )
 
 // The observability tier. Membership is this list: a workload is deployed here
@@ -19,11 +18,10 @@ tier: schema.#Tier & {
 	name: "observability"
 
 	bundles: {
-		"alloy":                        alloy.bundle
-		"gotify":                       gotify.bundle
-		"grafana":                      grafana.bundle
-		"kube-prometheus-stack":        kubeprometheusstack.bundle
-		"loki":                         loki.bundle
-		"traefik-observability-config": traefikobservabilityconfig.bundle
+		"alloy":                 alloy.bundle
+		"gotify":                gotify.bundle
+		"grafana":               grafana.bundle
+		"kube-prometheus-stack": kubeprometheusstack.bundle
+		"loki":                  loki.bundle
 	}
 }

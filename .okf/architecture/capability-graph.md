@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T19:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-15T21:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-31 bundles, 37 edges.
+30 bundles, 37 edges.
 
 ```mermaid
 flowchart BT
@@ -87,7 +87,6 @@ flowchart BT
     grafana["grafana"]
     kube_prometheus_stack["kube-prometheus-stack"]
     loki["loki"]
-    traefik_observability_config["traefik-observability-config"]
   end
   subgraph tier_cloud["apps/cloud"]
     opencloud["opencloud"]
@@ -134,8 +133,8 @@ flowchart BT
   servarr -->|postgres| cnpg
   tailscale_config -->|tailscale| tailscale_operator
   traefik -->|ingress-certificate| certs_config
+  traefik -->|monitoring| kube_prometheus_stack
   traefik -->|redis| redis_operator
-  traefik_observability_config -->|monitoring| kube_prometheus_stack
   volsync -->|monitoring| kube_prometheus_stack
 ```
 
@@ -174,6 +173,6 @@ kubectl annotate kustomization -n flux-system --all \
 
 - **A `wait` on a bundle whose inventory holds a CR kstatus cannot read is unproven.** kstatus assesses a custom resource generically: top-level `observedGeneration`, then `Reconciling`/`Stalled`. An object with none of those — the trust-manager `Bundle` and the `ProxyGroup` — depends on what that fallback does with nothing to read, and it has not been observed here either way. `tailscale-config` is the first bundle to wait on such a CR, so it is where this gets settled: the expectation is that the fallback reports `Current` immediately, making the gate weak rather than hanging. If a waiting bundle ever sits `Progressing` with every named object Ready, that is the cause, and the fix is a `healthCheckExprs` entry for the GVK rather than dropping the wait.
 - **Nothing detects a cycle.** Whether kustomize-controller reports one or merely stalls every node in it is unverified, and CUE will not catch it either — `_provider` is a flat map, and the graph only exists once rendered. A new `needs` is therefore checked by topologically sorting the rendered `sync/*-sync.yaml`, not by `cue vet`. This document is the guard.
-- **Two near-misses are live, both on kube-prometheus-stack.** It needs nothing, which is what lets any bundle need `monitoring`, and anything it comes to need closes a cycle back through one of those bundles. `garage → kube-prometheus-stack` means it must never need `object-storage` — putting Thanos on Garage would close it — and `kanidm-cluster → volsync → kube-prometheus-stack` means it must never need `kanidm`, which is why Grafana is [its own bundle](/platform/observability.md). The same holds at runtime, where no edge shows it: a pod in kube-prometheus-stack waiting on a Secret kaniop writes would deadlock a cold start behind its own `wait`. The default StorageClass must not become a capability either: traefik is a storage consumer, so it would need longhorn, and longhorn needs traefik the moment it serves an ingress through Traefik again.
+- **Three near-misses are live, all on kube-prometheus-stack.** It needs nothing, which is what lets any bundle need `monitoring`, and anything it comes to need closes a cycle back through one of those bundles. `traefik → kube-prometheus-stack` means it must never need `ingress` — a public UI there would need the middleware set, which is why `middlewares: false` is load-bearing on it — `garage → kube-prometheus-stack` means it must never need `object-storage` — putting Thanos on Garage would close it — and `kanidm-cluster → volsync → kube-prometheus-stack` means it must never need `kanidm`, which is why Grafana is [its own bundle](/platform/observability.md). The same holds at runtime, where no edge shows it: a pod in kube-prometheus-stack waiting on a Secret kaniop writes would deadlock a cold start behind its own `wait`. The default StorageClass must not become a capability either: traefik is a storage consumer, so it would need longhorn, and longhorn needs traefik the moment it serves an ingress through Traefik again.
 - **A capability with two providers is not expressible.** One name, one bundle. Two bundles providing the same CRD would need the consumers to pick, which the enum deliberately does not allow.
 - **Adding a capability to `#Bundle`'s inferred set adds edges everywhere at once.** `middlewares` is on by default, so a bundle acquires the `ingress` edge by saying nothing. All 10 reference the set they install today, but that is a property of the fleet rather than of the schema, and the edge would be real either way because the CR is applied.
