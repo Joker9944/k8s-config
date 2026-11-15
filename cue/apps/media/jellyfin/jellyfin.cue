@@ -7,9 +7,14 @@ import "github.com/joker9944/k8s-config/schema"
 bundle: schema.#Bundle & {
 	namespace: "jellyfin"
 	// baseline forbids hostPath volumes, and the media mount is one
-	namespaceLabels: "pod-security.kubernetes.io/enforce": "privileged"
+	needs: ["kanidm"]
+	namespaceLabels: {
+		"pod-security.kubernetes.io/enforce": "privileged"
+		schema.#KanidmProvisioningLabel
+	}
 	before: [_logs.out]
 	releases: [_jellyfin]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient.out]
 }
 
 _jellyfinLogs: _ @embed(file="files/jellyfin.alloy", type=text)
@@ -122,4 +127,23 @@ _jellyfin: schema.#AppRelease & {
 			tmp: type: "emptyDir"
 		}
 	}
+}
+
+// ---------------------------------------------------------------------- kanidm
+
+_kanidmAdmins: schema.#KanidmGroup & {name: "jellyfin_admins", member: "media_admins", ns: bundle.namespace}
+_kanidmUsers: schema.#KanidmGroup & {name: "jellyfin_users", member: "media_users", ns: bundle.namespace}
+// The SSO plugin keeps its own copy of the client secret, entered in its
+// settings, so the credentials Secret is unread.
+_kanidmClient: schema.#KanidmOAuth2Client & {
+	name:        "jellyfin"
+	ns:          bundle.namespace
+	displayname: "Jellyfin"
+	origin:      "https://\(_jellyfin.host)/"
+	redirectUrl: [
+		"https://\(_jellyfin.host)/sso/OID/redirect/kanidm",
+		"https://\(_jellyfin.host)/sso/OID/r/kanidm",
+	]
+	groups: [_kanidmAdmins, _kanidmUsers]
+	scopes: ["openid", "profile", "groups"]
 }

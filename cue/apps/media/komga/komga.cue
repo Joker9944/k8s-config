@@ -2,15 +2,17 @@
 
 package komga
 
-// cSpell:ignore ACCOUNTCREATION ALLOWEDORIGINS CLIENTSECRET gotson OIDCEMAILVERIFICATION SPRINGFRAMEWORK
+// cSpell:ignore ACCOUNTCREATION ALLOWEDORIGINS CLIENTID CLIENTSECRET gotson OIDCEMAILVERIFICATION SPRINGFRAMEWORK
 
 import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "komga"
-	extraSecretFiles: ["apps/media/komga/secrets/komga.secret.yaml"]
+	needs: ["kanidm"]
+	namespaceLabels: schema.#KanidmProvisioningLabel
 	before: [_configOverlay.out]
 	releases: [_komga]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient.out]
 }
 
 // Plaintext config, read from disk at evaluation time. @embed cannot escape the
@@ -68,10 +70,8 @@ _komga: schema.#AppRelease & {
 					KOMGA_CORS_ALLOWEDORIGINS:   "https://\(host)"
 					KOMGA_OAUTH2ACCOUNTCREATION: "true"
 					KOMGA_OIDCEMAILVERIFICATION: "false"
-					SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET: valueFrom: secretKeyRef: {
-						name: "komga-oidc"
-						key:  "client-secret"
-					}
+					SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTID: valueFrom: secretKeyRef: {name: _kanidmClient.secretName, key: "CLIENT_ID"}
+					SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KANIDM_CLIENTSECRET: valueFrom: secretKeyRef: {name: _kanidmClient.secretName, key: "CLIENT_SECRET"}
 					LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: "INFO"
 				}
 			}
@@ -103,5 +103,27 @@ _komga: schema.#AppRelease & {
 			data: schema.#MediaData
 			tmp: type: "emptyDir"
 		}
+	}
+}
+
+// ---------------------------------------------------------------------- kanidm
+
+_kanidmAdmins: schema.#KanidmGroup & {name: "komga_admins", member: "media_admins", ns: bundle.namespace}
+_kanidmUsers: schema.#KanidmGroup & {name: "komga_users", member: "media_users", ns: bundle.namespace}
+_kanidmClient: schema.#KanidmOAuth2Client & {
+	name:        "komga"
+	ns:          bundle.namespace
+	displayname: "Komga"
+	origin:      "https://\(_komga.host)/"
+	redirectUrl: [
+		"https://\(_komga.host)/login/oauth2/code/kanidm",
+	]
+	groups: [_kanidmAdmins, _kanidmUsers]
+	scopes: ["openid", "profile", "email"]
+	// Spring Security sends no PKCE for a confidential client and expects RS256
+	// ID tokens.
+	spec: {
+		allowInsecureClientDisablePkce: true
+		jwtLegacyCryptoEnable:          true
 	}
 }

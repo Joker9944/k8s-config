@@ -17,7 +17,7 @@ bundle: schema.#Bundle & {
 	repositories: [_repo]
 	before: [_dashboards.out]
 	releases: [_grafana]
-	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient.out]
 }
 
 // Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
@@ -77,7 +77,7 @@ _grafana: schema.#Release & {
 				scopes:                     "openid,profile,email,groups"
 				auth_url:                   "https://idm.vonarx.online/ui/oauth2"
 				token_url:                  "https://idm.vonarx.online/oauth2/token"
-				api_url:                    "https://idm.vonarx.online/oauth2/openid/\(_kanidmClient.metadata.name)/userinfo"
+				api_url:                    "\(_kanidmClient.issuer)/userinfo"
 				use_pkce:                   true
 				use_refresh_token:          true
 				allow_sign_up:              true
@@ -89,8 +89,8 @@ _grafana: schema.#Release & {
 		}
 
 		envValueFrom: {
-			GF_AUTH_GENERIC_OAUTH_CLIENT_ID: secretKeyRef: {name: oidcSecret, key: "CLIENT_ID"}
-			GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: secretKeyRef: {name: oidcSecret, key: "CLIENT_SECRET"}
+			GF_AUTH_GENERIC_OAUTH_CLIENT_ID: secretKeyRef: {name: _kanidmClient.secretName, key: "CLIENT_ID"}
+			GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: secretKeyRef: {name: _kanidmClient.secretName, key: "CLIENT_SECRET"}
 		}
 		plugins: ["grafana-lokiexplore-app"]
 
@@ -140,30 +140,20 @@ _grafana: schema.#Release & {
 _kanidmAdmins: schema.#KanidmGroup & {name: "grafana_admins", member: "monitoring_admins", ns: bundle.namespace}
 _kanidmUsers: schema.#KanidmGroup & {name: "grafana_users", member: "monitoring_users", ns: bundle.namespace}
 
-let oidcSecret = "\(_kanidmClient.metadata.name)-kanidm-oauth2-credentials"
-
-_kanidmClient: {
-	apiVersion: "kaniop.rs/v1beta1"
-	kind:       "KanidmOAuth2Client"
-	metadata: {name: "grafana", namespace: bundle.namespace}
-	spec: {
-		kanidmRef:   schema.#KanidmRef
-		displayname: "Grafana"
-		origin:      "https://\(host)/login/generic_oauth"
-		redirectUrl: ["https://\(host)/login/generic_oauth"]
-		strictRedirectUrl:   true
-		preferShortUsername: true
-		scopeMap: [for g in [_kanidmAdmins, _kanidmUsers] {
-			group: g.name
-			scopes: ["openid", "profile", "email", "groups"]
-		}]
-		claimMap: [{
-			name:         "grafana_role"
-			joinStrategy: "array"
-			valuesMap: [
-				{group: _kanidmAdmins.name, values: ["Admin"]},
-				{group: _kanidmUsers.name, values: ["Editor"]},
-			]
-		}]
-	}
+_kanidmClient: schema.#KanidmOAuth2Client & {
+	name:        "grafana"
+	ns:          bundle.namespace
+	displayname: "Grafana"
+	origin:      "https://\(host)/login/generic_oauth"
+	redirectUrl: [origin]
+	groups: [_kanidmAdmins, _kanidmUsers]
+	scopes: ["openid", "profile", "email", "groups"]
+	spec: claimMap: [{
+		name:         "grafana_role"
+		joinStrategy: "array"
+		valuesMap: [
+			{group: _kanidmAdmins.name, values: ["Admin"]},
+			{group: _kanidmUsers.name, values: ["Editor"]},
+		]
+	}]
 }

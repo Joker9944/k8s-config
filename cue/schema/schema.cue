@@ -356,3 +356,36 @@ _mediaDataPath: "/chronos/media-data"
 		}
 	}
 }
+
+// A confidential client authorising by group: every group in `groups` is
+// granted the same `scopes`. Anything else the CR takes goes in `spec`.
+// kaniop writes the credentials to `secretName` as CLIENT_ID and CLIENT_SECRET.
+#KanidmOAuth2Client: {
+	name:        string
+	ns:          string
+	displayname: string
+	origin:      string
+	redirectUrl: [...string]
+	groups: [...#KanidmGroup]
+	scopes: [...string]
+	spec: {...}
+
+	secretName: "\(name)-kanidm-oauth2-credentials"
+	issuer:     "https://idm.vonarx.online/oauth2/openid/\(name)"
+
+	out: {
+		apiVersion: "kaniop.rs/v1beta1"
+		kind:       "KanidmOAuth2Client"
+		metadata: {"name": name, namespace: ns}
+		"spec": {
+			kanidmRef:           #KanidmRef
+			"displayname":       displayname
+			"origin":            origin
+			"redirectUrl":       redirectUrl
+			strictRedirectUrl:   true
+			preferShortUsername: *true | bool
+			scopeMap: [for g in groups {group: g.name, "scopes": scopes}]
+			spec
+		}
+	}
+}

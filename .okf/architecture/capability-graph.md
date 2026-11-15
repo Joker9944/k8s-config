@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-30 bundles, 38 edges.
+30 bundles, 41 edges.
 
 ```mermaid
 flowchart BT
@@ -101,6 +101,7 @@ flowchart BT
   end
   alloy -->|log-sink| loki
   audiobookshelf -->|ingress| traefik
+  audiobookshelf -->|kanidm| kanidm_operator
   audiobookshelf -->|volsync| volsync
   certs_config -->|certificate| cert_manager
   cnpg_config -->|postgres| cnpg
@@ -115,6 +116,7 @@ flowchart BT
   grafana -->|kanidm| kanidm_operator
   grafana -->|monitoring| kube_prometheus_stack
   jellyfin -->|ingress| traefik
+  jellyfin -->|kanidm| kanidm_operator
   jellyfin -->|volsync| volsync
   jellyseerr -->|ingress| traefik
   jellyseerr -->|volsync| volsync
@@ -124,6 +126,7 @@ flowchart BT
   kanidm_cluster -->|volsync| volsync
   kanidm_operator -->|ingress| traefik
   komga -->|ingress| traefik
+  komga -->|kanidm| kanidm_operator
   komga -->|volsync| volsync
   loki -->|object-storage| garage
   longhorn_config -->|block-storage| longhorn

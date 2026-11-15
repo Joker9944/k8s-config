@@ -8,8 +8,11 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "audiobookshelf"
+	needs: ["kanidm"]
+	namespaceLabels: schema.#KanidmProvisioningLabel
 	before: [_logs.out]
 	releases: [_audiobookshelf]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient.out]
 }
 
 _audiobookshelfLogs: _ @embed(file="files/audiobookshelf.alloy", type=text)
@@ -125,4 +128,30 @@ _audiobookshelf: schema.#AppRelease & {
 			tmp: type: "emptyDir"
 		}
 	}
+}
+
+// ---------------------------------------------------------------------- kanidm
+
+_kanidmAdmins: schema.#KanidmGroup & {name: "audiobookshelf_admins", member: "media_admins", ns: bundle.namespace}
+_kanidmUsers: schema.#KanidmGroup & {name: "audiobookshelf_users", member: "media_users", ns: bundle.namespace}
+// The app keeps its own copy of the client secret, entered in its settings,
+// so the credentials Secret is unread.
+_kanidmClient: schema.#KanidmOAuth2Client & {
+	name:        "audiobookshelf"
+	ns:          bundle.namespace
+	displayname: "Audiobookshelf"
+	origin:      "https://\(_audiobookshelf.host)/"
+	redirectUrl: [
+		"https://\(_audiobookshelf.host)/auth/openid/callback",
+		"https://\(_audiobookshelf.host)/auth/openid/mobile-redirect",
+	]
+	groups: [_kanidmAdmins, _kanidmUsers]
+	scopes: ["openid", "profile", "email", "role"]
+	spec: claimMap: [{
+		name: "role"
+		valuesMap: [
+			{group: _kanidmAdmins.name, values: ["admin"]},
+			{group: _kanidmUsers.name, values: ["user"]},
+		]
+	}]
 }

@@ -6,7 +6,6 @@ spring:
         registration:
           kanidm:
             provider: kanidm
-            client-id: komga
             client-name: Kanidm
             scope: openid,email,profile
             authorization-grant-type: authorization_code
