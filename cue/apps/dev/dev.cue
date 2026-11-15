@@ -1,0 +1,17 @@
+package tier
+
+import (
+	"github.com/joker9944/k8s-config/schema"
+	"github.com/joker9944/k8s-config/apps/dev/attic"
+)
+
+// The dev tier. Membership is this list: a workload is deployed here
+// because it is named here, and nowhere else.
+tier: schema.#Tier & {
+	tree: "apps"
+	name: "dev"
+
+	bundles: {
+		"attic": attic.bundle
+	}
+}

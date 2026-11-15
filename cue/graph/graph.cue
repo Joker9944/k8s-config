@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	cloud "github.com/joker9944/k8s-config/apps/cloud:tier"
+	dev "github.com/joker9944/k8s-config/apps/dev:tier"
 	media "github.com/joker9944/k8s-config/apps/media:tier"
 	controllers "github.com/joker9944/k8s-config/infrastructure/controllers:tier"
 	observability "github.com/joker9944/k8s-config/infrastructure/observability:tier"
@@ -27,6 +28,7 @@ _tiers: [
 	security.tier,
 	observability.tier,
 	cloud.tier,
+	dev.tier,
 	media.tier,
 ]
 
