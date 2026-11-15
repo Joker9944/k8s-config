@@ -2,6 +2,7 @@
 
 ## 2026-11-15
 
+- grafana's kanidm groups and client are kaniop CRs; its client credentials come from the kaniop Secret — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
 - traefik owns its ServiceMonitor and dashboard again; kube-prometheus-stack must never need `ingress` — [observability](/platform/observability.md), [capability graph](/architecture/capability-graph.md)
 - Grafana is its own leaf bundle; kube-prometheus-stack needs no capability, and must never need `kanidm` — [observability](/platform/observability.md), [capability graph](/architecture/capability-graph.md), [identity — kanidm](/platform/identity-kanidm.md)
 - The capability graph is a Mermaid flowchart generated from `cue/graph` by a pre-commit hook; edges carry their capability — [capability graph](/architecture/capability-graph.md), [CUE layout](/architecture/cue-layout.md), [formatting and cspell](/workflows/formatting-and-cspell.md)
