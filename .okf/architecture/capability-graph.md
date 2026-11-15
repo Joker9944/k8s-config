@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-31 bundles, 43 edges.
+31 bundles, 44 edges.
 
 ```mermaid
 flowchart BT
@@ -104,6 +104,7 @@ flowchart BT
   end
   alloy -->|log-sink| loki
   attic -->|object-storage| garage
+  attic -->|postgres| cnpg
   audiobookshelf -->|ingress| traefik
   audiobookshelf -->|kanidm| kanidm_operator
   audiobookshelf -->|volsync| volsync

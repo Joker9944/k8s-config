@@ -2,7 +2,8 @@
 
 ## 2026-11-15
 
-- attic is the tailnet-only Nix binary cache on Garage, in the new `apps/dev` tier — [storage](/platform/storage.md), [flux topology](/architecture/flux-topology.md)
+- A claim whose `ReplicationDestination` is absent never binds — [backup and restore](/platform/backup-and-restore.md)
+- attic is the tailnet-only Nix binary cache on Garage, with its index in an unbacked CNPG cluster, in the new `apps/dev` tier — [storage](/platform/storage.md), [flux topology](/architecture/flux-topology.md), [backup and restore](/platform/backup-and-restore.md)
 - `infrastructure/` is for what the cluster runs on; where a new tier is registered — [CUE layout](/architecture/cue-layout.md)
 - servarr's kanidm group and clients are kaniop CRs; Sonarr and Radarr sign in natively as one user, prowlarr stays on the plugin — [identity — kanidm](/platform/identity-kanidm.md), [app-template pattern](/architecture/app-template-pattern.md)
 - audiobookshelf, jellyfin and komga provision their kanidm groups and clients through kaniop; `#KanidmOAuth2Client` carries what every client shares — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
