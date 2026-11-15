@@ -5,7 +5,7 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T14:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-15T17:00:00Z }
 ---
 
 All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
@@ -47,26 +47,104 @@ A provider needing its own capability is filtered in `#Tier.sync`, which is the 
 
 # The graph
 
-Acyclic: 30 bundles, 36 edges, seven levels. Derived by topologically sorting the rendered manifests, which is the only form of the graph that is authoritative.
+Each arrow runs from consumer to provider and carries the capability that put it there; a subgraph is a tier, which orders nothing. `cue/graph` builds the block from the same `edges` `#Tier.sync` renders into `dependsOn`, and the `capability-graph` pre-commit hook splices it in, so it cannot drift from the rendered manifests. It shows a cycle but does not detect one.
 
+<!-- capability-graph:begin -->
+
+30 bundles, 36 edges.
+
+```mermaid
+flowchart BT
+  subgraph tier_controllers["infrastructure/controllers"]
+    cert_manager["cert-manager"]
+    certs_config["certs-config"]
+    cnpg["cnpg"]
+    cnpg_config["cnpg-config"]
+    longhorn["longhorn"]
+    longhorn_config["longhorn-config"]
+    redis_operator["redis-operator"]
+    reflector["reflector"]
+    reloader["reloader"]
+    tailscale_config["tailscale-config"]
+    tailscale_operator["tailscale-operator"]
+    traefik["traefik"]
+    volsync["volsync"]
+  end
+  subgraph tier_plugins["infrastructure/plugins"]
+    generic_device_plugin["generic-device-plugin"]
+    nvidia_device_plugin["nvidia-device-plugin"]
+  end
+  subgraph tier_storage["infrastructure/storage"]
+    garage["garage"]
+  end
+  subgraph tier_security["infrastructure/security"]
+    kanidm_cluster["kanidm-cluster"]
+    kanidm_operator["kanidm-operator"]
+  end
+  subgraph tier_observability["infrastructure/observability"]
+    alloy["alloy"]
+    gotify["gotify"]
+    kube_prometheus_stack["kube-prometheus-stack"]
+    loki["loki"]
+    traefik_observability_config["traefik-observability-config"]
+  end
+  subgraph tier_cloud["apps/cloud"]
+    opencloud["opencloud"]
+  end
+  subgraph tier_media["apps/media"]
+    audiobookshelf["audiobookshelf"]
+    jellyfin["jellyfin"]
+    jellyseerr["jellyseerr"]
+    komga["komga"]
+    qbittorrent["qbittorrent"]
+    servarr["servarr"]
+  end
+  alloy -->|log-sink| loki
+  audiobookshelf -->|ingress| traefik
+  audiobookshelf -->|volsync| volsync
+  certs_config -->|certificate| cert_manager
+  cnpg_config -->|postgres| cnpg
+  garage -->|ingress| traefik
+  garage -->|monitoring| kube_prometheus_stack
+  gotify -->|ingress| traefik
+  gotify -->|kanidm| kanidm_operator
+  gotify -->|monitoring| kube_prometheus_stack
+  gotify -->|postgres| cnpg
+  gotify -->|volsync| volsync
+  jellyfin -->|ingress| traefik
+  jellyfin -->|volsync| volsync
+  jellyseerr -->|ingress| traefik
+  jellyseerr -->|volsync| volsync
+  kanidm_cluster -->|certificate| cert_manager
+  kanidm_cluster -->|ingress| traefik
+  kanidm_cluster -->|kanidm| kanidm_operator
+  kanidm_cluster -->|volsync| volsync
+  kanidm_operator -->|ingress| traefik
+  komga -->|ingress| traefik
+  komga -->|volsync| volsync
+  kube_prometheus_stack -->|ingress| traefik
+  loki -->|object-storage| garage
+  longhorn_config -->|block-storage| longhorn
+  opencloud -->|ingress| traefik
+  opencloud -->|monitoring| kube_prometheus_stack
+  qbittorrent -->|volsync| volsync
+  servarr -->|ingress| traefik
+  servarr -->|postgres| cnpg
+  tailscale_config -->|tailscale| tailscale_operator
+  traefik -->|ingress-certificate| certs_config
+  traefik -->|redis| redis_operator
+  traefik_observability_config -->|monitoring| kube_prometheus_stack
+  volsync -->|monitoring| kube_prometheus_stack
 ```
-L0  cert-manager  cnpg  longhorn  redis-operator  reflector
-    reloader  generic-device-plugin  nvidia-device-plugin  tailscale-operator
-L1  certs-config  cnpg-config  longhorn-config  tailscale-config
-L2  traefik
-L3  kanidm-operator  kube-prometheus-stack  servarr
-L4  garage  opencloud  traefik-observability-config  volsync
-L5  audiobookshelf  gotify  jellyfin  jellyseerr  kanidm-cluster  komga
-    loki  qbittorrent
-L6  alloy
-```
+
+<!-- capability-graph:end -->
 
 The two chains that set the depth:
 
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → volsync`
 - `cert-manager → certs-config → traefik → kube-prometheus-stack → garage → loki → alloy`
 
-`traefik` at L2 is the fleet's articulation point: 11 bundles reach it through `ingress` alone, and everything above L2 is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` is now a root. `traefik` stays at L2 despite the [MetalLB removal](/platform/networking-and-ingress.md): its depth was never the address pool, it is `cert-manager → certs-config`.
+`traefik`, two hops from a root, is the fleet's articulation point: 11 bundles reach it through `ingress` alone, and every bundle deeper than it is behind it. It was 14 before the operational ingresses moved to [the tailnet](/platform/networking-and-ingress.md), which declares no capability at all — and the same move is why `longhorn` is now a root. Its depth survived the [MetalLB removal](/platform/networking-and-ingress.md): it was never the address pool, it is `cert-manager → certs-config`.
 
 Level-3 Kustomizations carry `retryInterval: "1m"` against a 10m `interval`. Without it a blocked reconcile retries at the interval, so a six-hop chain costs an hour of waiting rather than six minutes.
 

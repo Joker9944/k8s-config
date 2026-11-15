@@ -280,16 +280,17 @@ _provider: {
 
 // The edges a bundle contributes: what it declares, plus what its own fields
 // already imply. Deduplicated through a struct, because a capability can be
-// both needed explicitly and inferred.
+// both needed explicitly and inferred. Keyed by provider, valued by the
+// capability that put the edge there.
 _edges: {
 	needs: [...#Capability]
-	inferred: [string]: bool
+	inferred: [#Capability]: bool
 
-	_set: {
-		for c in needs {(_provider[c]): true}
-		inferred
+	byProvider: {
+		for c, _ in inferred {(_provider[c]): c}
+		for c in needs {(_provider[c]): c}
 	}
-	out: [for n, _ in _set {n}]
+	out: [for n, _ in byProvider {n}]
 }
 
 #Bundle: {
@@ -334,17 +335,20 @@ _edges: {
 	// never what it renders. The three below are implied and never written.
 	needs: [...#Capability] | *[]
 
-	edges: (_edges & {
+	_e: _edges & {
 		"needs": needs
 		// The Middleware set, #NamespaceCert and #VolsyncRestic respectively: each
 		// renders a CR another bundle installs the CRD for, so the field that
 		// switches it on is the edge.
 		inferred: {
-			if middlewares {traefik: true}
-			if namespaceCert {"cert-manager": true}
+			if middlewares {ingress: true}
+			if namespaceCert {certificate: true}
 			for r in releases if len(r.backups) > 0 {volsync: true}
 		}
-	}).out
+	}
+	edges: _e.out
+	// The capability behind each edge, for the documented graph.
+	edgeCapabilities: _e.byProvider
 
 	// Gate the bundle's own resources on readiness rather than on their apply.
 	// For a bundle whose content is a HelmRelease this is the gate a consumer
@@ -403,7 +407,9 @@ _edges: {
 	// no middleware set and no namespace certificate.
 	needs: [...#Capability] | *[]
 
-	edges: (_edges & {"needs": needs, inferred: {}}).out
+	_e: _edges & {"needs": needs, inferred: {}}
+	edges:            _e.out
+	edgeCapabilities: _e.byProvider
 
 	// As #Bundle's. certs-config is the only config bundle that gates: its CA
 	// chain, issuers and wildcard all carry a real Ready condition, so waiting

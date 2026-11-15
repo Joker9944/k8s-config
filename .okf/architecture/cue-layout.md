@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-15T17:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -20,12 +20,14 @@ cue/
   render.nix                one derivation per tier, plus the bootstrap layer
   generate.sh               regenerates cue.mod/gen from the running Flux versions
   probe/                    package probe — mutation tests on the schema
+  graph/                    package graph — the capability graph as Mermaid,
+                            importing every tier
   schema/                   package schema — #Release, #AppRelease, #Bundle,
                             #ConfigBundle, #Hardened, #HardenedPrivileged,
                             #Middlewares, #IngressAnnotations, #TailnetIngress,
                             #ConfigMapFiles, #NamespaceCert, #VolsyncRestic,
                             #AlloyPipeline, #Reserved, #MediaData, #PodCIDR,
-                            #ServiceCIDR
+                            #ServiceCIDR, #KanidmGroup, #KanidmRef
   infrastructure/
     controllers/
       controllers.cue       package controllers — the tier collector

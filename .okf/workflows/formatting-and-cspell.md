@@ -4,7 +4,7 @@ title: Formatting and cspell
 description: The pre-commit suite declared in flake.nix, the generated config symlink that must not be edited, and how the spellchecker's dictionaries are assembled.
 tags: [pre-commit, formatting, cspell, nix]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T22:10:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-15T17:00:00Z }
 ---
 
 # Where the config lives
@@ -17,15 +17,16 @@ Run everything with `nix fmt`, which the flake's `formatter` output maps to `pre
 
 # Hooks
 
-| Group   | Hooks                                                                                                   |
-| ------- | ------------------------------------------------------------------------------------------------------- |
-| Files   | `trim-trailing-whitespace`, `end-of-file-fixer`, `fix-byte-order-marker`, `mixed-line-endings --fix=lf` |
-| General | `prettier`                                                                                              |
-| Nix     | `deadnix`, `nixfmt`, `statix`                                                                           |
-| Shell   | `shellcheck` (excluding `.envrc`), `shfmt`                                                              |
-| CUE     | `cue-fmt`                                                                                               |
-| Custom  | `sops-pre-commit` — see [secrets and SOPS](/workflows/secrets-sops.md)                                  |
-| Git     | `conform` — see [commit conventions](/workflows/commit-conventions.md)                                  |
+| Group   | Hooks                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Files   | `trim-trailing-whitespace`, `end-of-file-fixer`, `fix-byte-order-marker`, `mixed-line-endings --fix=lf`                                                                         |
+| General | `prettier`                                                                                                                                                                      |
+| Nix     | `deadnix`, `nixfmt`, `statix`                                                                                                                                                   |
+| Shell   | `shellcheck` (excluding `.envrc`), `shfmt`                                                                                                                                      |
+| CUE     | `cue-fmt`                                                                                                                                                                       |
+| Alloy   | `alloy-fmt`, one file per invocation                                                                                                                                            |
+| Custom  | `sops-pre-commit` — see [secrets and SOPS](/workflows/secrets-sops.md); `capability-graph` — splices `cue/graph` into [the capability graph](/architecture/capability-graph.md) |
+| Git     | `conform` — see [commit conventions](/workflows/commit-conventions.md)                                                                                                          |
 
 Prettier owns YAML formatting but excludes `clusters/nyx/flux`: those manifests are flux's own output, and reformatting them turns every renovate bump into a whole-file diff. `.editorconfig` fixes LF endings, a final newline, UTF-8, and 2-space indentation for YAML.
 

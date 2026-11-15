@@ -88,6 +88,7 @@
         packages = cueRender.perTier // {
           # programs
           sops-pre-commit = pkgs.callPackage ./pkgs/sops-pre-commit.nix { flake = self; };
+          capability-graph = pkgs.callPackage ./pkgs/capability-graph.nix { };
 
           # cue render
           cue-render-bootstrap = cueRender.bootstrap;
@@ -242,6 +243,15 @@
               };
 
               # Custom
+              capability-graph = {
+                enable = true;
+
+                name = "capability-graph";
+                entry = lib.getExe self.packages.${system}.capability-graph;
+                files = "^(cue/.*\\.cue|\\.okf/architecture/capability-graph\\.md)$";
+                pass_filenames = false;
+              };
+
               sops-pre-commit = {
                 enable = true;
 
