@@ -4,7 +4,7 @@ title: App-template pattern
 description: The bjw-s app-template idioms every workload follows, the chart sources, and the OIDC runbooks that sit beside them.
 tags: [helm, app-template, conventions]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-08T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-15T23:30:00Z }
 ---
 
 # Package shape
@@ -18,7 +18,7 @@ cue/<tree>/<tier>/<name>/
   kanidm-oidc.txt            manual OIDC registration commands
 ```
 
-Nesting is flat: `apps/media/servarr/` is one package holding six releases, one namespace and one CNPG cluster, keyed per sub-app in `secrets/<app>.secret.yaml` and `kanidm-oidc/<app>.txt`. See [the CUE layout](/architecture/cue-layout.md).
+Nesting is flat: `apps/media/servarr/` is one package holding six releases, one namespace and one CNPG cluster, keyed per sub-app in `secrets/<app>.secret.yaml`. See [the CUE layout](/architecture/cue-layout.md).
 
 # HelmRelease idioms
 

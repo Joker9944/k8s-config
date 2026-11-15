@@ -8,7 +8,7 @@ import (
 	"github.com/joker9944/k8s-config/schema"
 )
 
-// cSpell:ignore INSTANCENAME APIKEY MAINDB LOGDB
+// cSpell:ignore INSTANCENAME APIKEY MAINDB LOGDB OIDCAUTHORITY OIDCCLIENTID OIDCCLIENTSECRET OIDCUSERIDENTIFIER TRUSTEDNETWORKS
 
 // Six releases in one namespace sharing one Postgres cluster. The four *arr
 // apps differ by roughly eight parameters; everything else is #Arr.
@@ -58,6 +58,27 @@ _cnpgSecretRef: {
 	diagnostics:  string | int | *"0"
 	databaseRole: string | *""
 
+	// Sonarr and Radarr sign in one user natively; prowlarr has no OIDC of its
+	// own and sits behind Traefik's plugin.
+	oidc: *"native" | "plugin"
+
+	_kanidmClient: schema.#KanidmOAuth2Client & {
+		"name":      name
+		ns:          "servarr"
+		displayname: instanceName
+		origin:      "https://\(name).vonarx.online/"
+		groups: [_servarrAdmins]
+		spec: preferShortUsername: false
+		if oidc == "native" {
+			redirectUrl: ["https://\(name).vonarx.online/signin-oidc"]
+			scopes: ["openid", "profile", "email"]
+		}
+		if oidc == "plugin" {
+			redirectUrl: ["https://\(name).vonarx.online/oauth2/callback"]
+			scopes: ["profile", "openid", "email", "groups", "offline_access"]
+		}
+	}
+
 	_secrets: _cnpgSecretRef & {"name": name}
 	_probe: {
 		enabled: true
@@ -70,7 +91,9 @@ _cnpgSecretRef: {
 		namespace:  "servarr"
 		host:       "\(name).vonarx.online"
 		ingressKey: app
-		extraMiddlewares: ["\(name)-oidc"]
+		if oidc == "plugin" {
+			extraMiddlewares: ["\(name)-oidc"]
+		}
 
 		// A major bump migrates a retained Postgres schema, so a rollback would
 		// leave the old binary on the new schema: a failed upgrade has to stay
@@ -104,8 +127,20 @@ _cnpgSecretRef: {
 						"\(envPrefix)__AUTH__APIKEY": valueFrom: secretKeyRef: {
 							"name": "\(name)-api-key", key: "key"
 						}
-						"\(envPrefix)__AUTH__METHOD":       "External"
-						"\(envPrefix)__AUTH__REQUIRED":     "Enabled"
+						"\(envPrefix)__AUTH__REQUIRED": "Enabled"
+						if oidc == "plugin" {
+							"\(envPrefix)__AUTH__METHOD": "External"
+						}
+						if oidc == "native" {
+							"\(envPrefix)__AUTH__METHOD":        "Oidc"
+							"\(envPrefix)__AUTH__OIDCAUTHORITY": _kanidmClient.issuer
+							"\(envPrefix)__AUTH__OIDCCLIENTID": valueFrom: secretKeyRef: {"name": _kanidmClient.secretName, key: "CLIENT_ID"}
+							"\(envPrefix)__AUTH__OIDCCLIENTSECRET": valueFrom: secretKeyRef: {"name": _kanidmClient.secretName, key: "CLIENT_SECRET"}
+							"\(envPrefix)__AUTH__OIDCUSERIDENTIFIER": valueFrom: secretKeyRef: {"name": "servarr-oidc-user", key: "USER_IDENTIFIER"}
+							// Unset, ASP.NET ignores Traefik's X-Forwarded-Proto and builds an
+							// http:// redirect URI that kanidm's strict match rejects.
+							"\(envPrefix)__SERVER__TRUSTEDNETWORKS": schema.#PodCIDR
+						}
 						"\(envPrefix)__SERVER__PORT":       port
 						"\(envPrefix)__LOG__LEVEL":         "info"
 						"\(envPrefix)__POSTGRES__HOST":     "servarr-cnpg-rw"
@@ -194,13 +229,13 @@ _cnpgSecretRef: {
 						}
 					}
 				}
-				oidc: manifest: {
+				if oidc == "plugin" {oidc: manifest: {
 					apiVersion: "traefik.io/v1alpha1"
 					kind:       "Middleware"
 					spec: plugin: oidc: {
-						providerURL:          "https://idm.vonarx.online/oauth2/openid/\(name)"
-						clientID:             name
-						clientSecret:         "urn:k8s:secret:\(name)-oidc:CLIENT_SECRET"
+						providerURL:          _kanidmClient.issuer
+						clientID:             _kanidmClient.name
+						clientSecret:         "urn:k8s:secret:\(_kanidmClient.secretName):CLIENT_SECRET"
 						sessionEncryptionKey: "urn:k8s:secret:\(name)-oidc:SESSION_ENCRYPTION_KEY"
 						callbackURL:          "/oauth2/callback"
 						enablePKCE:           true
@@ -215,7 +250,7 @@ _cnpgSecretRef: {
 						}
 						logLevel: "info"
 					}
-				}
+				}}
 			}
 		}
 	}
@@ -224,6 +259,7 @@ _cnpgSecretRef: {
 _arrs: [
 	#Arr & {
 		name:         "prowlarr", app: "prowlarr", envPrefix: "PROWLARR"
+		oidc:         "plugin"
 		instanceName: "Prowlarr"
 		image: {
 			repository: "ghcr.io/home-operations/prowlarr"
@@ -470,9 +506,11 @@ _scheduledBackup: {
 
 bundle: schema.#Bundle & {
 	namespace: "servarr"
-	needs: ["postgres"]
+	needs: ["postgres", "kanidm"]
+	namespaceLabels: schema.#KanidmProvisioningLabel
 	extraSecretFiles: [
 		"apps/media/servarr/secrets/cnpg.secret.yaml",
+		"apps/media/servarr/secrets/oidc-user.secret.yaml",
 		"apps/media/servarr/secrets/prowlarr.secret.yaml",
 		"apps/media/servarr/secrets/radarr-standard.secret.yaml",
 		"apps/media/servarr/secrets/sonarr-anime.secret.yaml",
@@ -496,5 +534,13 @@ bundle: schema.#Bundle & {
 		[for a in _arrs {a.release}],
 		[_recyclarr],
 	])
-	after: [_cnpgCluster, _scheduledBackup]
+	after: list.Concat([
+		[_cnpgCluster, _scheduledBackup, _servarrAdmins.out],
+		[for a in _arrs {a._kanidmClient.out}],
+	])
 }
+
+// The one group behind every arr client. The native ones additionally admit
+// only the user in servarr-oidc-user: upstream allows a single user, so that
+// trackers cannot read multi-user support as account sharing.
+_servarrAdmins: schema.#KanidmGroup & {name: "servarr_admins", member: "media_admins", ns: "servarr"}

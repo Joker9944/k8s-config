@@ -2,6 +2,7 @@
 
 ## 2026-11-15
 
+- servarr's kanidm group and clients are kaniop CRs; Sonarr and Radarr sign in natively as one user, prowlarr stays on the plugin — [identity — kanidm](/platform/identity-kanidm.md), [app-template pattern](/architecture/app-template-pattern.md)
 - audiobookshelf, jellyfin and komga provision their kanidm groups and clients through kaniop; `#KanidmOAuth2Client` carries what every client shares — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
 - grafana's kanidm groups and client are kaniop CRs; its client credentials come from the kaniop Secret — [identity — kanidm](/platform/identity-kanidm.md), [capability graph](/architecture/capability-graph.md)
 - traefik owns its ServiceMonitor and dashboard again; kube-prometheus-stack must never need `ingress` — [observability](/platform/observability.md), [capability graph](/architecture/capability-graph.md)
