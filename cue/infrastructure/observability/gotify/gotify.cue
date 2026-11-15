@@ -8,10 +8,12 @@ import "github.com/joker9944/k8s-config/schema"
 
 bundle: schema.#Bundle & {
 	namespace: "gotify"
-	needs: ["monitoring", "postgres"]
+	needs: ["monitoring", "postgres", "kanidm"]
+	namespaceLabels: schema.#KanidmProvisioningLabel
 	extraSecretFiles: ["infrastructure/observability/gotify/secrets/gotify.secret.yaml"]
 	before: [_logs.out]
 	releases: [_gotify, _bridge]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient]
 }
 
 _gotifyLogs: _ @embed(file="files/gotify.alloy", type=text)
@@ -86,9 +88,10 @@ _gotify: schema.#AppRelease & {
 					GOTIFY_UPLOADEDIMAGESDIR:               "/data/images"
 					GOTIFY_PLUGINSDIR:                      null
 
-					GOTIFY_OIDC_ENABLED:      true
-					GOTIFY_OIDC_ISSUER:       "https://idm.vonarx.online/oauth2/openid/gotify"
-					GOTIFY_OIDC_CLIENTID:     "gotify"
+					GOTIFY_OIDC_ENABLED: true
+					GOTIFY_OIDC_ISSUER:  "https://idm.vonarx.online/oauth2/openid/\(_kanidmClient.metadata.name)"
+					GOTIFY_OIDC_CLIENTID: valueFrom: secretKeyRef: {name: oidcSecret, key: "CLIENT_ID"}
+					GOTIFY_OIDC_CLIENTSECRET: valueFrom: secretKeyRef: {name: oidcSecret, key: "CLIENT_SECRET"}
 					GOTIFY_OIDC_REDIRECTURL:  "https://\(host)/auth/oidc/callback"
 					GOTIFY_OIDC_IDP_NAME:     "kanidm"
 					GOTIFY_OIDC_SCOPES:       "openid,groups"
@@ -99,7 +102,6 @@ _gotify: schema.#AppRelease & {
 				envFrom: [
 					{secretRef: name: "gotify-default-user"},
 					{secretRef: name: "gotify-custom-cnpg-connection"},
-					{secretRef: name: "gotify-oidc"},
 				]
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}
@@ -235,5 +237,35 @@ _bridge: schema.#AppRelease & {
 			primary:    true
 			ports: http: {primary: true, port: 80, targetPort: portHTTP}
 		}
+	}
+}
+
+// ---------------------------------------------------------------------- kanidm
+
+_kanidmAdmins: schema.#KanidmGroup & {name: "gotify_admins", member: "monitoring_admins", ns: bundle.namespace}
+_kanidmUsers: schema.#KanidmGroup & {name: "gotify_users", member: "monitoring_users", ns: bundle.namespace}
+
+let oidcSecret = "\(_kanidmClient.metadata.name)-kanidm-oauth2-credentials"
+
+_kanidmClient: {
+	apiVersion: "kaniop.rs/v1beta1"
+	kind:       "KanidmOAuth2Client"
+	metadata: {name: "gotify", namespace: bundle.namespace}
+	spec: {
+		kanidmRef:   schema.#KanidmRef
+		displayname: "Gotify"
+		origin:      "https://\(_gotify.host)/auth/oidc/login"
+		redirectUrl: [
+			"https://\(_gotify.host)/auth/oidc/callback",
+			// The Android app. kanidm matches a non-http(s) redirect as an opaque
+			// origin, on a confidential client too.
+			"gotify://oidc/callback",
+		]
+		strictRedirectUrl:   true
+		preferShortUsername: true
+		scopeMap: [for g in [_kanidmAdmins, _kanidmUsers] {
+			group: g.name
+			scopes: ["openid", "groups"]
+		}]
 	}
 }

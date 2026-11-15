@@ -1,5 +1,7 @@
 package schema
 
+import "strings"
+
 // ---------------------------------------------------------------- constraints
 // House style, enforced by the type checker rather than by review.
 
@@ -320,4 +322,37 @@ _mediaDataPath: "/chronos/media-data"
 // The hub's transit address. Traefik's trust lists want it as a /32; a scrape
 // target wants the bare address, so the CIDR is derived rather than restated.
 #WireGuardHubAddr: "10.100.0.254"
-#WireGuardHubIP:   "\(#WireGuardHubAddr)/32"
+
+#WireGuardHubIP: "\(#WireGuardHubAddr)/32"
+
+// ----------------------------------------------------------------------- kanidm
+// kaniop reconciles group and OAuth2 client CRs only in namespaces carrying
+// this label. A CR adopts an existing entry of the same name and deletes the
+// entry when it is deleted.
+
+#KanidmProvisioningLabel: "vonarx.online/kanidm-provisioning": "true"
+#KanidmRef: {name: "kanidm", namespace: "kanidm-system"}
+
+// An app group whose only member is its tier group. `members` is an exact
+// list, so the tier groups — which hold the people — stay out of the repo.
+#KanidmGroup: {
+	name:   string
+	member: string
+	ns:     string
+
+	out: {
+		apiVersion: "kaniop.rs/v1beta1"
+		kind:       "KanidmGroup"
+		metadata: {
+			"name":    strings.Replace(name, "_", "-", -1)
+			namespace: ns
+			// Deleting the CR deletes the group. Removing it from git leaves both.
+			annotations: "kustomize.toolkit.fluxcd.io/prune": "disabled"
+		}
+		spec: {
+			kanidmRef:  #KanidmRef
+			kanidmName: name
+			members: [member]
+		}
+	}
+}

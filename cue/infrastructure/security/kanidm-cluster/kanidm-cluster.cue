@@ -66,6 +66,10 @@ _kanidm: {
 		disableUpgradeChecks: true
 		tlsSecretName:        _cert.spec.secretName
 		ldapPortName:         "ldaps"
+		// Namespaces opt in to provisioning kanidm entries with this label.
+		let provisioning = {matchLabels: schema.#KanidmProvisioningLabel}
+		groupNamespaceSelector:        provisioning
+		oauth2ClientNamespaceSelector: provisioning
 		replicaGroups: [{
 			name:     "default"
 			replicas: 3

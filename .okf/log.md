@@ -1,5 +1,11 @@
 # Update Log
 
+## 2026-11-15
+
+- gotify maps its client credentials with `secretKeyRef` rather than `envFrom` — [identity — kanidm](/platform/identity-kanidm.md)
+- gotify's kanidm groups and client are kaniop CRs; namespaces opt in by label; service accounts stay manual (kaniop#1127) — [identity — kanidm](/platform/identity-kanidm.md), [kanidm IDM layout](/platform/kanidm-idm-layout.md), [capability graph](/architecture/capability-graph.md)
+- kaniop's admin Secret goes stale when pod 0 is restored — [identity — kanidm](/platform/identity-kanidm.md)
+
 ## 2026-11-14
 
 - Grafana maps `grafana_users` to Editor; `grafana_editors` is gone — [kanidm IDM layout](/platform/kanidm-idm-layout.md)
