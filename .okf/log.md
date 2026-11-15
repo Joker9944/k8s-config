@@ -2,6 +2,7 @@
 
 ## 2026-11-15
 
+- Grafana is its own leaf bundle; kube-prometheus-stack needs no capability, and must never need `kanidm` — [observability](/platform/observability.md), [capability graph](/architecture/capability-graph.md), [identity — kanidm](/platform/identity-kanidm.md)
 - The capability graph is a Mermaid flowchart generated from `cue/graph` by a pre-commit hook; edges carry their capability — [capability graph](/architecture/capability-graph.md), [CUE layout](/architecture/cue-layout.md), [formatting and cspell](/workflows/formatting-and-cspell.md)
 - gotify maps its client credentials with `secretKeyRef` rather than `envFrom` — [identity — kanidm](/platform/identity-kanidm.md)
 - gotify's kanidm groups and client are kaniop CRs; namespaces opt in by label; service accounts stay manual (kaniop#1127) — [identity — kanidm](/platform/identity-kanidm.md), [kanidm IDM layout](/platform/kanidm-idm-layout.md), [capability graph](/architecture/capability-graph.md)

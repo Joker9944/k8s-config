@@ -6,6 +6,7 @@ import (
 	"github.com/joker9944/k8s-config/schema"
 	"github.com/joker9944/k8s-config/infrastructure/observability/alloy"
 	"github.com/joker9944/k8s-config/infrastructure/observability/gotify"
+	"github.com/joker9944/k8s-config/infrastructure/observability/grafana"
 	kubeprometheusstack "github.com/joker9944/k8s-config/infrastructure/observability/kube-prometheus-stack:kubeprometheusstack"
 	"github.com/joker9944/k8s-config/infrastructure/observability/loki"
 	traefikobservabilityconfig "github.com/joker9944/k8s-config/infrastructure/observability/traefik-observability-config:traefikobservabilityconfig"
@@ -20,6 +21,7 @@ tier: schema.#Tier & {
 	bundles: {
 		"alloy":                        alloy.bundle
 		"gotify":                       gotify.bundle
+		"grafana":                      grafana.bundle
 		"kube-prometheus-stack":        kubeprometheusstack.bundle
 		"loki":                         loki.bundle
 		"traefik-observability-config": traefikobservabilityconfig.bundle

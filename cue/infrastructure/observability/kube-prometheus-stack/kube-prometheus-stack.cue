@@ -1,8 +1,6 @@
-@extern(embed)
-
 package kubeprometheusstack
 
-// cSpell:ignore Kanidm kubeprometheusstack lokiexplore mcp Mem nodememoryhighutilization pkce runbook zfs
+// cSpell:ignore kubeprometheusstack Mem nodememoryhighutilization runbook zfs
 
 import "github.com/joker9944/k8s-config/schema"
 
@@ -10,7 +8,6 @@ bundle: schema.#Bundle & {
 	namespace: "kube-prometheus-stack"
 	wait:      true
 	extraSecretFiles: [
-		"infrastructure/observability/kube-prometheus-stack/secrets/kube-prometheus-stack.secret.yaml",
 		"infrastructure/observability/kube-prometheus-stack/secrets/joker9944.secret.yaml",
 	]
 	repositories: [_prometheusCommunity]
@@ -20,27 +17,11 @@ bundle: schema.#Bundle & {
 		"pod-security.kubernetes.io/enforce": "privileged"
 		"pod-security.kubernetes.io/warn":    "privileged"
 	}
-	before: [_dashboards.out]
+	// Every ingress here is served from the tailnet, which needs no middleware
+	// set, so this bundle has no ingress edge to traefik.
+	middlewares: false
 	after: [_woprNodeExporter]
 	releases: [_kps]
-}
-
-// Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
-// the package directory, which is why this file lives here.
-_labelConformance: _ @embed(file="files/label-conformance.json", type=text)
-
-// Cross-signal: the panels read both stores, so the "belongs to the store the
-// panels read" rule that places loki's logs dashboard does not decide this one.
-// It lives with Grafana instead.
-_dashboards: schema.#ConfigMapFiles & {
-	name: "kube-prometheus-stack-dashboards"
-	ns:   bundle.namespace
-	labels: {
-		grafana_dashboard:            "1"
-		"app.kubernetes.io/name":     "kube-prometheus-stack"
-		"app.kubernetes.io/instance": "kube-prometheus-stack"
-	}
-	files: "label-conformance.json": _labelConformance
 }
 
 // wopr is the edge VPS, outside the cluster and reachable only over the
@@ -76,8 +57,7 @@ _prometheusCommunity: schema.#HelmRepo & {
 	url:  "https://prometheus-community.github.io/helm-charts"
 }
 
-// TODO pull this stack chart apart and use the individual app charts, with a
-// monitoring-apps namespace for Grafana
+// TODO pull the rest of this stack chart apart into the individual app charts
 _kps: schema.#Release & {
 	name:      "kube-prometheus-stack"
 	namespace: bundle.namespace
@@ -87,11 +67,8 @@ _kps: schema.#Release & {
 	sourceName: _prometheusCommunity.name
 	crds:       true
 
-	// Three ingresses on one chart on two different ingress paths, so each builds
-	// its own set rather than reading the release's single one. Grafana stays
-	// public behind Traefik; the other two are served from the tailnet, which is
-	// why this bundle keeps its middleware set.
-	_public: (schema.#IngressAnnotations & {ns: namespace}).out
+	// Two ingresses on one chart, so each builds its own set rather than
+	// reading the release's single one.
 	_alertmanager: schema.#TailnetIngress & {label: "alertmanager"}
 	_prometheus: schema.#TailnetIngress & {label: "prometheus"}
 
@@ -129,56 +106,12 @@ _kps: schema.#Release & {
 			}
 		}
 
-		// HACK the read-only MCP server's service account is created by hand,
-		// see grafana-service-account.txt. Grafana provisions datasources,
-		// dashboards and plugins but not service accounts or their tokens
-		// (https://github.com/grafana/grafana/issues/82987), and with no
-		// persistence here the account does not outlive the pod.
+		// Grafana is its own bundle. The chart still renders the Prometheus and
+		// Alertmanager datasources and its default dashboards for it.
 		grafana: {
-			admin: {
-				existingSecret: "grafana-admin"
-				userKey:        "username"
-				passwordKey:    "password"
-			}
-
-			"grafana.ini": {
-				server: root_url: "https://grafana.vonarx.online/"
-
-				"auth.generic_oauth": {
-					enabled:                    true
-					name:                       "Kanidm"
-					client_id:                  "grafana"
-					scopes:                     "openid,profile,email,groups"
-					auth_url:                   "https://idm.vonarx.online/ui/oauth2"
-					token_url:                  "https://idm.vonarx.online/oauth2/token"
-					api_url:                    "https://idm.vonarx.online/oauth2/openid/grafana/userinfo"
-					use_pkce:                   true
-					use_refresh_token:          true
-					allow_sign_up:              true
-					login_attribute_path:       "preferred_username"
-					groups_attribute_path:      "groups"
-					role_attribute_path:        "contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'"
-					allow_assign_grafana_admin: false
-				}
-			}
-
-			envFromSecret: "grafana-environment"
-			plugins: ["grafana-lokiexplore-app"]
-
-			additionalDataSources: [{
-				name:   "loki"
-				type:   "loki"
-				access: "proxy"
-				url:    "http://loki-gateway.loki.svc.cluster.local"
-			}]
-
-			ingress: {
-				enabled:     true
-				annotations: _public
-				hosts: ["grafana.vonarx.online"]
-				paths: ["/"]
-				tls: [{secretName: "wildcard-vonarx-online-cert", hosts: ["grafana.vonarx.online"]}]
-			}
+			enabled:                false
+			forceDeployDatasources: true
+			forceDeployDashboards:  true
 		}
 
 		prometheus: {
