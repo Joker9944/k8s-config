@@ -89,8 +89,11 @@ _attic: schema.#AppRelease & {
 					repository: "ghcr.io/zhaofengli/attic"
 					tag:        "main@sha256:18574aba70fc89d2b695273fbe2e7b2f8ad7e8e786b4cc535124fbe14bada1d0"
 				}
-				args: ["--config", "/config/server.toml"]
-				env: ATTIC_SERVER_DATABASE_URL: valueFrom: secretKeyRef: {name: appSecret, key: "uri"}
+				env: {
+					// both binaries find $XDG_CONFIG_HOME/attic/server.toml, so atticadm needs no -f
+					XDG_CONFIG_HOME: "/config"
+					ATTIC_SERVER_DATABASE_URL: valueFrom: secretKeyRef: {name: appSecret, key: "uri"}
+				}
 				envFrom: [{secretRef: name: "attic"}]
 				probes: {
 					liveness: probe & {spec: failureThreshold: 6}
@@ -142,7 +145,7 @@ _attic: schema.#AppRelease & {
 			config: {
 				type: "configMap"
 				name: _config.name
-				globalMounts: [{path: "/config", readOnly: true}]
+				globalMounts: [{path: "/config/attic", readOnly: true}]
 			}
 			tmp: type: "emptyDir"
 		}
