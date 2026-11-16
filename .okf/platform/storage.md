@@ -1,10 +1,10 @@
 ---
 type: Infrastructure
 title: Storage
-description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn, and the attic Nix cache on top of Garage.
-tags: [longhorn, nfs, garage, s3, storage, attic, nix]
+description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
+tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T23:59:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-16T21:00:00Z }
 ---
 
 # Longhorn classes
@@ -49,16 +49,10 @@ Garage is the in-cluster S3, and the whole of the `storage` tier. Its chart is m
 - Web: `*.web.vonarx.online`
 - In-cluster: `http://garage.garage.svc.cluster.local:3900`
 
-Consumers are Loki (chunks and indexes), [attic](#attic), and opencloud, which uses it as _primary_ object storage. opencloud runs the `decomposeds3` driver, which splits a file in two: the bytes become an object in Garage, while the decomposedfs metadata naming it stays on the workload's data volume — so neither half restores without the other. That volume is **also the tus staging area**, and an upload lands on it whole before its blob moves to Garage, so it is sized for the largest single upload (20Gi) rather than for what it otherwise holds — ~250MB of metadata, plus the bleve search index, which is the volume's largest tenant at ~1GB and grows with indexed content ([its memory profile](/workflows/opencloud-memory.md) is what bounds the workload, not this volume). Too short to stage one and the session fails `insufficient storage: disk full`, leaves the staged file behind, and nothing expires it — the volume reads as legitimately full forever. `opencloud storage-users uploads sessions --expired --clean` is what reclaims it. The bucket's other unbounded tenant is file revisions, which decomposedfs never expires and which an autosaving client grows without limit — [reclaiming them](/workflows/opencloud-revisions.md) is a separate tool, and the bucket is the only place the growth shows. Loki needs Garage's `object-storage`, so it is the longest chain in the [capability graph](/architecture/capability-graph.md): `garage → loki → alloy`. <!-- cSpell:ignore tus -->
+Consumers are Loki (chunks and indexes) and opencloud, which uses it as _primary_ object storage. opencloud runs the `decomposeds3` driver, which splits a file in two: the bytes become an object in Garage, while the decomposedfs metadata naming it stays on the workload's data volume — so neither half restores without the other. That volume is **also the tus staging area**, and an upload lands on it whole before its blob moves to Garage, so it is sized for the largest single upload (20Gi) rather than for what it otherwise holds — ~250MB of metadata, plus the bleve search index, which is the volume's largest tenant at ~1GB and grows with indexed content ([its memory profile](/workflows/opencloud-memory.md) is what bounds the workload, not this volume). Too short to stage one and the session fails `insufficient storage: disk full`, leaves the staged file behind, and nothing expires it — the volume reads as legitimately full forever. `opencloud storage-users uploads sessions --expired --clean` is what reclaims it. The bucket's other unbounded tenant is file revisions, which decomposedfs never expires and which an autosaving client grows without limit — [reclaiming them](/workflows/opencloud-revisions.md) is a separate tool, and the bucket is the only place the growth shows. Loki needs Garage's `object-storage`, so it is the longest chain in the [capability graph](/architecture/capability-graph.md): `garage → loki → alloy`. <!-- cSpell:ignore tus -->
 
-Garage's usable capacity is one node's share, because every object is replicated to all three zones — 93 GiB, which loki, opencloud and attic share.
+Garage's usable capacity is one node's share, because every object is replicated to all three zones — 93 GiB, which loki and opencloud share.
 
 Administration is CLI-inside-the-pod; the [dev shell](/workflows/dev-environment.md) defines a `garage` alias that execs into `garage-0`.
 
 Garage is **not** where backups go — those leave the cluster entirely. See [backup and restore](/platform/backup-and-restore.md).
-
-# attic
-
-attic is the private Nix binary cache, fed by nix-config's CI and read by every host. It is tailnet-only as defense in depth: the cache holds unfree paths that cannot be redistributed, and attic's own token auth is the only other barrier in experimental software. Reads and writes both take a JWT minted by hand with `atticadm make-token` inside the pod, signed with the RS256 key in its secret. Upstream publishes no versions, so the image is its `main` tag and renovate automerges every new digest — an attic that breaks after a quiet weekend has most likely been upgraded.
-
-Chunks go to the `attic` Garage bucket; the index naming them is a CNPG cluster of its own, not backed up — the cache can be rebuilt from scratch. Losing the database without wiping the bucket leaves every chunk orphaned, since nothing else knows they exist. attic reads its connection from the `uri` key of the `attic-cnpg-app` Secret CNPG generates, so no credential of it is in SOPS. The chunking parameters in `attic.cue` fix the cutpoints, so changing them stops new uploads from deduplicating against what is stored. Retention is attic's own last-access GC, defaulting to 14 days, sized against Garage's free space rather than a number of lock generations.

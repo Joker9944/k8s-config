@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-31 bundles, 44 edges.
+30 bundles, 42 edges.
 
 ```mermaid
 flowchart BT
@@ -91,9 +91,6 @@ flowchart BT
   subgraph tier_cloud["apps/cloud"]
     opencloud["opencloud"]
   end
-  subgraph tier_dev["apps/dev"]
-    attic["attic"]
-  end
   subgraph tier_media["apps/media"]
     audiobookshelf["audiobookshelf"]
     jellyfin["jellyfin"]
@@ -103,8 +100,6 @@ flowchart BT
     servarr["servarr"]
   end
   alloy -->|log-sink| loki
-  attic -->|object-storage| garage
-  attic -->|postgres| cnpg
   audiobookshelf -->|ingress| traefik
   audiobookshelf -->|kanidm| kanidm_operator
   audiobookshelf -->|volsync| volsync

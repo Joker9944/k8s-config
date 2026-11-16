@@ -22,7 +22,6 @@ generated: { by: claude-code/opus-5, at: 2026-11-16T00:30:00Z }
 | `security`      | `…/security`                                     |
 | `storage`       | `…/storage`                                      |
 | `cloud`         | `…/cloud`                                        |
-| `dev`           | `…/dev`                                          |
 | `media`         | `…/media`                                        |
 
 Both files are generated — `cue cmd --inject out=.. bootstrap ./clusters/nyx/flux` from `cue/` — and committed, because level 1 reconciles them out of git. They are the only place that names the registry.

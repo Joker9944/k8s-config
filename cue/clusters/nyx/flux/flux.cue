@@ -27,7 +27,6 @@ _tiers: {
 	security: tree:      "infrastructure"
 	storage: tree:       "infrastructure"
 	cloud: tree:         "apps"
-	dev: tree:           "apps"
 	media: tree:         "apps"
 }
 

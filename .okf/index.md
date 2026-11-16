@@ -40,6 +40,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Jellyfin's SSO plugin is the maintained fork](decisions/jellyfin-sso-plugin.md) - the fork shares 9p4's plugin GUID, so adopting it is an upgrade rather than a migration.
 - [Jellyseerr is now seerr](decisions/jellyseerr-is-now-seerr.md) - the image follows the rename; the namespace, PVC, restic repo and host do not.
 - [Upgrades roll back, installs do not](decisions/helm-remediation-policy.md) - rollback-and-retry on upgrade; install remediation is an uninstall that would delete Postgres.
+- [The Nix binary cache is not in the cluster](decisions/nix-cache-not-in-cluster.md) - harmonia on mother, in nix-config; attic redirected clients to Garage's in-cluster endpoint.
 
 # Workflows
 

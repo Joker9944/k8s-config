@@ -1,5 +1,9 @@
 # Update Log
 
+## 2026-11-16
+
+- attic and the `apps/dev` tier are removed; the Nix cache is harmonia on mother, in nix-config — [nix cache decision](/decisions/nix-cache-not-in-cluster.md), [storage](/platform/storage.md), [flux topology](/architecture/flux-topology.md), [CUE layout](/architecture/cue-layout.md), [backup and restore](/platform/backup-and-restore.md)
+
 ## 2026-11-15
 
 - A claim whose `ReplicationDestination` is absent never binds — [backup and restore](/platform/backup-and-restore.md)

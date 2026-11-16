@@ -4,7 +4,7 @@ title: CUE layout
 description: How the CUE tree is organized — a package per workload, a collector package per tier, and the language mechanics that force that shape.
 tags: [cue, layout, gitops]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-16T00:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-16T21:00:00Z }
 stale_after: 2027-03-06
 ---
 
@@ -64,7 +64,7 @@ collector, so the name is free.
 
 A workload is a package. A tier is a package that imports its workloads and is also the OCI artifact boundary, so `cue export ./apps/media -e rendered` is both the unit of rendering and the unit of blast radius.
 
-`infrastructure/` holds what the cluster itself runs on; anything consumed as a service is in `apps/`, even when it is built on infrastructure — attic sits in `apps/dev` although it is a Garage client. Beside its collector, a new tier is named in `_tiers` in `clusters/nyx/flux/flux.cue` (then `bootstrap`), in the `cue-publish.yaml` matrix and in `graph/graph.cue`; `render.nix` finds it from the directory.
+`infrastructure/` holds what the cluster itself runs on; anything consumed as a service is in `apps/`, even when it is built on infrastructure. Beside its collector, a new tier is named in `_tiers` in `clusters/nyx/flux/flux.cue` (then `bootstrap`), in the `cue-publish.yaml` matrix and in `graph/graph.cue`; `render.nix` finds it from the directory.
 
 `#ConfigBundle` is the other kind of bundle: a pile of cluster resources with no namespace of its own, no chart and no releases — the CA chain, the storage classes, the CNPG image catalogs, the tailnet ProxyGroup, a monitor the workload it describes cannot emit itself. It sits in the tier that reconciles it, so `certs-config` is a package under `infrastructure/controllers/` alongside `cert-manager`.
 
