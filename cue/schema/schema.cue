@@ -319,6 +319,13 @@ _mediaDataPath: "/chronos/media-data"
 #IngressSpoke: "vonarx.online/ingress-spoke"
 #EdgeNodePort: 30443
 
+// UDP the edge's nginx splices to a NodePort directly, bypassing Traefik, keyed
+// by the public port on the edge. Mirrored by `udpForwards` in nix-config's
+// wgEdge.nix.
+#EdgeUDPNodePorts: {
+	valheim: {"2456": 32456, "2457": 32457}
+}
+
 // The hub's transit address. Traefik's trust lists want it as a /32; a scrape
 // target wants the bare address, so the CIDR is derived rather than restated.
 #WireGuardHubAddr: "10.100.0.254"

@@ -5,6 +5,10 @@
 - kaniop's upgrade checks are on and Renovate tracks `kanidm/server` again; the image stays pinned in the CR — [identity — kanidm](/platform/identity-kanidm.md)
 - `kanidm/server` minors go through `ai-triage` like majors; majors need no dashboard approval — [images, CI and dependency updates](/workflows/images-and-ci.md)
 
+## 2026-11-18
+
+- valheim in the new `apps/games` tier, reached over a UDP splice on the edge that bypasses Traefik; its `config` claim ships without `dataSourceRef` — [networking and ingress](/platform/networking-and-ingress.md), [flux topology](/architecture/flux-topology.md), [backup and restore](/platform/backup-and-restore.md), [the cluster](/platform/cluster-nyx.md)
+
 ## 2026-11-16
 
 - attic and the `apps/dev` tier are removed; the Nix cache is harmonia on mother, in nix-config — [nix cache decision](/decisions/nix-cache-not-in-cluster.md), [storage](/platform/storage.md), [flux topology](/architecture/flux-topology.md), [CUE layout](/architecture/cue-layout.md), [backup and restore](/platform/backup-and-restore.md)

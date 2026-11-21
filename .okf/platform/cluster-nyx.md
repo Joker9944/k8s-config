@@ -4,7 +4,7 @@ title: The nyx cluster
 description: Node inventory, the label and taint scheme workloads schedule against, and what the cluster gets from nix-config rather than this repo.
 tags: [cluster, nodes, scheduling]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-03T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-18T12:00:00Z }
 ---
 
 # Nodes
@@ -36,7 +36,7 @@ The taint comes from nix-config and is **not** reconciled by Flux.
 
 # Pod Security
 
-A workload that needs a hostPath or a root container needs `pod-security.kubernetes.io/enforce: privileged` on its namespace, set through `#Bundle`'s `namespaceLabels`.
+A workload that needs a hostPath needs `pod-security.kubernetes.io/enforce: privileged` on its namespace, set through `#Bundle`'s `namespaceLabels`. A root container whose added capabilities stay within the baseline set — valheim's supervisord — needs only `baseline`.
 
 Talos applied its admission configuration from its own defaults rather than from anything checked in here, and the retired `clusters/nyx/talos/` tree never mentioned it — so grepping this repo for what these labels answer to finds nothing. Treat them as deliberate; do not prune them as cargo cult.
 

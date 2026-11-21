@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-30 bundles, 42 edges.
+31 bundles, 43 edges.
 
 ```mermaid
 flowchart BT
@@ -90,6 +90,9 @@ flowchart BT
   end
   subgraph tier_cloud["apps/cloud"]
     opencloud["opencloud"]
+  end
+  subgraph tier_games["apps/games"]
+    valheim["valheim"]
   end
   subgraph tier_media["apps/media"]
     audiobookshelf["audiobookshelf"]
@@ -140,6 +143,7 @@ flowchart BT
   traefik -->|ingress-certificate| certs_config
   traefik -->|monitoring| kube_prometheus_stack
   traefik -->|redis| redis_operator
+  valheim -->|volsync| volsync
   volsync -->|monitoring| kube_prometheus_stack
 ```
 

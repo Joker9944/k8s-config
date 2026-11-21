@@ -54,6 +54,7 @@ Timoni
 toplevel
 traefikoidc
 updatekeys
+valheim
 volsync
 webfinger
 websecure
