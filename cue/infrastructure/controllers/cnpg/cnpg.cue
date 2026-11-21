@@ -17,7 +17,7 @@ _cnpg: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "cloudnative-pg"
 	// renovate: datasource=helm packageName=cloudnative-pg registryUrl=https://cloudnative-pg.github.io/charts/
-	version:    "0.29.1"
+	version:    "0.29.2"
 	sourceName: "cnpg"
 	interval:   "5m"
 	hasValues:  false
