@@ -51,7 +51,7 @@ _grafana: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "grafana"
 	// renovate: datasource=docker packageName=ghcr.io/grafana-community/helm-charts/grafana
-	version:    "14.4.1"
+	version:    "14.5.0"
 	sourceName: _repo.name
 
 	"host": host
