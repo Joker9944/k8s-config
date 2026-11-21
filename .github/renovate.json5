@@ -33,9 +33,11 @@
       automerge: true,
     },
     {
-      description: "Frozen at 1.12.1 until kaniop supports it (pando85/kaniop#1141)",
+      description: "kanidm ships breaking changes in minors",
       matchPackageNames: ["kanidm/server"],
-      enabled: false,
+      matchUpdateTypes: ["minor"],
+      automerge: false,
+      addLabels: ["ai-triage"],
     },
     {
       description: "Probe fixtures are mutation tests, not dependencies",

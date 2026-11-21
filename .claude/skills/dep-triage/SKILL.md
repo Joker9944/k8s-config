@@ -1,12 +1,12 @@
 ---
 name: dep-triage
-description: Triage a renovate major-version pull request in this repository — read the upstream breaking changes, check them against what this repo actually configures, and record a verdict as a comment plus a structured label decision. Use when invoked as /dep-triage <pr-number>, or when asked to review a dependency major bump.
+description: Triage a renovate pull request labelled ai-triage in this repository (every major, plus minors of packages that break in minors) — read the upstream breaking changes, check them against what this repo actually configures, and record a verdict as a comment plus a structured label decision. Use when invoked as /dep-triage <pr-number>, or when asked to review a dependency bump.
 allowed-tools: mcp__github__get_pull_request, mcp__github__get_pull_request_diff, mcp__github__get_pull_request_files, mcp__github__add_issue_comment, Read, Grep, Glob, WebFetch
 ---
 
 # dep-triage
 
-Triage one renovate major bump. The argument is the pull request number.
+Triage one renovate version bump. The argument is the pull request number.
 
 **You do not merge, enable auto-merge, approve, or push commits, and you do not set labels.** Your output is one comment plus a structured verdict; the workflow turns that verdict into a label. A human decides what happens next.
 
@@ -16,7 +16,7 @@ Triage one renovate major bump. The argument is the pull request number.
 - `mcp__github__get_pull_request_diff` — what actually changed in this repo. Usually one or two lines.
 - Identify what kind of bump it is: a foreign Helm chart, a container image tag, the `app-template` version, or a flux controller.
 
-Follow the upstream links in the PR body with WebFetch when the inlined notes are truncated or absent. A major bump whose breaking changes you could not read is `dep-review`, not `dep-safe`.
+Follow the upstream links in the PR body with WebFetch when the inlined notes are truncated or absent. A bump whose breaking changes you could not read is `dep-review`, not `dep-safe`.
 
 ## 2. Check the breaking changes against this repo
 

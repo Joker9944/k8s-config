@@ -4,7 +4,7 @@ title: Images, CI and dependency updates
 description: How this repo's OCI images and per-tier manifest artifacts are built from Nix, published and signed, and how renovate is pointed at this repo's filename conventions.
 tags: [nix, oci, github-actions, renovate, cosign]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-10T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-21T12:00:00Z }
 ---
 
 # Images
@@ -38,10 +38,12 @@ The one non-image derivation is **`sops-pre-commit`** — see [secrets and SOPS]
 
 `.github/renovate.json5`, weekend schedule, dependency dashboard enabled, assigned to `Joker9944`.
 
-| Update kind               | Behavior                                                 |
-| ------------------------- | -------------------------------------------------------- |
-| minor, patch, pin, digest | `automerge`                                              |
-| major                     | dashboard approval, no `automerge`, labelled `ai-triage` |
+| Update kind                       | Behavior                             |
+| --------------------------------- | ------------------------------------ |
+| minor, patch, pin, digest         | `automerge`                          |
+| major, and `kanidm/server` minors | no `automerge`, labelled `ai-triage` |
+
+kanidm breaks in minor releases, so its minors are triaged like majors.
 
 `ai-triage` is the queue `claude-dep-triage.yaml` drains: it fires while the label is attached and swaps it for one of `dep-safe`, `dep-breaking` or `dep-review` plus a comment, so the label still being there means the run did not finish. The workflow reads and comments only — merging stays manual — and bills against the subscription through `CLAUDE_CODE_OAUTH_TOKEN` rather than per-token.
 

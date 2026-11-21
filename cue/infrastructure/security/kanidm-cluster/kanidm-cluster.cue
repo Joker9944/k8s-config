@@ -59,13 +59,10 @@ _kanidm: {
 	kind:       "Kanidm"
 	metadata: {name: cluster, namespace: ns}
 	spec: {
-		domain: "idm.vonarx.online"
-		image:  "\(_image.repository):\(_image.tag)"
-		// kaniop builds against the 1.11 client SDK and rejects 1.12 servers
-		// (pando85/kaniop#1141). This also disables kaniop's backup transport.
-		disableUpgradeChecks: true
-		tlsSecretName:        _cert.spec.secretName
-		ldapPortName:         "ldaps"
+		domain:        "idm.vonarx.online"
+		image:         "\(_image.repository):\(_image.tag)"
+		tlsSecretName: _cert.spec.secretName
+		ldapPortName:  "ldaps"
 		// Namespaces opt in to provisioning kanidm entries with this label.
 		let provisioning = {matchLabels: schema.#KanidmProvisioningLabel}
 		groupNamespaceSelector:        provisioning

@@ -5,7 +5,7 @@ description: The cluster's OIDC/LDAP provider, and how its clients are registere
 tags: [kanidm, oidc, sso, identity]
 resource: cue/infrastructure/security/kanidm
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T23:30:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-21T12:00:00Z }
 ---
 
 # Deployment
@@ -14,7 +14,7 @@ generated: { by: claude-code/opus-5, at: 2026-11-15T23:30:00Z }
 
 Only pod 0's volume is backed up, by a standalone [`#VolsyncRestic`](/platform/backup-and-restore.md) source; restore is not wired, because kaniop never recreates its StatefulSet and Kubernetes rejects a changed claim template. kaniop writes `kanidm-admin-passwords` from `kanidmd recover-account` only while that Secret is missing, so a restored pod 0 leaves it holding passwords the database does not, and every kaniop login fails; deleting the Secret makes kaniop recover both accounts again. kaniop's own backup is not used: its CRDs are `v1alpha1`, online upload is experimental for want of a completion marker from kanidm, and its restore cannot read 1.12 dumps — the data mover finds the domain entry by `uuid.UU`/`domain_name.N8`, where 1.12 writes `US`/`N8S`.
 
-kaniop v0.22.1 builds against the kanidm 1.11 client SDK and marks 1.12 servers incompatible ([#1141](https://github.com/pando85/kaniop/issues/1141)), so `disableUpgradeChecks` is set. It gates only the upgrade path. Renovate holds `kanidm/server` until kaniop catches up. The kanidm image has no shell or `tar`, so files go in and out through an ephemeral container, and `kanidmd database backup` is offline-only and still wants the TLS paths set.
+The image stays pinned in the CR: `spec.image` defaults to `kanidm/server:latest`. kaniop checks it against the kanidm client SDK it is built with and refuses to roll the StatefulSet to a server it does not support, so a kanidm minor that outruns kaniop stalls in the CR rather than reaching the pods. The kanidm image has no shell or `tar`, so files go in and out through an ephemeral container, and `kanidmd database backup` is offline-only and still wants the TLS paths set.
 
 # Replication
 
