@@ -36,7 +36,7 @@ _nvidia: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "nvidia-device-plugin"
 	// renovate: datasource=helm packageName=nvidia-device-plugin registryUrl=https://nvidia.github.io/k8s-device-plugin
-	version:    "0.20.1"
+	version:    "0.20.2"
 	sourceName: "nvidia-device-plugin"
 	interval:   "5m"
 
