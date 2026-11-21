@@ -24,7 +24,7 @@ _kaniop: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "kaniop"
 	// renovate: datasource=docker packageName=ghcr.io/pando85/helm-charts/kaniop
-	version:    "0.22.1"
+	version:    "0.24.1"
 	sourceName: _repo.name
 	crds:       true
 	values: {
