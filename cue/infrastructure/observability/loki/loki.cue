@@ -44,7 +44,7 @@ _loki: schema.#Release & {
 	namespace: bundle.namespace
 	chart:     "loki"
 	// renovate: datasource=helm packageName=loki registryUrl=https://grafana-community.github.io/helm-charts
-	version:    "21.2.3"
+	version:    "21.4.3"
 	sourceName: _grafana.name
 
 	// Loki expands these out of its environment at startup — the chart passes
