@@ -249,7 +249,7 @@ _appTemplateVersion: "5.3.0"
 // What one bundle needs from another, named by the thing provided rather than
 // by the provider. A closed enum, so a mistyped need is a build error instead
 // of a Kustomization waiting forever on a name nobody owns; one provider per
-// capability, so moving a provider between tiers touches no consumer.
+// capability, so renaming a provider touches no consumer.
 //
 // A capability is something whose absence fails the apply — in practice a CRD.
 // Runtime coupling is not a capability: a PVC on a StorageClass that does not
@@ -425,12 +425,10 @@ _edges: {
 	out: resources
 }
 
-// A tier: one CUE package, one render, one OCI artifact. Collects the bundles
-// its workload packages export.
-#Tier: {
-	// The tier's own identity: where its artifact renders, and the name its
-	// OCIRepository and level-2 Kustomization carry.
-	tree: "apps" | "infrastructure"
+// The fleet: one render, one OCI artifact. Collects the bundles the workload
+// packages export.
+#Manifests: {
+	// The name the artifact, its OCIRepository and the level-2 Kustomization carry.
 	name: string
 
 	// Constrained by what this definition reads rather than by #Bundle, which is
@@ -454,13 +452,9 @@ _edges: {
 		for k, b in bundles {(k): b.secretFiles}
 	}
 
-	// The level-3 Kustomizations, one per bundle, which retire <tier>-sync.yaml
-	// and the common-sync-patch component together: interval, timeout, prune,
-	// sourceRef and decryption were that patch's entire content.
-	//
-	// They render into sync/ rather than the artifact root because
-	// kustomize-controller's generated kustomization walks subdirectories. At the
-	// root, the level-2 Kustomization would apply every workload a second time —
+	// The level-3 Kustomizations, one per bundle. They render into sync/ rather
+	// than the artifact root because kustomize-controller's generated
+	// kustomization walks subdirectories. At the root, the level-2 Kustomization would apply every workload a second time —
 	// and without decryption, which would push SOPS ciphertext into the cluster.
 	sync: [for k, b in bundles {
 		fluxKustomize.#Kustomization

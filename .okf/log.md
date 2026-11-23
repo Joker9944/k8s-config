@@ -2,6 +2,8 @@
 
 ## 2026-11-23
 
+- Tiers are gone: every bundle ships in the one `nyx-manifests` artifact, collected by `cue/manifests` — [one manifests artifact](/decisions/single-manifests-artifact.md), [flux topology](/architecture/flux-topology.md), [CUE layout](/architecture/cue-layout.md), [images, CI and dependency updates](/workflows/images-and-ci.md)
+- Workloads sit directly under `cue/apps/` and `cue/infrastructure/`; the tree is a folder and a graph subgraph, nothing more — [CUE layout](/architecture/cue-layout.md), [capability graph](/architecture/capability-graph.md), [adding an app](/workflows/adding-an-app.md)
 - Level-2 and level-3 Kustomizations orphan their objects on deletion; the `MirrorPrune` default cascades — [flux topology](/architecture/flux-topology.md)
 - `nyx_admins` → `headlamp_admins`, the only cluster-admin grant; one client per consumer, headlamp's trusted by the kube-apiserver — [kanidm IDM layout](/platform/kanidm-idm-layout.md), [identity — kanidm](/platform/identity-kanidm.md)
 - `base` is published — [images, CI and dependency updates](/workflows/images-and-ci.md)

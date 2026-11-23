@@ -5,7 +5,7 @@ description: How a file's name decides its encryption rule, how the key reaches 
 tags: [sops, age, secrets, security]
 resource: .sops.yaml
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # The filename is the rule
@@ -29,7 +29,7 @@ Renaming a secret file changes how it is encrypted, and changes whether cspell s
 
 # Reaching the cluster
 
-`clusters/nyx/bootstrap.sh` creates the `sops-age` Secret in `flux-system` from the age private key, read from stdin. Every level-3 Flux Kustomization then references it through `decryption.provider: sops` / `secretRef: sops-age`, set by `#Tier.sync` — which is why a SOPS file has to sit in a bundle directory inside the artifact rather than at its root (see [Flux topology](/architecture/flux-topology.md)).
+`clusters/nyx/bootstrap.sh` creates the `sops-age` Secret in `flux-system` from the age private key, read from stdin. Every level-3 Flux Kustomization then references it through `decryption.provider: sops` / `secretRef: sops-age`, set by `#Manifests.sync` — which is why a SOPS file has to sit in a bundle directory inside the artifact rather than at its root (see [Flux topology](/architecture/flux-topology.md)).
 
 # The guardrail
 

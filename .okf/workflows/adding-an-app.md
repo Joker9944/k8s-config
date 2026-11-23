@@ -4,14 +4,14 @@ title: Adding an app
 description: The end-to-end sequence for introducing a new workload, including the steps Flux cannot do for you.
 tags: [playbook, onboarding]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-12T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 Read [the app-template pattern](/architecture/app-template-pattern.md) first; this is the ordering, not the content.
 
 # 1. Write the package
 
-Create `cue/<tree>/<tier>/<name>/<name>.cue` with `package <name>`, a `#Bundle` and one `#AppRelease`. Copy the closest existing neighbour rather than starting blank — the probes, the security context and the persistence shape are the convention. The constraints do the rest: an unpinned image or a softened `readOnlyRootFilesystem` is a build error, not a review comment.
+Create `cue/<tree>/<name>/<name>.cue` with `package <name>`, a `#Bundle` and one `#AppRelease`. Copy the closest existing neighbour rather than starting blank — the probes, the security context and the persistence shape are the convention. The constraints do the rest: an unpinned image or a softened `readOnlyRootFilesystem` is a build error, not a review comment.
 
 # 2. Secrets
 
@@ -25,9 +25,9 @@ Decide which ingress path it is on. Public means a `host` on `vonarx.online`; `#
 
 If the app has a PVC worth keeping, add a `#VolsyncRestic` with its `secretFile`, put it in the release's `backups`, and give the volume a `dataSourceRef`. `dataSourceRef` is immutable, so a volume that ships without one can never gain it. If it needs Postgres, add a role to an existing CNPG cluster rather than a new one. See [backup and restore](/platform/backup-and-restore.md).
 
-# 5. Register with the tier
+# 5. Register the bundle
 
-Add the package to its tier collector — `cue/<tree>/<tier>/<tier>.cue`. Nothing is deployed until this step. A tier is a packaging boundary, so it implies no ordering; declare `needs` on the bundle for any CRD a chart of yours renders that another bundle installs, and nothing else — `ingress`, `certificate` and `volsync` are inferred, and a StorageClass is not a capability. See [capability graph](/architecture/capability-graph.md).
+Import the package in `cue/manifests/manifests.cue` and name it in the map for its tree. Nothing is deployed until this step. The tree implies no ordering; declare `needs` on the bundle for any CRD a chart of yours renders that another bundle installs, and nothing else — `ingress`, `certificate` and `volsync` are inferred, and a StorageClass is not a capability. See [capability graph](/architecture/capability-graph.md).
 
 # 6. The manual steps
 
@@ -39,4 +39,4 @@ Flux finishes here; these do not happen on their own:
 
 # 7. Verify
 
-From `cue/`: `cue vet ./...`, then render the tier with `cue cmd --inject out=./out render ./<tree>/<tier>` and read what came out. `nix fmt` before committing. After reconciling, `flux get kustomizations -A` and `flux get helmreleases -A` — a level-3 Kustomization that never appears usually means the package was never added to its tier collector.
+From `cue/`: `cue vet ./...`, then render with `cue cmd --inject out=./out render ./manifests` and read what came out. `nix fmt` before committing. After reconciling, `flux get kustomizations -A` and `flux get helmreleases -A` — a level-3 Kustomization that never appears usually means the package was never named in `manifests.cue`.

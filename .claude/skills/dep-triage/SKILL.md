@@ -20,7 +20,7 @@ Follow the upstream links in the PR body with WebFetch when the inlined notes ar
 
 ## 2. Check the breaking changes against this repo
 
-The question is never "what broke upstream" but **"does anything that broke upstream touch what this repo sets"**. Read the package that owns the bumped dependency — `cue/<tree>/<tier>/<name>/<name>.cue` — and work through:
+The question is never "what broke upstream" but **"does anything that broke upstream touch what this repo sets"**. Read the package that owns the bumped dependency — `cue/<tree>/<name>/<name>.cue` — and work through:
 
 - **Removed or renamed values keys.** Does the release actually set the key that moved? A key the repo never sets is not a break.
 - **CRD changes.** Flux does not upgrade CRDs for every chart; a new or changed CRD can need a manual apply before the release reconciles. See `/platform/*` for the controller in question.

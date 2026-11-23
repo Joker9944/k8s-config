@@ -4,7 +4,7 @@ title: Repository layout
 description: The top-level trees of k8s-config, and why everything Kubernetes-shaped lives under one CUE module.
 tags: [gitops, layout]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T20:36:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # Trees
@@ -27,14 +27,14 @@ repository root for no gain.
 
 `cue/clusters/nyx/flux/` is the one place a source path and its output path
 differ only by that prefix: it holds the CUE that generates
-`clusters/nyx/flux/{app,infrastructure}-sync.yaml`, which are committed.
+`clusters/nyx/flux/nyx-manifests-sync.yaml`, which is committed.
 
 # There is no base/overlay split
 
 `nyx` is the only cluster and nothing was ever parameterized per cluster, so the
-tier collector is simultaneously the tier definition and the cluster overlay. A
+collector is simultaneously the fleet definition and the cluster overlay. A
 second cluster would reintroduce the split as `clusters/<name>/` collectors.
 
-Cluster membership is expressed by naming a workload in its tier collector; that
+Cluster membership is expressed by naming a workload in `cue/manifests/manifests.cue`; that
 is what deploys it. The wiring is described in
 [the Flux topology](/architecture/flux-topology.md).

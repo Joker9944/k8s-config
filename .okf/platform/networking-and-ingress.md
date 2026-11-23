@@ -4,7 +4,7 @@ title: Networking and ingress
 description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and why the VPN sidecar is kept out of pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-18T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # The edge
@@ -72,7 +72,7 @@ The tailnet settings an Ingress depends on are not in this repo — MagicDNS, HT
 
 **Each Ingress is one Tailscale Service, `svc:` plus the cut label, and advertising one is a double opt-in action.** Without an `autoApprovers.services` entry for the proxy tag, every name waits on a manual approval in the admin console and the proxy pods never get the VIP in their AllowedIPs — the operator's own comment is the clearest statement of it. That, not the grants, is the setting a new tailnet ingress is most likely to be blocked on. Whether a tailnet-wide grant also reaches the Service is unsettled: `*` in a `dst` expands to Tailscale IPs and approved subnet routes, and the docs do not say whether a Service's Virtual IPs are inside that set. `dst: ["svc:<label>"]` is the unambiguous form if a name resolves but refuses to connect.
 
-`cue/infrastructure/controllers/tailscale-config` holds the one `ProxyGroup`, named from `#TailnetProxyGroup` so it cannot drift from the annotation every ingress writes, at three replicas. The proxy pods run in the operator's own namespace, `tailscale`: the operator reads `OPERATOR_NAMESPACE` from its own `metadata.namespace` through a fieldRef and creates every proxy StatefulSet there, with no separate knob — which is why that namespace is named for the tailnet rather than for the operator. Nothing declares a capability on it: an `Ingress` is core API and applies cleanly against a missing ProxyGroup, so the coupling is at runtime — see [capability graph](/architecture/capability-graph.md).
+`cue/infrastructure/tailscale-config` holds the one `ProxyGroup`, named from `#TailnetProxyGroup` so it cannot drift from the annotation every ingress writes, at three replicas. The proxy pods run in the operator's own namespace, `tailscale`: the operator reads `OPERATOR_NAMESPACE` from its own `metadata.namespace` through a fieldRef and creates every proxy StatefulSet there, with no separate knob — which is why that namespace is named for the tailnet rather than for the operator. Nothing declares a capability on it: an `Ingress` is core API and applies cleanly against a missing ProxyGroup, so the coupling is at runtime — see [capability graph](/architecture/capability-graph.md).
 
 **Spreading those replicas is a `ProxyClass` concern.** `ProxyGroup.spec` carries no scheduling fields at all, and the operator applies neither affinity rules nor topology spread constraints of its own, so three replicas may share one node. The `spread` ProxyClass supplies a `topologySpreadConstraint` over `kubernetes.io/hostname` and selects on a label it adds through `pod.labels` — the operator's own pod labels are not a documented interface. `nodeTaintsPolicy: Honor` keeps the [reserved node](/platform/cluster-nyx.md) out of the skew calculation, leaving three domains for three replicas.
 

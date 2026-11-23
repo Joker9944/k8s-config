@@ -85,12 +85,13 @@
         cueRender = pkgs.callPackage ./cue/render.nix { };
       in
       {
-        packages = cueRender.perTier // {
+        packages = {
           # programs
           sops-pre-commit = pkgs.callPackage ./pkgs/sops-pre-commit.nix { flake = self; };
           capability-graph = pkgs.callPackage ./pkgs/capability-graph.nix { };
 
           # cue render
+          cue-render-nyx-manifests = cueRender.nyxManifests;
           cue-render-bootstrap = cueRender.bootstrap;
 
           # images

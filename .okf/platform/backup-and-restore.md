@@ -4,7 +4,7 @@ title: Backup and restore
 description: The two independent backup systems — volsync/restic for PVCs and CNPG/barman-cloud for Postgres — and the manual steps each restore requires.
 tags: [volsync, restic, cnpg, barman, backup, disaster-recovery]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-18T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 Both systems push off-cluster to third-party S3. Nothing is backed up into [Garage](/platform/storage.md).
@@ -38,7 +38,7 @@ Repository credentials (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`, `AWS_ACCESS_KEY_
 
 The plugin is a HelmRelease of its own in the `cnpg` namespace, `plugin-barman-cloud` from the same chart repository the operator comes from. The operator finds it by the `cnpg.io/pluginName` label on its `Service`, not by the release name.
 
-`cue/apps/media/servarr` is the only workload that backs Postgres up, through four objects:
+`cue/apps/servarr` is the only workload that backs Postgres up, through four objects:
 
 - **`ObjectStore`** (`barmancloud.cnpg.io/v1`) named `storj` — `s3://k8s-cnpg-backup` at `https://gateway.storjshare.io`, 30d retention, gzip WAL, credentials from `backup-s3-credentials`.
 - **`Cluster`** — three instances with required pod anti-affinity, storage and WAL on `longhorn-local-strict`, and the `barman-cloud.cloudnative-pg.io` plugin as `isWALArchiver`.
@@ -55,7 +55,7 @@ Rotating is not cosmetic. A recovery bootstrap runs `barman-cloud-check-wal-arch
 
 The operator latches the failure: `Cluster is unrecoverable and needs manual intervention` survives a corrected manifest. Delete the `<cluster>-1-full-recovery` Job and the instance PVCs (`<cluster>-1`, `<cluster>-1-wal`), then let Flux recreate the `Cluster`.
 
-Postgres images come from upstream: `cue/infrastructure/controllers/cnpg-config` syncs the `image-catalogs/` directory of `github.com/cloudnative-pg/artifacts` through its own `GitRepository`, and clusters reference `ClusterImageCatalog` `postgresql-standard-trixie` by major version rather than pinning an image tag.
+Postgres images come from upstream: `cue/infrastructure/cnpg-config` syncs the `image-catalogs/` directory of `github.com/cloudnative-pg/artifacts` through its own `GitRepository`, and clusters reference `ClusterImageCatalog` `postgresql-standard-trixie` by major version rather than pinning an image tag.
 
 # Traps
 

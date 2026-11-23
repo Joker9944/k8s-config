@@ -4,12 +4,12 @@ title: Storage
 description: The three Longhorn storage classes and when each is correct, plus the NFS and Garage object storage that sit outside Longhorn.
 tags: [longhorn, nfs, garage, s3, storage]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-16T21:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # Longhorn classes
 
-The chart's default `longhorn` class is replicated. `cue/infrastructure/controllers/longhorn-config` adds two single-replica classes, both `allowVolumeExpansion: true`:
+The chart's default `longhorn` class is replicated. `cue/infrastructure/longhorn-config` adds two single-replica classes, both `allowVolumeExpansion: true`:
 
 | Class                   | `dataLocality` | Replicas | Intended for                                                                                                                                  |
 | ----------------------- | -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -43,7 +43,7 @@ Two definitions in [the CUE tree](/architecture/cue-layout.md) share that path, 
 
 # Garage
 
-Garage is the in-cluster S3, and the whole of the `storage` tier. Its chart is mounted out of the upstream `GitRepository` (`script/helm/garage`, tag-pinned), and it stores meta (6Gi) and data (120Gi) on `longhorn-local-strict`.
+Garage is the in-cluster S3. Its chart is mounted out of the upstream `GitRepository` (`script/helm/garage`, tag-pinned), and it stores meta (6Gi) and data (120Gi) on `longhorn-local-strict`.
 
 - API: `s3.vonarx.online` and `*.s3.vonarx.online`, region `nyx`
 - Web: `*.web.vonarx.online`

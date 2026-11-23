@@ -3,9 +3,9 @@ type: Reference
 title: kanidm OIDC clients and claims
 description: How kanidm resolves an OAuth2 client_id, which OIDC claim carries which attribute, which attributes never leave kanidm at all, and where the upstream book disagrees with the code.
 tags: [kanidm, oidc, oauth2, claims, sso]
-resource: cue/infrastructure/security/kanidm
+resource: cue/infrastructure/kanidm-cluster
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-10-27T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 sources:
   - id: kanidm-oauth2
     resource: https://github.com/kanidm/kanidm/blob/v1.11.1/server/lib/src/idm/oauth2.rs

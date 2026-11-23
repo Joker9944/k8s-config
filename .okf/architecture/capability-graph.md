@@ -5,14 +5,14 @@ description: How level-3 ordering is derived from capability declarations, the c
 tags: [gitops, flux, dependencies, ordering]
 resource: cue/schema/bundle.cue
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T21:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
-All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global and tier-blind: a tier decides which artifact a workload ships in, nothing more. `loki → garage` crosses tiers, and `volsync → kube-prometheus-stack` runs against the direction the old level-2 graph implied.
+All ordering in the fleet lives in the level-3 Kustomizations described by [Flux topology](/architecture/flux-topology.md). They all sit in `flux-system` and name each other by plain string, so the graph is global. Which folder a bundle lives in orders nothing: `alloy → loki` runs inside `infrastructure/` exactly as `jellyfin → volsync` crosses into it.
 
 # A capability, not a bundle name
 
-A consumer declares what it needs, never who provides it. `#Capability` is a closed enum and `_provider` maps each entry to exactly one bundle name, so a typo is a build error rather than a Kustomization waiting forever on a name nobody owns, and a provider can be renamed or moved tiers without touching a consumer.
+A consumer declares what it needs, never who provides it. `#Capability` is a closed enum and `_provider` maps each entry to exactly one bundle name, so a typo is a build error rather than a Kustomization waiting forever on a name nobody owns, and a provider can be renamed without touching a consumer.
 
 | Capability            | Provider                                              | What the consumer cannot apply without it                      |
 | --------------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
@@ -43,11 +43,11 @@ The three highest-fan-in capabilities are inferred from fields [`#Bundle`](/arch
 
 Everything else is an explicit `needs`, because the fact lives in chart values CUE cannot introspect — it sees a HelmRelease, never what the chart renders. A `ServiceMonitor` is spelled `monitoring.metrics.serviceMonitor.enabled` in garage, `monitoring.enabled` in opencloud, and a `.Capabilities` gate in volsync's chart; there is no uniform field to read.
 
-A provider needing its own capability is filtered in `#Tier.sync`, which is the only place a bundle's own name is known — `bundles` is keyed by it.
+A provider needing its own capability is filtered in `#Manifests.sync`, which is the only place a bundle's own name is known — `bundles` is keyed by it.
 
 # The graph
 
-Each arrow runs from consumer to provider and carries the capability that put it there; a subgraph is a tier, which orders nothing. `cue/graph` builds the block from the same `edges` `#Tier.sync` renders into `dependsOn`, and the `capability-graph` pre-commit hook splices it in, so it cannot drift from the rendered manifests. It shows a cycle but does not detect one.
+Each arrow runs from consumer to provider and carries the capability that put it there; a subgraph is a tree, which orders nothing. `cue/graph` builds the block from the same `edges` `#Manifests.sync` renders into `dependsOn`, and the `capability-graph` pre-commit hook splices it in, so it cannot drift from the rendered manifests. It shows a cycle but does not detect one.
 
 <!-- capability-graph:begin -->
 
@@ -55,13 +55,24 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 ```mermaid
 flowchart BT
-  subgraph tier_controllers["infrastructure/controllers"]
+  subgraph infrastructure
+    alloy["alloy"]
     cert_manager["cert-manager"]
     certs_config["certs-config"]
     cnpg["cnpg"]
     cnpg_config["cnpg-config"]
+    garage["garage"]
+    generic_device_plugin["generic-device-plugin"]
+    gotify["gotify"]
+    grafana["grafana"]
+    headlamp["headlamp"]
+    kanidm_cluster["kanidm-cluster"]
+    kanidm_operator["kanidm-operator"]
+    kube_prometheus_stack["kube-prometheus-stack"]
+    loki["loki"]
     longhorn["longhorn"]
     longhorn_config["longhorn-config"]
+    nvidia_device_plugin["nvidia-device-plugin"]
     redis_operator["redis-operator"]
     reflector["reflector"]
     reloader["reloader"]
@@ -70,38 +81,15 @@ flowchart BT
     traefik["traefik"]
     volsync["volsync"]
   end
-  subgraph tier_plugins["infrastructure/plugins"]
-    generic_device_plugin["generic-device-plugin"]
-    nvidia_device_plugin["nvidia-device-plugin"]
-  end
-  subgraph tier_storage["infrastructure/storage"]
-    garage["garage"]
-  end
-  subgraph tier_security["infrastructure/security"]
-    headlamp["headlamp"]
-    kanidm_cluster["kanidm-cluster"]
-    kanidm_operator["kanidm-operator"]
-  end
-  subgraph tier_observability["infrastructure/observability"]
-    alloy["alloy"]
-    gotify["gotify"]
-    grafana["grafana"]
-    kube_prometheus_stack["kube-prometheus-stack"]
-    loki["loki"]
-  end
-  subgraph tier_cloud["apps/cloud"]
-    opencloud["opencloud"]
-  end
-  subgraph tier_games["apps/games"]
-    valheim["valheim"]
-  end
-  subgraph tier_media["apps/media"]
+  subgraph apps
     audiobookshelf["audiobookshelf"]
     jellyfin["jellyfin"]
     jellyseerr["jellyseerr"]
     komga["komga"]
+    opencloud["opencloud"]
     qbittorrent["qbittorrent"]
     servarr["servarr"]
+    valheim["valheim"]
   end
   alloy -->|log-sink| loki
   audiobookshelf -->|ingress| traefik

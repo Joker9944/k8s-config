@@ -3,9 +3,9 @@ type: Infrastructure
 title: Certificates and PKI
 description: The two issuance paths — public ACME wildcard and a private root/intermediate CA — and the two unrelated mechanisms that distribute them across namespaces.
 tags: [cert-manager, tls, pki, trust-manager]
-resource: cue/infrastructure/controllers/certs-config
+resource: cue/infrastructure/certs-config
 status: stable
-generated: { by: claude-code/fable-5, at: 2026-11-14T16:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # Public path

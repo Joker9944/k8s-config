@@ -1,0 +1,157 @@
+@extern(embed)
+
+package audiobookshelf
+
+// cSpell:ignore advplyr
+
+import "github.com/joker9944/k8s-config/schema"
+
+bundle: schema.#Bundle & {
+	namespace: "audiobookshelf"
+	needs: ["kanidm"]
+	namespaceLabels: schema.#KanidmProvisioningLabel
+	before: [_logs.out]
+	releases: [_audiobookshelf]
+	after: [_kanidmAdmins.out, _kanidmUsers.out, _kanidmClient.out]
+}
+
+_audiobookshelfLogs: _ @embed(file="files/audiobookshelf.alloy", type=text)
+
+// audiobookshelf's log pipeline, shipped with the app rather than with alloy.
+_logs: schema.#AlloyPipeline & {
+	app:    "audiobookshelf"
+	ns:     bundle.namespace
+	config: _audiobookshelfLogs
+}
+
+_audiobookshelf: schema.#AppRelease & {
+	name:      "audiobookshelf"
+	namespace: "audiobookshelf"
+
+	let uid = 6011
+	let gid = 6000
+	let portHTTP = 8080
+	let pathConfig = "/config"
+	let pathMetadata = "/metadata"
+	host: "audiobookshelf.vonarx.online"
+
+	let configSize = "1Gi"
+	let metadataSize = "1Gi"
+
+	let probe = {
+		custom:  true
+		enabled: true
+	}
+
+	let secretFile = "apps/audiobookshelf/secrets/restic.secret.yaml"
+	_backupConfig: schema.#VolsyncRestic & {
+		app:          name, vol:  "config", size: configSize
+		"uid":        uid, "gid": gid
+		"secretFile": secretFile
+	}
+	_backupMetadata: schema.#VolsyncRestic & {
+		app:          name, vol:  "metadata", size: metadataSize
+		"uid":        uid, "gid": gid
+		"secretFile": secretFile
+	}
+	backups: [_backupConfig, _backupMetadata]
+
+	values: {
+		defaultPodOptions: labels: _logs.podLabels
+
+		controllers: audiobookshelf: {
+			type: "statefulset"
+			pod: {
+				securityContext: {
+					runAsUser:           uid
+					runAsGroup:          gid
+					runAsNonRoot:        true
+					fsGroup:             gid
+					fsGroupChangePolicy: "OnRootMismatch"
+					supplementalGroups: [568]
+					seccompProfile: type: "RuntimeDefault"
+				}
+			}
+			containers: audiobookshelf: schema.#Hardened & {
+				image: {
+					repository: "advplyr/audiobookshelf"
+					tag:        "2.38.0@sha256:60064c23f32fd9099fd39e82c5132c51701d1221135bbca04cd099b589e1edc3"
+				}
+				env: {
+					UMASK:         "0002"
+					PORT:          portHTTP
+					CONFIG_PATH:   pathConfig
+					METADATA_PATH: pathMetadata
+				}
+				probes: {
+					liveness: probe & {spec: {httpGet: {path: "/healthcheck", port: portHTTP}, failureThreshold: 6}}
+					readiness: probe & {spec: httpGet: {path: "/ping", port: portHTTP}}
+					startup: probe & {spec: {httpGet: {path: "/healthcheck", port: portHTTP}, failureThreshold: 30, periodSeconds: 5}}
+				}
+				resources: {
+					requests: {cpu: "30m", memory: "200Mi"}
+					limits: memory: "500Mi"
+				}
+			}
+		}
+
+		service: audiobookshelf: {
+			controller: "audiobookshelf"
+			ports: http: port: portHTTP
+		}
+
+		ingress: audiobookshelf: {
+			hosts: [{"host": host, paths: [{path: "/", service: {identifier: "audiobookshelf", port: "http"}}]}]
+			tls: [{hosts: [host], secretName: "wildcard-vonarx-online-cert"}]
+		}
+
+		persistence: {
+			config: {
+				type:       "persistentVolumeClaim"
+				accessMode: "ReadWriteOnce"
+				retain:     true
+				size:       configSize
+				globalMounts: [{path: pathConfig}]
+				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-config"}
+			}
+			metadata: {
+				type:       "persistentVolumeClaim"
+				accessMode: "ReadWriteOnce"
+				retain:     true
+				size:       metadataSize
+				globalMounts: [{path: pathMetadata}]
+				dataSourceRef: {apiGroup: "volsync.backube", kind: "ReplicationDestination", "name": "\(name)-dest-metadata"}
+			}
+			media: schema.#MediaData & {
+				globalMounts: [{path: "/audiobooks"}]
+			}
+			tmp: type: "emptyDir"
+		}
+	}
+}
+
+// ---------------------------------------------------------------------- kanidm
+
+_kanidmAdmins: schema.#KanidmGroup & {name: "audiobookshelf_admins", member: "media_admins", ns: bundle.namespace}
+_kanidmUsers: schema.#KanidmGroup & {name: "audiobookshelf_users", member: "media_users", ns: bundle.namespace}
+// The app keeps its own copy of the client secret, entered in its settings,
+// so the credentials Secret is unread.
+_kanidmClient: schema.#KanidmOAuth2Client & {
+	name:        "audiobookshelf"
+	ns:          bundle.namespace
+	displayname: "Audiobookshelf"
+	origin:      "https://\(_audiobookshelf.host)/"
+	redirectUrl: [
+		"https://\(_audiobookshelf.host)/auth/openid/callback",
+		"https://\(_audiobookshelf.host)/auth/openid/mobile-redirect",
+	]
+	groups: [_kanidmAdmins, _kanidmUsers]
+	scopes: ["openid", "profile", "email", "role"]
+	spec: claimMap: [{
+		name: "role"
+		valuesMap: [
+			{group: _kanidmAdmins.name, values: ["admin"]},
+			{group: _kanidmUsers.name, values: ["user"]},
+		]
+	}]
+}

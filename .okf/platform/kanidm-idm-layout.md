@@ -3,9 +3,9 @@ type: Infrastructure
 title: kanidm IDM layout
 description: The groups, OAuth2 clients and service accounts that live only in kanidm's database, and how membership flows from tier groups to app groups.
 tags: [kanidm, groups, oauth2, identity]
-resource: cue/infrastructure/security/kanidm-cluster
+resource: cue/infrastructure/kanidm-cluster
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-23T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 # Groups

@@ -1,10 +1,10 @@
 ---
 type: Decision
 title: Replace kustomize with CUE
-description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as per-tier OCI artifacts.
+description: CUE replaces kustomize as the composition layer; Flux, HelmReleases and the bjw-s app-template chart stay, and rendered manifests reach the cluster as a signed OCI artifact.
 tags: [cue, kustomize, gitops, flux, decision]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-09-08T12:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 stale_after: 2027-03-05
 sources:
   - id: fluxcd-cues
@@ -17,7 +17,7 @@ sources:
 
 CUE replaces kustomize as the composition layer. Flux, the `HelmRelease` model and
 the bjw-s `app-template` chart are unchanged. CUE renders plain YAML in CI, which
-is published as one signed OCI artifact per tier and consumed by `OCIRepository`.
+is published as a signed OCI artifact and consumed by `OCIRepository`.
 
 Taken: the kustomize tree is deleted and the module lives at `cue/`.
 
@@ -60,9 +60,8 @@ precisely because its vendored definitions were frozen at
 Enum and duration constraints are not carried across, because kubebuilder markers
 are comments rather than Go types.
 
-**Delivery is one OCI artifact per tier.** A single artifact would let one
-evaluation error block updates to every workload; per-tier keeps the blast radius
-where [the Flux topology](/architecture/flux-topology.md) already puts it. The
+**Delivery is one OCI artifact**, for [the reasons recorded
+separately](/decisions/single-manifests-artifact.md). The
 artifact is cosign-signed by the same machinery that signs
 [the repo's images](/workflows/images-and-ci.md), and verified in-cluster via
 `OCIRepository.spec.verify`.
@@ -77,10 +76,9 @@ shape `forbid_secrets` rejects. Naming matters: a converted file must match the
 `secret.yaml` rule, not the whole-file `.sops.yaml` one. See
 [secrets and SOPS](/workflows/secrets-sops.md).
 
-**Layout** is a package per workload, collected by a package per tier, so the
-tier is at once the CUE package, the unit of rendering and the OCI artifact.
-`base/` and `nyx/` collapse into one file per tier, and `components/` has no
-successor tree. See [the CUE layout](/architecture/cue-layout.md).
+**Layout** is a package per workload, collected by one package that is at once
+the cluster overlay, the unit of rendering and the OCI artifact. `base/` and
+`nyx/` collapse into it, and `components/` has no successor tree. See [the CUE layout](/architecture/cue-layout.md).
 
 **Renovate** keeps working through regex managers over `.cue`: container images
 need no annotation because the `repository`/`tag` pair is self-describing. Chart

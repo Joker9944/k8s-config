@@ -12,7 +12,7 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 - [Flux topology](architecture/flux-topology.md) - the three-level Kustomization graph, its artifacts and their signature verification.
 - [Capability graph](architecture/capability-graph.md) - how level-3 ordering is derived, the chains it produces, and the cycles that must not be closed.
 - [App-template pattern](architecture/app-template-pattern.md) - the shape every workload package takes.
-- [CUE layout](architecture/cue-layout.md) - the CUE tree: a package per workload, a collector per tier.
+- [CUE layout](architecture/cue-layout.md) - the CUE tree: a package per workload, one collector.
 
 # Platform
 
@@ -34,7 +34,8 @@ GitOps configuration for **nyx** — a four-node Kubernetes cluster reconciled b
 
 # Decisions
 
-- [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as per-tier OCI artifacts.
+- [Replace kustomize with CUE](decisions/replace-kustomize-with-cue.md) - CUE composes, Flux and app-template stay, manifests ship as a signed OCI artifact.
+- [One manifests artifact](decisions/single-manifests-artifact.md) - every bundle ships in `nyx-manifests`; tiers are gone and rendering stays in CI.
 - [Jellyfin's config is not declared](decisions/jellyfin-config-not-declared.md) - the settings stay in the volume; the repo declares the deployment.
 - [Jellyfin is not scraped](decisions/jellyfin-metrics-not-scraped.md) - 361 series of .NET runtime internals, nothing about playback.
 - [Jellyfin's SSO plugin is the maintained fork](decisions/jellyfin-sso-plugin.md) - the fork shares 9p4's plugin GUID, so adopting it is an upgrade rather than a migration.

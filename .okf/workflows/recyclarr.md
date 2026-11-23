@@ -3,9 +3,9 @@ type: Reference
 title: Recyclarr
 description: How recyclarr reaches the *arr instances, what it cannot manage, and why a broken sync is easy to miss.
 tags: [recyclarr, servarr, trash-guides, cronjob]
-resource: cue/apps/media/servarr
+resource: cue/apps/servarr
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-08T00:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
 ---
 
 A daily CronJob in the servarr namespace running `recyclarr sync` against the two
