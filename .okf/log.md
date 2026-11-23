@@ -2,6 +2,7 @@
 
 ## 2026-11-23
 
+- Level-2 and level-3 Kustomizations orphan their objects on deletion; the `MirrorPrune` default cascades — [flux topology](/architecture/flux-topology.md)
 - `nyx_admins` → `headlamp_admins`, the only cluster-admin grant; one client per consumer, headlamp's trusted by the kube-apiserver — [kanidm IDM layout](/platform/kanidm-idm-layout.md), [identity — kanidm](/platform/identity-kanidm.md)
 - `base` is published — [images, CI and dependency updates](/workflows/images-and-ci.md)
 

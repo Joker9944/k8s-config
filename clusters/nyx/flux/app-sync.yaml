@@ -23,6 +23,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: cloud
@@ -52,6 +53,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: games
@@ -81,6 +83,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: media

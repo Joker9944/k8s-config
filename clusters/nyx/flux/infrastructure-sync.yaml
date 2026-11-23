@@ -23,6 +23,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: controllers
@@ -52,6 +53,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: plugins
@@ -81,6 +83,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: observability
@@ -110,6 +113,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: security
@@ -139,6 +143,7 @@ spec:
   interval: 30m
   path: ./sync
   prune: true
+  deletionPolicy: Orphan
   sourceRef:
     kind: OCIRepository
     name: storage

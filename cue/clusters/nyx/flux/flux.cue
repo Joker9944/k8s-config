@@ -74,6 +74,7 @@ _sync: {
 			path:     "./sync"
 			prune:    true
 			sourceRef: {kind: "OCIRepository", "name": name}
+			deletionPolicy: "Orphan" // TEMPORARY tier system retiring
 		}
 	}
 }
