@@ -2,6 +2,7 @@
 
 ## 2026-11-23
 
+- Level-3 Kustomizations are back on `MirrorPrune`; only the `nyx-manifests` level 2 orphans — [flux topology](/architecture/flux-topology.md)
 - Tiers are gone: every bundle ships in the one `nyx-manifests` artifact, collected by `cue/manifests` — [one manifests artifact](/decisions/single-manifests-artifact.md), [flux topology](/architecture/flux-topology.md), [CUE layout](/architecture/cue-layout.md), [images, CI and dependency updates](/workflows/images-and-ci.md)
 - Workloads sit directly under `cue/apps/` and `cue/infrastructure/`; the tree is a folder and a graph subgraph, nothing more — [CUE layout](/architecture/cue-layout.md), [capability graph](/architecture/capability-graph.md), [adding an app](/workflows/adding-an-app.md)
 - Level-2 and level-3 Kustomizations orphan their objects on deletion; the `MirrorPrune` default cascades — [flux topology](/architecture/flux-topology.md)

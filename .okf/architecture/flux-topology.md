@@ -5,7 +5,7 @@ description: The three-level Kustomization graph that reconciles nyx, its OCI ar
 tags: [gitops, flux, reconciliation]
 resource: clusters/nyx/flux
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T23:00:00Z }
 ---
 
 # Three levels
@@ -30,7 +30,7 @@ The `sops-age` Secret is not read until level 3, so levels 1 and 2 going Ready p
 
 - **Only level-3 Kustomizations can decrypt.** `#Manifests.sync` is what sets `decryption`, so a SOPS file must live in a bundle directory inside the artifact, never at the artifact root.
 - **A generated `kustomization.yaml` walks subdirectories.** Where `spec.path` holds no `kustomization.yaml`, kustomize-controller generates one — and it collects manifests from nested directories too, verified with `flux build`. This is why the render puts the level-3 manifests in `sync/` rather than at the artifact root: from the root, the level-2 Kustomization would apply every bundle a second time, without the decryption only level 3 carries.
-- **Deleting a Kustomization deletes what it applied, all the way down.** `deletionPolicy` defaults to `MirrorPrune`, which with `prune: true` means delete: removing a level-2 Kustomization would delete its level-3 ones, and they their namespaces, PVCs and Postgres clusters. Levels 2 and 3 set `Orphan`, so a Kustomization leaving git leaves its objects running, and retiring a workload means deleting them by hand.
+- **Deleting a Kustomization deletes what it applied, all the way down.** `deletionPolicy` defaults to `MirrorPrune`, which with `prune: true` means delete: removing a level-2 Kustomization would delete its level-3 ones, and they their namespaces, PVCs and Postgres clusters. Level 2 sets `Orphan`, so the one place that cascade would take the whole cluster leaves everything running instead. Level 3 keeps the default, so removing a bundle from `manifests.cue` deletes its workload — PVCs and Postgres included.
 - **A hand edit on a Flux-applied object does not survive its next reconcile.** kustomize-controller removes fields owned by `kubectl` field managers, so a `kubectl label` on a bundle's Namespace is gone within one interval even where no manifest sets that field. Suspend the Kustomization first, or change git.
 - **A capability-gated chart template renders only when helm-controller upgrades.** A template behind `.Capabilities.APIVersions.Has …` is evaluated against the cluster as it stood at the last install or upgrade, and nothing re-evaluates it afterwards. A CRD landing after a release installs therefore leaves the object missing indefinitely, and the next unrelated chart bump emits it — reading as a regression in that version rather than a deferred render. `helm get manifest --revision` per revision is what settles it. A `postRenderers` patch aimed at such an object needs an explicit `target`, because an inline patch relying on its own GVKN fails the entire render with `no matches for Id` wherever the gate is false.
 - **`gotk-components.yaml` has two writers.** Renovate bumps the controller images in place; `flux bootstrap` regenerates the whole file from whatever version its CLI asks for. Re-running bootstrap without `--version` matching what is committed silently reverts the upgrade — the flag downloads the manifests for the version named, so the dev shell's CLI need not match.

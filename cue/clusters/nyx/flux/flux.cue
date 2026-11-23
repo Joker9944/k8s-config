@@ -55,7 +55,9 @@ _sync: {
 			path:     "./sync"
 			prune:    true
 			sourceRef: {kind: "OCIRepository", "name": name}
-			deletionPolicy: "Orphan" // TEMPORARY tier system retiring
+			// Deleting or renaming this one Kustomization would otherwise delete
+			// every bundle's level-3 Kustomization, and with it every workload.
+			deletionPolicy: "Orphan"
 		}
 	}
 }

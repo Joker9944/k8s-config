@@ -481,8 +481,6 @@ _edges: {
 				dependsOn: [for d in _deps {"name": d}]
 			}
 			if b.wait {wait: true}
-
-			deletionPolicy: "Orphan" // TEMPORARY tier system retiring
 		}
 	}]
 }
