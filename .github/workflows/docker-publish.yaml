@@ -26,6 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - attr: .#base
           - attr: .#jinja-cli
           - attr: .#postgresql-client
 

@@ -7,7 +7,7 @@
       description: "Update chart and plugin versions in cue files marked by comment",
       managerFilePatterns: ["/\\.cue$/"],
       matchStrings: [
-        '\\/\\/ renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: registryUrl=(?<registryUrl>\\S+?))?(?: versioning=(?<versioning>[a-z-]+?))?\\s+[\\w-]+:\\s+"(?<currentValue>[^"]+)"',
+        '\\/\\/ renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: registryUrl=(?<registryUrl>\\S+?))?(?: versioning=(?<versioning>[a-z-]+?))?(?: extractVersion=(?<extractVersion>\\S+?))?\\s+[\\w-]+:\\s+"(?<currentValue>[^"]+)"',
       ],
     },
     {

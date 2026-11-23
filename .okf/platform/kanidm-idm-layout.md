@@ -5,7 +5,7 @@ description: The groups, OAuth2 clients and service accounts that live only in k
 tags: [kanidm, groups, oauth2, identity]
 resource: cue/infrastructure/security/kanidm-cluster
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-15T14:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-23T00:00:00Z }
 ---
 
 # Groups
@@ -20,8 +20,9 @@ People join tier groups only. Each tier group is a member of the app groups its 
 | `cloud_users`       | `opencloud_users`                                                            |
 | `monitoring_admins` | `gotify_admins`, `grafana_admins`                                            |
 | `monitoring_users`  | `gotify_users`, `grafana_users`                                              |
+| `nyx_admins`        | `headlamp_admins`                                                            |
 
-`servarr_admins` serves all four servarr clients and has no `_users` counterpart. Grafana has no viewer tier: its claim map gives `grafana_users` `Editor` and `grafana_admins` `Admin`, since Editor is what unlocks Explore and Drilldown and nothing saved in the UI survives [provisioning](/platform/observability.md). The tier groups and `servarr_admins` are created by hand; every other app group comes from its app's `kanidm-oidc.txt` or, for gotify, its kaniop CRs ([client registration](/platform/identity-kanidm.md)).
+`servarr_admins` serves all four servarr clients and has no `_users` counterpart. Grafana has no viewer tier: its claim map gives `grafana_users` `Editor` and `grafana_admins` `Admin`, since Editor is what unlocks Explore and Drilldown and nothing saved in the UI survives [provisioning](/platform/observability.md). The tier groups and `servarr_admins` are created by hand; every other app group comes from its app's `kanidm-oidc.txt` or, for gotify and headlamp, its kaniop CRs ([client registration](/platform/identity-kanidm.md)). `nyx_admins` has no `_users` counterpart: `headlamp_admins` is bound to `cluster-admin`, and that is the only grant.
 
 # OAuth2 clients
 
@@ -29,6 +30,7 @@ People join tier groups only. Each tier group is a member of the app groups its 
 | ---------------------------------------------------------------- | ------ | ------------------------------------- |
 | `audiobookshelf`, `jellyfin`, `komga`                            | basic  | `<client>_admins`, `<client>_users`   |
 | `gotify`, `grafana`                                              | basic  | `<client>_admins`, `<client>_users`   |
+| `headlamp`                                                       | basic  | `headlamp_admins`                     |
 | `prowlarr`, `radarr-standard`, `sonarr-anime`, `sonarr-standard` | basic  | `servarr_admins`                      |
 | `openclouddesktop`                                               | public | `opencloud_admins`, `opencloud_users` |
 

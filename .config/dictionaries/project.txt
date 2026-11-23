@@ -22,6 +22,7 @@ GOFLAGS
 GOMODCACHE
 GOPATH
 gotk
+headlamp
 helmreleases
 HSTS
 initdb

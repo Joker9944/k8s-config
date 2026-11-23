@@ -51,7 +51,7 @@ Each arrow runs from consumer to provider and carries the capability that put it
 
 <!-- capability-graph:begin -->
 
-31 bundles, 43 edges.
+32 bundles, 44 edges.
 
 ```mermaid
 flowchart BT
@@ -78,6 +78,7 @@ flowchart BT
     garage["garage"]
   end
   subgraph tier_security["infrastructure/security"]
+    headlamp["headlamp"]
     kanidm_cluster["kanidm-cluster"]
     kanidm_operator["kanidm-operator"]
   end
@@ -118,6 +119,7 @@ flowchart BT
   grafana -->|ingress| traefik
   grafana -->|kanidm| kanidm_operator
   grafana -->|monitoring| kube_prometheus_stack
+  headlamp -->|kanidm| kanidm_operator
   jellyfin -->|ingress| traefik
   jellyfin -->|kanidm| kanidm_operator
   jellyfin -->|volsync| volsync

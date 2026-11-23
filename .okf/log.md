@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-11-23
+
+- `nyx_admins` → `headlamp_admins`, the only cluster-admin grant; one client per consumer, headlamp's trusted by the kube-apiserver — [kanidm IDM layout](/platform/kanidm-idm-layout.md), [identity — kanidm](/platform/identity-kanidm.md)
+- `base` is published — [images, CI and dependency updates](/workflows/images-and-ci.md)
+
 ## 2026-11-21
 
 - kaniop's upgrade checks are on and Renovate tracks `kanidm/server` again; the image stays pinned in the CR — [identity — kanidm](/platform/identity-kanidm.md)
