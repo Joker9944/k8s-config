@@ -13,8 +13,18 @@ bundle: schema.#Bundle & {
 	middlewares: false
 	extraSecretFiles: ["infrastructure/loki/secrets/loki.secret.yaml"]
 	repositories: [_grafana]
-	before: [_dashboards.out]
+	before: [_dashboards.out, _rules.out]
 	releases: [_loki]
+}
+
+_fleetRules: _ @embed(file="files/rules.yaml", type=text)
+
+// Fleet-wide, for the same reason as the dashboards below.
+_rules: schema.#ConfigMapFiles & {
+	name: "loki-rules"
+	ns:   bundle.namespace
+	labels: loki_rule:   "1"
+	files: "fleet.yaml": _fleetRules
 }
 
 // Plaintext dashboard, read from disk at evaluation time. @embed cannot escape
@@ -83,6 +93,13 @@ _loki: schema.#Release & {
 			}
 
 			querier: max_concurrent: 2
+
+			// The local store reads one subdirectory per tenant, and with auth off
+			// every stream belongs to `fake` — hence the sidecar's folder below.
+			rulerConfig: {
+				storage: {type: "local", local: directory: "/rules"}
+				alertmanager_url: "http://kube-prometheus-stack-alertmanager.kube-prometheus-stack.svc.cluster.local:9093"
+			}
 
 			// the garage buckets, addressed in-cluster
 			storage: {
@@ -224,6 +241,16 @@ _loki: schema.#Release & {
 					}
 					"""#
 			}
+		}
+
+		// Rules live with the app they watch, as dashboards and alloy pipelines do.
+		// The chart's ClusterRole already grants the cluster-wide read; ConfigMaps
+		// only, so the sidecar does not watch every Secret on the cluster.
+		sidecar: enableUniqueFilenames: true
+		sidecar: rules: {
+			folder:          "/rules/fake"
+			searchNamespace: "ALL"
+			resource:        "configmap"
 		}
 
 		backend: {

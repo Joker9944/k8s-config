@@ -1,0 +1,19 @@
+# Evaluated by Loki's ruler. detected_level rather than level: Loki derives it
+# for every stream, where level exists only where a pipeline sets it.
+groups:
+  - name: fleet-errors
+    rules:
+      # An absolute rate, not a share of the app's lines, so a chatty app cannot
+      # hide a flood. Ordinary error noise peaks well under 1/s.
+      - alert: AppErrorLogFlood
+        expr: >-
+          sum by (app) (rate({cluster="nyx"}
+          | detected_level=~"error|critical|fatal" [5m])) > 1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: An app is logging errors at a sustained high rate.
+          description: >-
+            {{ $labels.app }} has logged {{ $value | humanize }} error lines per
+            second for 15 minutes.

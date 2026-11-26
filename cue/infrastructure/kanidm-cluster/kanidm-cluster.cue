@@ -10,7 +10,7 @@ bundle: schema.#ConfigBundle & {
 	needs: ["kanidm", "certificate", "ingress", "volsync"]
 	wait: true
 	secretFiles: [_backup.secretFile]
-	resources: [_cert, _transport, _kanidm, _pdb, _backupSource, _logs.out]
+	resources: [_cert, _transport, _kanidm, _pdb, _backupSource, _logs.out, _rules.out]
 }
 
 let ns = "kanidm-system"
@@ -133,6 +133,15 @@ _backupSource: _backup.out["source-data"].manifest & {
 }
 
 _kanidmLogs: _ @embed(file="files/kanidm.alloy", type=text)
+
+_kanidmRules: _ @embed(file="files/kanidm-rules.yaml", type=text)
+
+_rules: schema.#ConfigMapFiles & {
+	name: "\(cluster)-loki-rules"
+	"ns": ns
+	labels: loki_rule:    "1"
+	files: "kanidm.yaml": _kanidmRules
+}
 
 // Claimed through kaniop's managed-by label in alloy's base config, so
 // podLabels goes unused.

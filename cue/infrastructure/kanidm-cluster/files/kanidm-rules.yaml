@@ -1,0 +1,32 @@
+# Evaluated by Loki's ruler, which the loki_rule sidecar on loki-backend feeds.
+# `pod` is structured metadata, not a stream label; a metric query can still
+# group by it.
+groups:
+  - name: kanidm-replication
+    rules:
+      # Logged by the supplier, so `pod` names the replica being refused.
+      - alert: KanidmReplicationDomainMismatch
+        expr: >-
+          sum by (pod) (count_over_time({namespace="kanidm-system", app="kanidm"}
+          |= "Consumer Domain UUID does not match" [5m])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: A kanidm replica belongs to a different domain.
+          description: >-
+            kanidm {{ $labels.pod }} refuses to supply a consumer whose domain UUID
+            does not match its own; that replica is no longer replicating and needs
+            a manual refresh.
+      # The replicas run with automatic_refresh off, so this is the error variant
+      # that needs a hand, not the warning that refreshes itself.
+      - alert: KanidmReplicationConsumerOutOfDate
+        expr: >-
+          sum by (pod) (count_over_time({namespace="kanidm-system", app="kanidm"}
+          |= "Consumer is out of date and must be refreshed" [5m])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: A kanidm replica is out of date and must be refreshed.
+          description: >-
+            kanidm {{ $labels.pod }} has fallen behind its supplier past the
+            changelog window and stopped replicating; refresh it by hand.

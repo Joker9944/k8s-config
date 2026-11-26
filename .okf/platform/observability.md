@@ -4,7 +4,7 @@ title: Observability
 description: The metrics, logs and notification path — kube-prometheus-stack, Grafana, Loki fed by Alloy, and Gotify running a repo-built image.
 tags: [prometheus, grafana, loki, alloy, gotify, alerting]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-26T15:00:00Z }
 ---
 
 # The workloads
@@ -78,6 +78,8 @@ Two gates cover these files, failing for different reasons. `alloy fmt -w` runs 
 # Alerting path
 
 Alertmanager → `gotify-alertmanager-bridge` (`ghcr.io/druggeri/alertmanager_gotify_bridge`) <!-- cSpell:ignore druggeri --> → Gotify.
+
+Log-based alerts come from Loki's ruler on `loki-backend`, pushing to the same Alertmanager. A rule file is a `loki_rule`-labelled ConfigMap in the app's own namespace, or in `loki` for a fleet-wide rule such as `AppErrorLogFlood`; the chart's sidecar collects them cluster-wide into `/rules/fake`, the local store's directory for the one tenant `auth_enabled: false` leaves. The S3 ruler store the chart defaults to never reads what the sidecar writes. `pod` is structured metadata, not a stream label, yet `sum by (pod)` still groups on it.
 
 The route tree is the chart's: naming `route.routes` replaces the default list wholesale, so Watchdog — the heartbeat that must never stop firing — has to be re-declared to `null` beside any addition.
 

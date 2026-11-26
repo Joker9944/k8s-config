@@ -1,5 +1,10 @@
 # Update Log
 
+## 2026-11-26
+
+- Loki's ruler reads `loki_rule` ConfigMaps from every namespace and alerts through Alertmanager; kanidm replication divergence is the first rule — [observability](/platform/observability.md)
+- `AppErrorLogFlood` alerts on any app logging over 1 error/s for 15m — [observability](/platform/observability.md)
+
 ## 2026-11-23
 
 - Level-3 Kustomizations are back on `MirrorPrune`; only the `nyx-manifests` level 2 orphans — [flux topology](/architecture/flux-topology.md)
