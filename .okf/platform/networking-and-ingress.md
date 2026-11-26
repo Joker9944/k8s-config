@@ -4,7 +4,7 @@ title: Networking and ingress
 description: The WireGuard edge the cluster is reached through, Traefik entrypoints and plugins, the middleware chain every public service sits behind, the tailnet path that carries everything else, and why the VPN sidecar is kept out of pod DNS.
 tags: [traefik, wireguard, ingress, middleware, tailscale]
 status: stable
-generated: { by: claude-code/opus-5, at: 2026-11-23T18:00:00Z }
+generated: { by: claude-code/opus-5, at: 2026-11-26T15:30:00Z }
 ---
 
 # The edge
@@ -18,6 +18,7 @@ Three things have to line up, and each fails differently:
 - **`nodeSelector` on `#IngressSpoke`** places the Traefik DaemonSet on exactly the nodes that terminate a tunnel. `mother` is an agent, runs no Traefik pod, terminates no tunnel and is not a spoke — which is also why Traefik carries no [`#Reserved`](/platform/cluster-nyx.md) toleration any more.
 - **`externalTrafficPolicy: Local`** keeps the hub's source address off kube-proxy's SNAT, and stops a packet arriving on a spoke from being forwarded to a node with no tunnel. Dropping it does not break connectivity; it silently replaces every client IP with a node's.
 - **`proxyProtocol.trustedIPs` and `forwardedHeaders.trustedIPs`, both `#WireGuardHubIP`.** The hub speaks PROXY protocol; nothing else may. Get the trusted range wrong and every request presents the hub's `10.100.0.254`, so `basic-ratelimit` puts the whole internet in one bucket while looking healthy. The access log is the test: a `ClientHost` of `10.100.0.254` means it did not take.
+- **The access log keeps every header but `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie`, which it redacts.** It reaches Loki, and a kept header there is a credential any Grafana user can read: OAuth clients authenticate to kanidm's token endpoint with Basic auth, and a kanidm session is a `bearer` cookie. The names apply to the request, origin and downstream copies alike, and match the canonical header spelling exactly.
 
 **UDP bypasses Traefik.** nginx also splices UDP, port for port, straight to a workload's own `NodePort` Service; `#EdgeUDPNodePorts` in `schema.cue` names the pairs, mirrored by `udpForwards` in nix-config. Valheim is the one user. Such a Service runs `externalTrafficPolicy: Cluster`, because nginx has no health check for a UDP upstream and under `Local` a spoke without the pod drops the datagram silently; the client address is gone either way, since UDP carries no PROXY header. Traefik's UDP routing was rejected: it has no UDP middlewares, and every Traefik rollout would drop every game session.
 

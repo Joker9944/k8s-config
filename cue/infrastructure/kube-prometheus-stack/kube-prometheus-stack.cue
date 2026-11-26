@@ -83,7 +83,14 @@ _kps: schema.#Release & {
 			alertmanagerSpec: secrets: [gotifyURLSecret]
 
 			config: {
-				route: receiver: "gotify-joker9944"
+				// routes replaces the chart's list wholesale, so Watchdog is restated.
+				route: {
+					receiver: "gotify-joker9944"
+					routes: [{
+						receiver: "null"
+						matchers: ["alertname =~ \"Watchdog|LokiWatchdog\""]
+					}]
+				}
 				receivers: [
 					{name: "null"},
 					{

@@ -2,6 +2,8 @@
 
 ## 2026-11-26
 
+- `LokiWatchdog` heartbeat, watched by `LokiRulerNotSending` in Prometheus — [observability](/platform/observability.md)
+- Traefik's access log redacts the credential headers — [networking and ingress](/platform/networking-and-ingress.md)
 - Loki's ruler reads `loki_rule` ConfigMaps from every namespace and alerts through Alertmanager; kanidm replication divergence is the first rule — [observability](/platform/observability.md)
 - `AppErrorLogFlood` alerts on any app logging over 1 error/s for 15m — [observability](/platform/observability.md)
 

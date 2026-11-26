@@ -132,7 +132,17 @@ _traefik: schema.#Release & {
 		accessLog: {
 			enabled: true
 			format:  "json"
-			fields: headers: defaultMode: "keep"
+			// The log reaches Loki, which every Grafana user can query. The names
+			// govern the request, origin and downstream copies of each header alike.
+			fields: headers: {
+				defaultMode: "keep"
+				names: {
+					Authorization:         "redact"
+					"Proxy-Authorization": "redact"
+					Cookie:                "redact"
+					"Set-Cookie":          "redact"
+				}
+			}
 		}
 
 		service: spec: {

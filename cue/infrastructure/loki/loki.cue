@@ -151,6 +151,32 @@ _loki: schema.#Release & {
 			// duplicate_entries_total counts what the websocket tail delivers twice:
 			// every hourly tail reconnect replays the last ~100s. The `expected` floor
 			// keeps a young pod's few-line edge error from moving the ratio.
+			// LokiWatchdog always fires, so a healthy ruler always sends. A ruler
+			// holding no rules exports no notifier series at all, hence the
+			// vector(0) — without it the alert goes silent in exactly that case.
+			// The error ratio is upstream's PrometheusErrorSendingAlertsToAnyAlertmanager.
+			additionalPrometheusRules: "loki-ruler": groups: [{
+				name: "loki-ruler"
+				rules: [{
+					alert: "LokiRulerNotSending"
+					expr:  "(sum(rate(loki_prometheus_notifications_sent_total[5m])) or vector(0)) == 0"
+					"for": "10m"
+					labels: severity: "warning"
+					annotations: {
+						summary:     "Loki's ruler is not sending alerts."
+						description: "No Loki ruler has sent an alert to Alertmanager in 10 minutes, although LokiWatchdog always fires; log-based alerts are not reaching anyone."
+					}
+				}, {
+					alert: "LokiRulerErrorSendingAlerts"
+					expr:  "min without (alertmanager) (rate(loki_prometheus_notifications_errors_total{alertmanager!~``}[5m]) / rate(loki_prometheus_notifications_sent_total{alertmanager!~``}[5m])) * 100 > 3"
+					"for": "15m"
+					labels: severity: "critical"
+					annotations: {
+						summary:     "Loki's ruler is failing to send alerts."
+						description: "{{ $labels.pod }} fails to send {{ $value | humanize }}% of its alerts to Alertmanager."
+					}
+				}]
+			}]
 			additionalPrometheusRules: "loki-canary": groups: [{
 				name: "loki-canary"
 				rules: [{

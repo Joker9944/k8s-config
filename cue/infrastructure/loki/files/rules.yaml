@@ -1,6 +1,22 @@
 # Evaluated by Loki's ruler. detected_level rather than level: Loki derives it
 # for every stream, where level exists only where a pipeline sets it.
 groups:
+  # The ruler's heartbeat, read by LokiRulerNotSending in Prometheus.
+  - name: loki-watchdog
+    rules:
+      - alert: LokiWatchdog
+        expr: vector(1)
+        labels:
+          severity: none
+        annotations:
+          summary: An alert that should always be firing to certify that Loki is working properly.
+          description: >-
+            This is an alert meant to ensure that the entire alerting pipeline
+            is functional. This alert is always firing, therefore it should
+            always be firing in Alertmanager and always fire against a receiver.
+            There are integrations with various notification mechanisms that
+            send a notification when this alert is not firing. For example the
+            "DeadMansSnitch" integration in PagerDuty.
   - name: fleet-errors
     rules:
       # An absolute rate, not a share of the app's lines, so a chatty app cannot
