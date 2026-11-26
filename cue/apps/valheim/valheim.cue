@@ -94,7 +94,7 @@ _valheim: schema.#AppRelease & {
 			server: {
 				type:       "persistentVolumeClaim"
 				accessMode: "ReadWriteOnce"
-				size:       "5Gi"
+				size:       "8Gi"
 				globalMounts: [{path: "/opt/valheim"}]
 			}
 			// Steam IDs, one per line; an empty list admits everyone. In the
