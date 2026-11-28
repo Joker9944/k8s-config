@@ -163,7 +163,7 @@ _cnpgSecretRef: {
 				initContainers: postgresql: schema.#Hardened & {
 					image: {
 						repository: "ghcr.io/joker9944/postgresql-client"
-						tag:        "4.0.0@sha256:10779b6759ea289040d04bda9557ec5906c0658c0ccec58a3fa9c2fdbef674cd"
+						tag:        "4.0.0@sha256:200d506def33161bb01f2265b1fa759649d74f659ddd4f29f04d6a2b058cc4c1"
 					}
 					env: {
 						PGHOST:        "servarr-cnpg-r"
