@@ -286,7 +286,7 @@ _arrs: [
 		instanceName:  "Sonarr Anime"
 		image: {
 			repository: "ghcr.io/home-operations/sonarr"
-			tag:        "5.0.0.2997@sha256:05acf764e72fa458b5edf236771d7a08d1f120fce509d4fb8a4e799fae29fda7"
+			tag:        "5.0.0.3041@sha256:ec7797f30e65cc411fba6768ed575337a5787de7d06c382173df610f2d23a317"
 		}
 		uid: 6006, port: 8989
 		cpu: "40m", mem: {request: "500Mi", limit: "700Mi"}
@@ -297,7 +297,7 @@ _arrs: [
 		instanceName:  "Sonarr Standard"
 		image: {
 			repository: "ghcr.io/home-operations/sonarr"
-			tag:        "5.0.0.2997@sha256:05acf764e72fa458b5edf236771d7a08d1f120fce509d4fb8a4e799fae29fda7"
+			tag:        "5.0.0.3041@sha256:ec7797f30e65cc411fba6768ed575337a5787de7d06c382173df610f2d23a317"
 		}
 		uid: 6006, port: 8989
 		cpu: "40m", mem: {request: "500Mi", limit: "700Mi"}
