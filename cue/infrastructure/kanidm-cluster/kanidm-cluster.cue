@@ -20,7 +20,7 @@ let uid = 568
 // Spelled as a repository/tag pair for renovate's image manager.
 _image: {
 	repository: "kanidm/server"
-	tag:        "1.12.1@sha256:77198131f28116203e105d2e42214203757d113a694f35de545669e75db5c96f"
+	tag:        "1.12.2@sha256:555618fc71aa5cbbacf0041136f8a5430615ee215d677386594726abcc18dbf0"
 }
 
 _cert: {
