@@ -41,7 +41,7 @@ _plugins: {
 
 _base: schema.#PinnedImage & {image: {
 	repository: "ghcr.io/joker9944/base"
-	tag:        "1.0.0@sha256:bfb70d8bc4198b66d6d4a2a39e996a2b0e8c7fbcba156ab3a9df0daaae2b0d77"
+	tag:        "1.0.0@sha256:612a1a68ad367e331c91e745597a79ac1e717bc16b0d06ffdeaeccef8a5e5094"
 }}
 
 _headlamp: schema.#Release & {
